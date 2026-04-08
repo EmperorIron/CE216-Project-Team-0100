@@ -168,7 +168,7 @@ public class CalendarFootball extends Calendar {
                         }
                     }
                 }
-                matchPlayedThisWeek = true; /
+                matchPlayedThisWeek = true; 
             }
         }
         
