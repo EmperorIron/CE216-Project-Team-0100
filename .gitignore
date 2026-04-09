@@ -1,2 +1,4 @@
 # Ignore compiled Java class files
 *.class
+*.xml
+*.txt
