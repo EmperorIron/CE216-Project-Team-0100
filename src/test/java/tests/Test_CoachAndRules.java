@@ -2,7 +2,6 @@ package tests;
 
 import Classes.*;
 import Sport.*;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +15,7 @@ public class Test_CoachAndRules {
     @BeforeEach
     void setUp() {
         rules = new GameRulesFootball();
-        coach = CoachGenerator.createRandomFootballCoach(rules);
+        coach = CoachGeneratorFootball.createRandomFootballCoach(rules);
     }
 
 

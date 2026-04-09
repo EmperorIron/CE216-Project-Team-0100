@@ -8,6 +8,7 @@ Classes\Calendar.class
 Classes\Team.class
 Interface\IPlayer.class
 Sport\PlayerGeneratorFootball.class
+Sport\CoachGeneratorFootball.class
 Classes\Training$1.class
 Classes\Game.class
 core\Main.class

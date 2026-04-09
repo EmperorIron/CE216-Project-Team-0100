@@ -1,4 +1,4 @@
-package main.java.Sport;
+package Sport;
 
 import Classes.CoachGenerator;
 import Classes.GameRules;
