@@ -4,6 +4,7 @@ import java.util.Map;
 
 import Classes.GameRules;
 import Classes.PlayerGenerator;
+import Classes.RandomGenerator;
 import Classes.Positions;
 
 public class PlayerGeneratorFootball extends PlayerGenerator {
@@ -21,73 +22,73 @@ public class PlayerGeneratorFootball extends PlayerGenerator {
         String country = identity[2];
         String id = identity[3];
 
-        int defVal = randGen.generateBellCurveStat(50, 15, 10, 100);
-        int pasVal = randGen.generateBellCurveStat(50, 15, 10, 100);
-        int sutVal = randGen.generateBellCurveStat(50, 15, 10, 100);
-        int hizVal = randGen.generateBellCurveStat(50, 15, 10, 100);
-        int fizVal = randGen.generateBellCurveStat(50, 15, 10, 100);
-        int menVal = randGen.generateBellCurveStat(50, 15, 10, 100);
-        int gkVal  = randGen.generateBellCurveStat(10, 5, 0, 100); 
+        int defVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int pasVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int sutVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int hizVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int fizVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int menVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int gkVal  = RandomGenerator.generateBellCurveStat(10, 5, 0, 100); 
 
         switch (exactPosition.toUpperCase()) {
             case "ST": 
-                sutVal = randGen.generateBellCurveStat(85, 7, 60, 100); 
-                fizVal = randGen.generateBellCurveStat(75, 10, 50, 100);
-                hizVal = randGen.generateBellCurveStat(75, 10, 50, 100);
+                sutVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); 
+                fizVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                hizVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 break;
             case "LW": 
             case "RW": 
-                hizVal = randGen.generateBellCurveStat(88, 6, 70, 100);
-                sutVal = randGen.generateBellCurveStat(75, 10, 50, 100);
-                pasVal = randGen.generateBellCurveStat(75, 10, 50, 100);
+                hizVal = RandomGenerator.generateBellCurveStat(88, 6, 70, 100);
+                sutVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                pasVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 break;
             case "CAM": 
-                pasVal = randGen.generateBellCurveStat(85, 7, 60, 100);
-                menVal = randGen.generateBellCurveStat(82, 8, 50, 100);
-                sutVal = randGen.generateBellCurveStat(75, 10, 50, 100);
+                pasVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
+                menVal = RandomGenerator.generateBellCurveStat(82, 8, 50, 100);
+                sutVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 break;
             case "CM": 
-                pasVal = randGen.generateBellCurveStat(80, 8, 60, 100);
-                menVal = randGen.generateBellCurveStat(80, 8, 60, 100);
-                fizVal = randGen.generateBellCurveStat(75, 10, 50, 100);
-                defVal = randGen.generateBellCurveStat(70, 10, 40, 90);
+                pasVal = RandomGenerator.generateBellCurveStat(80, 8, 60, 100);
+                menVal = RandomGenerator.generateBellCurveStat(80, 8, 60, 100);
+                fizVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                defVal = RandomGenerator.generateBellCurveStat(70, 10, 40, 90);
                 break;
             case "CDM": 
-                defVal = randGen.generateBellCurveStat(82, 8, 60, 100);
-                fizVal = randGen.generateBellCurveStat(82, 8, 60, 100);
-                pasVal = randGen.generateBellCurveStat(75, 10, 50, 100);
+                defVal = RandomGenerator.generateBellCurveStat(82, 8, 60, 100);
+                fizVal = RandomGenerator.generateBellCurveStat(82, 8, 60, 100);
+                pasVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 break;
             case "CB": 
-                defVal = randGen.generateBellCurveStat(88, 6, 70, 100);
-                fizVal = randGen.generateBellCurveStat(85, 7, 60, 100);
-                hizVal = randGen.generateBellCurveStat(50, 15, 20, 85); // Stoperler genelde yavaştır
+                defVal = RandomGenerator.generateBellCurveStat(88, 6, 70, 100);
+                fizVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
+                hizVal = RandomGenerator.generateBellCurveStat(50, 15, 20, 85); // Stoperler genelde yavaştır
                 break;
             case "LB": 
             case "RB": 
-                hizVal = randGen.generateBellCurveStat(85, 7, 60, 100);
-                defVal = randGen.generateBellCurveStat(75, 10, 50, 100);
-                pasVal = randGen.generateBellCurveStat(70, 12, 50, 100);
+                hizVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
+                defVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                pasVal = RandomGenerator.generateBellCurveStat(70, 12, 50, 100);
                 break;
             case "GK": 
-                gkVal = randGen.generateBellCurveStat(85, 5, 60, 100);
-                defVal = randGen.generateBellCurveStat(30, 10, 10, 60);
-                hizVal = randGen.generateBellCurveStat(40, 15, 20, 70);
+                gkVal = RandomGenerator.generateBellCurveStat(85, 5, 60, 100);
+                defVal = RandomGenerator.generateBellCurveStat(30, 10, 10, 60);
+                hizVal = RandomGenerator.generateBellCurveStat(40, 15, 20, 70);
                 break;
             
             case "FORWARD": 
-                sutVal = randGen.generateBellCurveStat(85, 7, 60, 100); break;
+                sutVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); break;
             case "DEFENDER": 
-                defVal = randGen.generateBellCurveStat(85, 7, 60, 100); break;
+                defVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); break;
             case "MIDFIELDER": 
-                pasVal = randGen.generateBellCurveStat(85, 7, 60, 100); break;
+                pasVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); break;
             case "GOALKEEPER": 
-                gkVal = randGen.generateBellCurveStat(85, 5, 60, 100); break;
+                gkVal = RandomGenerator.generateBellCurveStat(85, 5, 60, 100); break;
         }
 
         int primaryPositionId = PositionsFootball.getRandomPositionForRole(exactPosition);
-        int primaryProficiency = randGen.generateBellCurveStat(95, 5, 90, 100);
+        int primaryProficiency = RandomGenerator.generateBellCurveStat(95, 5, 90, 100);
         
-        double falloffRate = randGen.generateBellCurveStat(8, 2, 5, 12); 
+        double falloffRate = RandomGenerator.generateBellCurveStat(8, 2, 5, 12); 
 
         Map<Integer, Integer> proficiencyMap = Positions.generateProficiencyMap(primaryPositionId, primaryProficiency, falloffRate);
 

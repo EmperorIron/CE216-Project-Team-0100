@@ -24,10 +24,10 @@ public class TeamGeneratorFootball extends TeamGenerator {
         for (int i = 0; i < numDefenders; i++) team.addPlayer(PlayerGeneratorFootball.createFootballPlayerByPosition("Defender", rules));
         for (int i = 0; i < numMidfielders; i++) team.addPlayer(PlayerGeneratorFootball.createFootballPlayerByPosition("Midfielder", rules));
         for (int i = 0; i < numForwards; i++) team.addPlayer(PlayerGeneratorFootball.createFootballPlayerByPosition("Forward", rules));
-        
-        team.addCoach(CoachGenerator.createFootballCoachByStyle("Offensive", rules));
-        team.addCoach(CoachGenerator.createFootballCoachByStyle("Defensive", rules));
-        team.addCoach(CoachGenerator.createFootballCoachByStyle("Youth-focused", rules));
+
+        team.addCoach(CoachGeneratorFootball.createFootballCoachByStyle("Offensive", rules));
+        team.addCoach(CoachGeneratorFootball.createFootballCoachByStyle("Defensive", rules));
+        team.addCoach(CoachGeneratorFootball.createFootballCoachByStyle("Youth-focused", rules));
 
         return team;
     }
