@@ -12,14 +12,19 @@ public abstract class Game implements IGame {
     protected final ITeam homeTeam;
     protected final ITeam awayTeam;
     protected final GameRules rules;
-    protected final ITactic homeTactic;
-    protected final ITactic awayTactic;
+    protected ITactic homeTactic;
+    protected ITactic awayTactic;
+
+    protected Interface.IManager homeManager;
+    protected Interface.IManager awayManager;
 
     protected int homeScore;
     protected int awayScore;
     protected boolean isCompleted;
     protected final List<String> gameLog;
     protected final Random random;
+    protected int homeSubsLeft;
+    protected int awaySubsLeft;
 
     public Game(ITeam homeTeam, ITeam awayTeam, GameRules rules, ITactic homeTactic, ITactic awayTactic) {
         if (homeTeam == null || awayTeam == null || rules == null || homeTactic == null || awayTactic == null) {
@@ -50,10 +55,26 @@ public abstract class Game implements IGame {
     @Override public boolean isCompleted() { return isCompleted; }
     @Override public void setCompleted(boolean completed) { isCompleted = completed; }
     @Override public List<String> getGameLog() { return gameLog; }
+    @Override public int getHomeSubsLeft() { return homeSubsLeft; }
+    @Override public void setHomeSubsLeft(int homeSubsLeft) { this.homeSubsLeft = homeSubsLeft; }
+    @Override public int getAwaySubsLeft() { return awaySubsLeft; }
+    @Override public void setAwaySubsLeft(int awaySubsLeft) { this.awaySubsLeft = awaySubsLeft; }
+
+    public Interface.IManager getHomeManager() {
+        return homeManager;
+    }
+
+    public void setHomeManager(Interface.IManager homeManager) {
+        this.homeManager = homeManager;
+    }
+
+    public void setAwayManager(Interface.IManager awayManager) {
+        this.awayManager = awayManager;
+    }
     
     @Override
     public void addLogEntry(String entry) {
-        if (entry != null && !entry.isBlank()) {
+        if (entry != null) {
             this.gameLog.add(entry);
         }
     }
