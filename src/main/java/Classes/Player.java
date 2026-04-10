@@ -18,6 +18,7 @@ public abstract class Player implements IPlayer {
     private int currentPositionId;
     private final Map<String, Trait> traits; // Player's skills
     private int injuryDuration; 
+    private int jerseyNumber;
 
     public Player(String name, String surname, String country, String teamName, String id, Map<Integer, Integer> positionProficiency) {
         this.name = name;
@@ -165,5 +166,13 @@ public abstract class Player implements IPlayer {
         }
         double total = traits.values().stream().mapToInt(Trait::getCurrentLevel).sum();
         return total / traits.size();
+    }
+
+    public int getJerseyNumber() {
+        return jerseyNumber;
+    }
+
+    public void setJerseyNumber(int jerseyNumber) {
+        this.jerseyNumber = jerseyNumber;
     }
 }
