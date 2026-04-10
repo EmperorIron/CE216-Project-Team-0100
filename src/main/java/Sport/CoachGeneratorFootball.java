@@ -7,7 +7,7 @@ import Classes.RandomGenerator;
 public class CoachGeneratorFootball extends CoachGenerator {
 
    
-    private static final String[] FOOTBALL_FORMATIONS = {"4-4-2", "4-3-3", "3-5-2", "4-2-3-1", "5-3-2"};
+    private static final String[] FOOTBALL_FORMATIONS = {"1-4-4-2", "1-4-3-3", "1-3-5-2", "1-4-2-3-1", "1-5-3-2"};
     private static final String[] COACH_STYLES = {"Offensive", "Defensive", "Balanced", "Youth-focused"};
 
     

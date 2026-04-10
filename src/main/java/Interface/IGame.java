@@ -16,6 +16,10 @@ public interface IGame {
     void setCompleted(boolean completed);
     ITactic getHomeTactic();
     ITactic getAwayTactic();
+    int getHomeSubsLeft();
+    void setHomeSubsLeft(int count);
+    int getAwaySubsLeft();
+    void setAwaySubsLeft(int count);
 
     /**
      * Simulates the entire game from start to finish.

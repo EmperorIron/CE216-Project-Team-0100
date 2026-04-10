@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="tests.Test_Team" time="0.046" tests="13" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="tests.Test_Team" time="0.045" tests="13" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="23"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="TR"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-23\bin"/>
-    <property name="sun.java.command" value="C:\Users\bitze\AppData\Local\Temp\surefire8855126505863586338\surefirebooter-20260410003714551_3.jar C:\Users\bitze\AppData\Local\Temp\surefire8855126505863586338 2026-04-10T00-37-14_464-jvmRun1 surefire-20260410003714551_1tmp surefire_0-20260410003714551_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\bitze\AppData\Local\Temp\surefire8946716375470770997\surefirebooter-20260410180616281_3.jar C:\Users\bitze\AppData\Local\Temp\surefire8946716375470770997 2026-04-10T18-06-16_195-jvmRun1 surefire-20260410180616281_1tmp surefire_0-20260410180616281_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\target\test-classes;C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\target\classes;C:\Users\bitze\.m2\repository\org\openjfx\javafx-controls\23.0.1\javafx-controls-23.0.1.jar;C:\Users\bitze\.m2\repository\org\openjfx\javafx-controls\23.0.1\javafx-controls-23.0.1-win.jar;C:\Users\bitze\.m2\repository\org\openjfx\javafx-graphics\23.0.1\javafx-graphics-23.0.1.jar;C:\Users\bitze\.m2\repository\org\openjfx\javafx-graphics\23.0.1\javafx-graphics-23.0.1-win.jar;C:\Users\bitze\.m2\repository\org\openjfx\javafx-base\23.0.1\javafx-base-23.0.1.jar;C:\Users\bitze\.m2\repository\org\openjfx\javafx-base\23.0.1\javafx-base-23.0.1-win.jar;C:\Users\bitze\.m2\repository\com\github\javafaker\javafaker\1.0.2\javafaker-1.0.2.jar;C:\Users\bitze\.m2\repository\org\apache\commons\commons-lang3\3.5\commons-lang3-3.5.jar;C:\Users\bitze\.m2\repository\org\yaml\snakeyaml\1.23\snakeyaml-1.23-android.jar;C:\Users\bitze\.m2\repository\com\github\mifmif\generex\1.0.2\generex-1.0.2.jar;C:\Users\bitze\.m2\repository\dk\brics\automaton\automaton\1.11-8\automaton-1.11-8.jar;C:\Users\bitze\.m2\repository\org\openjfx\javafx-fxml\23.0.1\javafx-fxml-23.0.1.jar;C:\Users\bitze\.m2\repository\org\openjfx\javafx-fxml\23.0.1\javafx-fxml-23.0.1-win.jar;C:\Users\bitze\.m2\repository\org\junit\jupiter\junit-jupiter\5.10.2\junit-jupiter-5.10.2.jar;C:\Users\bitze\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.2\junit-jupiter-api-5.10.2.jar;C:\Users\bitze\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\bitze\.m2\repository\org\junit\platform\junit-platform-commons\1.10.2\junit-platform-commons-1.10.2.jar;C:\Users\bitze\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\bitze\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.10.2\junit-jupiter-params-5.10.2.jar;C:\Users\bitze\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.10.2\junit-jupiter-engine-5.10.2.jar;C:\Users\bitze\.m2\repository\org\junit\platform\junit-platform-engine\1.10.2\junit-platform-engine-1.10.2.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\bitze\AppData\Local\Temp\surefire8855126505863586338\surefirebooter-20260410003714551_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\bitze\AppData\Local\Temp\surefire8946716375470770997\surefirebooter-20260410180616281_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="23.0.1+11-39"/>
@@ -58,17 +58,17 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="67.0"/>
   </properties>
-  <testcase name="testTeamHasCorrectSquadSize" classname="tests.Test_Team" time="0.01"/>
-  <testcase name="testOffensiveRatingIsPositive" classname="tests.Test_Team" time="0.013"/>
-  <testcase name="testTeamHasGoalkeeper" classname="tests.Test_Team" time="0.003"/>
+  <testcase name="testTeamHasCorrectSquadSize" classname="tests.Test_Team" time="0.006"/>
+  <testcase name="testOffensiveRatingIsPositive" classname="tests.Test_Team" time="0.014"/>
+  <testcase name="testTeamHasGoalkeeper" classname="tests.Test_Team" time="0.002"/>
   <testcase name="testGoalDifference" classname="tests.Test_Team" time="0.001"/>
-  <testcase name="testCoachHasTraits" classname="tests.Test_Team" time="0.002"/>
-  <testcase name="testTeamHasName" classname="tests.Test_Team" time="0.001"/>
+  <testcase name="testCoachHasTraits" classname="tests.Test_Team" time="0.001"/>
+  <testcase name="testTeamHasName" classname="tests.Test_Team" time="0.002"/>
   <testcase name="testTeamHasThreeCoaches" classname="tests.Test_Team" time="0.001"/>
   <testcase name="testDefensiveRatingIsPositive" classname="tests.Test_Team" time="0.003"/>
-  <testcase name="testManagerAIDefault" classname="tests.Test_Team" time="0.001"/>
-  <testcase name="testAddPlayer" classname="tests.Test_Team" time="0.001"/>
+  <testcase name="testManagerAIDefault" classname="tests.Test_Team" time="0.003"/>
+  <testcase name="testAddPlayer" classname="tests.Test_Team" time="0.003"/>
   <testcase name="testSetPoints" classname="tests.Test_Team" time="0.001"/>
   <testcase name="testInitialStatsAreZero" classname="tests.Test_Team" time="0.001"/>
-  <testcase name="testAllPlayersHaveProficiencyMap" classname="tests.Test_Team" time="0.002"/>
+  <testcase name="testAllPlayersHaveProficiencyMap" classname="tests.Test_Team" time="0.001"/>
 </testsuite>

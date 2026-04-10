@@ -2,8 +2,10 @@ package Sport;
 
 import Classes.*;
 import Classes.Calendar;
+import Interface.IPlayer;
 import Interface.ITactic;
 import Interface.ITeam;
+import Interface.IManager;
 
 import java.util.*;
 
@@ -70,8 +72,40 @@ public class CalendarFootball extends Calendar {
         if (home == byeTeam || away == byeTeam) {
             return;
         }
-        ITactic defaultTactic = new TacticFootball("4-4-2");
-        weeklyGames.add(new GameFootball(home, away, rules, defaultTactic, defaultTactic));
+
+        IManager homeManager = null;
+        IManager awayManager = null;
+        ITactic homeTactic;
+        ITactic awayTactic;
+
+        if (home.isManagerAI()) {
+            homeManager = createRandomAIForTeam(home);
+        } else {
+            homeManager = new HumanManagerFootball(home);
+        }
+        homeTactic = new TacticFootball("1-4-4-2"); // Maç başlarken doldurulacak geçici taktik
+
+        if (away.isManagerAI()) {
+            awayManager = createRandomAIForTeam(away);
+        } else {
+            awayManager = new HumanManagerFootball(away);
+        }
+        awayTactic = new TacticFootball("1-4-4-2");
+
+        GameFootball game = new GameFootball(home, away, rules, homeTactic, awayTactic);
+        if (homeManager != null) game.setHomeManager(homeManager);
+        if (awayManager != null) game.setAwayManager(awayManager);
+        weeklyGames.add(game);
+    }
+
+    private AI createRandomAIForTeam(ITeam team) {
+        int randomChoice = new Random().nextInt(3); // 3 types: Adaptable, Attack, Defense
+        boolean isHard = new Random().nextBoolean(); // 2 difficulties: Easy, Hard
+        return switch (randomChoice) {
+            case 0 -> isHard ? new AIAdaptableHardFootball(team) : new AIAdaptableEasyFootball(team);
+            case 1 -> isHard ? new AIAttackHardFootball(team) : new AIAttackEasyFootball(team);
+            default -> isHard ? new AIDefenseHardFootball(team) : new AIDefenseEasyFootball(team);
+        };
     }
 
     @Override

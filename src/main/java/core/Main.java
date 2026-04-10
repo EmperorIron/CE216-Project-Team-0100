@@ -30,12 +30,26 @@ public class Main {
         }
         System.out.println();
 
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("[SİSTEM] Hangi takımı yönetmek istersiniz?");
+        System.out.println("0. Sadece Simüle Et (Tüm Takımlar AI)");
+        for (int i = 0; i < teams.size(); i++) {
+            System.out.println((i + 1) + ". " + teams.get(i).getName());
+        }
+        System.out.print("Seçiminiz: ");
+        try {
+            int teamChoice = Integer.parseInt(scanner.nextLine());
+            if (teamChoice > 0 && teamChoice <= teams.size()) {
+                teams.get(teamChoice - 1).setManagerAI(false); // YAPAY ZEKA DEĞİL, İNSAN!
+                System.out.println("\n>>> " + teams.get(teamChoice - 1).getName() + " takımının menajeri sizsiniz! <<<\n");
+            }
+        } catch(Exception e) {}
+
         CalendarFootball calendar = new CalendarFootball(rules);
         calendar.generateFixtures(teams);
         System.out.println("[SİSTEM] Fikstür oluşturuldu. Sezon başlıyor!\n");
 
-        Scanner scanner = new Scanner(System.in);
-        int totalWeeks = (teams.size() % 2 == 0 ? teams.size() - 1 : teams.size()) * rules.getMatchbetweenTeams();
+        int totalWeeks = calendar.getSchedule().size();
         boolean running = true;
 
         while (running) {
