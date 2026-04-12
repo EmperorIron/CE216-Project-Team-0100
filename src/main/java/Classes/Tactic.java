@@ -1,11 +1,12 @@
 package Classes;
 
-import Interface.IPlayer;
-import Interface.ITactic;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import Interface.IPlayer;
+import Interface.ITactic;
 
 public abstract class Tactic implements ITactic {
 
