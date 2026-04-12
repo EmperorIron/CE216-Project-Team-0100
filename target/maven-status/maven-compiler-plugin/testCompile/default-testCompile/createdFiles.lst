@@ -1,0 +1,5 @@
+tests\Test_Player.class
+tests\Test_CoachAndRules.class
+tests\Test_Training.class
+tests\Test_League.class
+tests\Test_Team.class

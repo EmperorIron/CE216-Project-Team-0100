@@ -13,11 +13,11 @@ public abstract class Tactic implements ITactic {
     private List<IPlayer> substitutes;
     private Map<String, String> playerRoles;
 
-    private final String formation;
+    private Formation formation;
 
     private final Map<String, StyleEffect> styles;
 
-    public Tactic(String formation) {
+    public Tactic(Formation formation) {
         this.formation = formation;
         this.startingLineup = new ArrayList<>();
         this.substitutes = new ArrayList<>();
@@ -26,7 +26,15 @@ public abstract class Tactic implements ITactic {
     }
     @Override
     public String getFormation() {
+        return formation.getFormattedName();
+    }
+    
+    public Formation getFormationObject() {
         return formation;
+    }
+    
+    public void setFormation(Formation formation) {
+        this.formation = formation;
     }
 
     @Override
@@ -67,9 +75,13 @@ public abstract class Tactic implements ITactic {
         }
     }
 
+    public void clearStyles() {
+        this.styles.clear();
+    }
+
     @Override
     public float getTotalXGMultiplier() {
-        float totalMultiplier = 1.0f;
+        float totalMultiplier = formation.calculateFormationXgEffect(startingLineup);
         for (StyleEffect effect : styles.values()) {
             totalMultiplier *= effect.xGMultiplier;
         }
@@ -78,7 +90,7 @@ public abstract class Tactic implements ITactic {
 
     @Override
     public float getTotalXGAMultiplier() {
-        float totalMultiplier = 1.0f;
+        float totalMultiplier = formation.calculateFormationXgaEffect(startingLineup);
         for (StyleEffect effect : styles.values()) {
             totalMultiplier *= effect.xGAMultiplier;
         }

@@ -20,14 +20,32 @@ public class TeamGeneratorFootball extends TeamGenerator {
         int numMidfielders = (int) Math.round(totalSquadSize * 0.35);
         int numDefenders = totalSquadSize - numGoalkeepers - numForwards - numMidfielders;
 
-        for (int i = 0; i < numGoalkeepers; i++) team.addPlayer(PlayerGeneratorFootball.createFootballPlayerByPosition("Goalkeeper", rules));
-        for (int i = 0; i < numDefenders; i++) team.addPlayer(PlayerGeneratorFootball.createFootballPlayerByPosition("Defender", rules));
-        for (int i = 0; i < numMidfielders; i++) team.addPlayer(PlayerGeneratorFootball.createFootballPlayerByPosition("Midfielder", rules));
-        for (int i = 0; i < numForwards; i++) team.addPlayer(PlayerGeneratorFootball.createFootballPlayerByPosition("Forward", rules));
-        
-        team.addCoach(CoachGenerator.createFootballCoachByStyle("Offensive", rules));
-        team.addCoach(CoachGenerator.createFootballCoachByStyle("Defensive", rules));
-        team.addCoach(CoachGenerator.createFootballCoachByStyle("Youth-focused", rules));
+        int jerseyNumber = 1;
+
+        for (int i = 0; i < numGoalkeepers; i++) {
+            PlayerFootball p = PlayerGeneratorFootball.createFootballPlayerByPosition("Goalkeeper", rules);
+            p.setJerseyNumber(jerseyNumber++);
+            team.addPlayer(p);
+        }
+        for (int i = 0; i < numDefenders; i++) {
+            PlayerFootball p = PlayerGeneratorFootball.createFootballPlayerByPosition("Defender", rules);
+            p.setJerseyNumber(jerseyNumber++);
+            team.addPlayer(p);
+        }
+        for (int i = 0; i < numMidfielders; i++) {
+            PlayerFootball p = PlayerGeneratorFootball.createFootballPlayerByPosition("Midfielder", rules);
+            p.setJerseyNumber(jerseyNumber++);
+            team.addPlayer(p);
+        }
+        for (int i = 0; i < numForwards; i++) {
+            PlayerFootball p = PlayerGeneratorFootball.createFootballPlayerByPosition("Forward", rules);
+            p.setJerseyNumber(jerseyNumber++);
+            team.addPlayer(p);
+        }
+
+        team.addCoach(CoachGeneratorFootball.createFootballCoachByStyle("Offensive", rules));
+        team.addCoach(CoachGeneratorFootball.createFootballCoachByStyle("Defensive", rules));
+        team.addCoach(CoachGeneratorFootball.createFootballCoachByStyle("Youth-focused", rules));
 
         return team;
     }
