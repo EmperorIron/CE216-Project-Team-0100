@@ -43,7 +43,19 @@ public abstract class Positions {
 
             proficiencyMap.put(i, proficiency);
         }
-        proficiencyMap.put(primaryPositionId, Math.max(0, Math.min(100, primaryProficiency)));
+        
+        int finalPrimaryProficiency = Math.max(0, Math.min(100, primaryProficiency));
+        
+        for (int i = 0; i < TOTAL_POSITIONS; i++) {
+            if (i != primaryPositionId) {
+                int currentVal = proficiencyMap.get(i);
+                if (currentVal >= finalPrimaryProficiency) {
+                    proficiencyMap.put(i, Math.max(0, finalPrimaryProficiency - 1));
+                }
+            }
+        }
+        
+        proficiencyMap.put(primaryPositionId, finalPrimaryProficiency);
 
         return proficiencyMap;
     }
