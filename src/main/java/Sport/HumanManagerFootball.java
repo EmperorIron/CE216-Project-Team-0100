@@ -12,11 +12,17 @@ import java.util.Scanner;
 
 public class HumanManagerFootball implements IManager {
     private final ITeam team;
-    private final Scanner scanner;
+    private transient Scanner scanner;
 
     public HumanManagerFootball(ITeam team) {
         this.team = team;
-        this.scanner = new Scanner(System.in);
+    }
+
+    private Scanner getScanner() {
+        if (scanner == null) {
+            scanner = new Scanner(System.in);
+        }
+        return scanner;
     }
 
     @Override
@@ -30,7 +36,7 @@ public class HumanManagerFootball implements IManager {
         
         System.out.println("Önerilen Formasyonlar: " + TacticFootball.BALANCED_FORMATIONS);
         System.out.print("Formasyon girin (Varsayılan 1-4-4-2): ");
-        String formationStr = scanner.nextLine();
+        String formationStr = getScanner().nextLine();
         if (formationStr.trim().isEmpty()) formationStr = "1-4-4-2";
         
         TacticFootball tactic = new TacticFootball(formationStr);
@@ -47,7 +53,7 @@ public class HumanManagerFootball implements IManager {
             System.out.println("1. Otomatik (En yüksek reytinge göre)");
             System.out.println("2. Manuel");
             System.out.print("Seçiminiz: ");
-            String choice = scanner.nextLine();
+            String choice = getScanner().nextLine();
             
             if ("2".equals(choice)) {
                 starting11.clear();
@@ -56,7 +62,7 @@ public class HumanManagerFootball implements IManager {
                     printInteractiveGrid(starting11);
                     System.out.print("Bir saha pozisyonu girin (0-99 arası, çıkmak için -1): ");
                     try {
-                        int posId = Integer.parseInt(scanner.nextLine().trim());
+                        int posId = Integer.parseInt(getScanner().nextLine().trim());
                         if (posId == -1) {
                             starting11.clear();
                             break;
@@ -87,7 +93,7 @@ public class HumanManagerFootball implements IManager {
                         }
 
                         System.out.print("Bu pozisyona yerleştirmek istediğiniz oyuncunun numarasını girin (İptal için 0): ");
-                        int playerIdx = Integer.parseInt(scanner.nextLine().trim()) - 1;
+                        int playerIdx = Integer.parseInt(getScanner().nextLine().trim()) - 1;
                         if (playerIdx >= 0 && playerIdx < limit) {
                             IPlayer selected = available.get(playerIdx);
                             if (selected instanceof Classes.Player) {
@@ -111,7 +117,7 @@ public class HumanManagerFootball implements IManager {
                         System.out.printf("Pozisyon: %-3d | %-25s (OVR: %.1f)\n", pos, p.getFullName(), p.calculateOverallRating());
                     }
                     System.out.print("Kadroyu onaylıyor musunuz? (E/H): ");
-                    String confirm = scanner.nextLine().trim().toUpperCase();
+                    String confirm = getScanner().nextLine().trim().toUpperCase();
                     if ("E".equals(confirm)) {
                         lineupSelected = true;
                     } else {
@@ -140,7 +146,7 @@ public class HumanManagerFootball implements IManager {
         System.out.println("2. Tam Saldırı (All Out Attack)");
         System.out.println("3. Katı Savunma (Park the Bus)");
         System.out.print("Seçiminiz: ");
-        String styleChoice = scanner.nextLine();
+        String styleChoice = getScanner().nextLine();
         if ("2".equals(styleChoice)) tactic.applyTacticStyle(TacticFootball.ALL_OUT_ATTACK);
         else if ("3".equals(styleChoice)) tactic.applyTacticStyle(TacticFootball.PARK_THE_BUS);
         else tactic.applyTacticStyle(TacticFootball.BALANCED);
@@ -162,7 +168,7 @@ public class HumanManagerFootball implements IManager {
             System.out.println("3. Formasyonu Değiştir");
             System.out.println("0. Maça Devam Et");
             System.out.print("Seçiminiz: ");
-            String choice = scanner.nextLine();
+            String choice = getScanner().nextLine();
             
             switch(choice) {
                 case "1":
@@ -181,7 +187,7 @@ public class HumanManagerFootball implements IManager {
                     
                     try {
                         System.out.print("\nÇıkacak oyuncu no (Saha) (İptal için 0): "); 
-                        int outIdx = Integer.parseInt(scanner.nextLine()) - 1;
+                        int outIdx = Integer.parseInt(getScanner().nextLine()) - 1;
                         if (outIdx == -1) break;
                         
                         IPlayer pOut = starters.get(outIdx);
@@ -203,7 +209,7 @@ public class HumanManagerFootball implements IManager {
                         }
 
                         System.out.print("\nGirecek oyuncu no (Yedek) (İptal için 0): "); 
-                        int inIdx = Integer.parseInt(scanner.nextLine()) - 1;
+                        int inIdx = Integer.parseInt(getScanner().nextLine()) - 1;
                         if (inIdx == -1) break;
 
                         IPlayer pIn = subs.get(inIdx);
@@ -224,7 +230,7 @@ public class HumanManagerFootball implements IManager {
                     break;
                 case "2":
                     System.out.print("1. Dengeli | 2. Tam Saldırı | 3. Katı Savunma -> Seçim: ");
-                    String s = scanner.nextLine();
+                    String s = getScanner().nextLine();
                     if (currentTactic instanceof TacticFootball tf) {
                         if ("2".equals(s)) tf.applyTacticStyle(TacticFootball.ALL_OUT_ATTACK); else if ("3".equals(s)) tf.applyTacticStyle(TacticFootball.PARK_THE_BUS); else tf.applyTacticStyle(TacticFootball.BALANCED);
                         game.addLogEntry("Taktik değiştirildi (" + team.getName() + ").");
@@ -232,7 +238,7 @@ public class HumanManagerFootball implements IManager {
                     break;
                 case "3":
                     System.out.print("Yeni Formasyon (örn. 1-4-3-3): ");
-                    String form = scanner.nextLine();
+                    String form = getScanner().nextLine();
                     if (currentTactic instanceof Classes.Tactic tacticBase) {
                         tacticBase.setFormation(new FormationFootball(form));
                         game.addLogEntry("Formasyon değiştirildi (" + team.getName() + ") -> " + form);

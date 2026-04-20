@@ -13,13 +13,12 @@ public abstract class Training {
     protected final String name;
     protected final String description;
     protected final TrainingCategory category;
-    protected final Random random;
+    protected transient Random random;
 
     public Training(String name, String description, TrainingCategory category) {
         this.name = name;
         this.description = description;
         this.category = category;
-        this.random = new Random();
     }
 
     public String getName() {
@@ -35,6 +34,9 @@ public abstract class Training {
     }
 
     public Random getRandom() {
+        if (random == null) {
+            random = new Random();
+        }
         return random;
     }
 

@@ -57,8 +57,8 @@ public class GameFootball extends Game {
 
         logFormationGrid(team, tactic, minute + "'. Değişiklik Öncesi");
 
-        int outIndex = random.nextInt(onField.size());
-        int inIndex = random.nextInt(bench.size());
+        int outIndex = getRandom().nextInt(onField.size());
+        int inIndex = getRandom().nextInt(bench.size());
 
         IPlayer playerOut = onField.remove(outIndex);
         IPlayer playerIn = bench.remove(inIndex);
@@ -83,8 +83,8 @@ public class GameFootball extends Game {
 
         for (int minute = startMinute; minute <= endMinute; minute++) {
 
-            if (random.nextDouble() < 0.01) {
-                if (random.nextBoolean() && homeSubsLeft > 0) {
+            if (getRandom().nextDouble() < 0.01) {
+                if (getRandom().nextBoolean() && homeSubsLeft > 0) {
                     performSubstitution(homeTeam, homeTactic, minute, "MECBURİ DEĞİŞİKLİK (Sakatlık)");
                     homeSubsLeft--;
                 } else if (awaySubsLeft > 0) {
@@ -94,13 +94,13 @@ public class GameFootball extends Game {
             }
 
             double homeGoalChance = (homeOffense / (homeOffense + awayDefense)) * 0.025;
-            if (random.nextDouble() < homeGoalChance) { 
+            if (getRandom().nextDouble() < homeGoalChance) { 
                 homeScore++;
                 addLogEntry(minute + "'. GOOOAALLL! " + homeTeam.getName() + " ağları sarsıyor! Skor: " + homeScore + "-" + awayScore);
             }
 
             double awayGoalChance = (awayOffense / (awayOffense + homeDefense)) * 0.025;
-            if (random.nextDouble() < awayGoalChance) {
+            if (getRandom().nextDouble() < awayGoalChance) {
                 awayScore++;
                 addLogEntry(minute + "'. GOOOAALLL! " + awayTeam.getName() + " golü buldu! Skor: " + homeScore + "-" + awayScore);
             }
