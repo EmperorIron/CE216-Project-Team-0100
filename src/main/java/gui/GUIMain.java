@@ -25,6 +25,7 @@ public class GUIMain {
     public static ITeam playerTeam;
     public static LeagueFootball activeLeague;
     public static CalendarFootball activeCalendar;
+    public static boolean isMatchDay = false;
     
     public GUIMain(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -67,9 +68,14 @@ public class GUIMain {
         mainLayout.setLeft(createSidebar());
         mainLayout.setCenter(createDashboard());
 
-        Scene scene = new Scene(mainLayout, 1280, 720);
         primaryStage.setTitle("Spor Menajerlik - Ana Ekran");
-        primaryStage.setScene(scene);
+        
+        if (primaryStage.getScene() == null) {
+            primaryStage.setScene(new Scene(mainLayout, 1280, 720));
+        } else {
+            primaryStage.getScene().setRoot(mainLayout);
+        }
+        
         primaryStage.show();
     }
 
@@ -95,33 +101,36 @@ public class GUIMain {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         // Zaman Çizelgesi
-        Label dateLabel = new Label("1 Mart");
+        String weekText = activeCalendar != null ? "Hafta " + (activeCalendar.getCurrentWeek() + 1) : "";
+        Label dateLabel = new Label(weekText + (isMatchDay ? " - Maç Günü" : " - Antrenman Haftası"));
         dateLabel.setTextFill(Color.WHITE);
         dateLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
         
-        // Hızlı Kaydet (Autosave) Butonu
-        Button autoSaveButton = new Button("Hızlı Kaydet");
-        autoSaveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        autoSaveButton.setOnMouseEntered(e -> autoSaveButton.setStyle("-fx-background-color: #66BB6A; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        autoSaveButton.setOnMouseExited(e -> autoSaveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        autoSaveButton.setOnAction(e -> {
-            SaveGame saveData = new SaveGame("autosave", activeLeague, activeCalendar, playerTeam,
-                    gui.GUITactic.getPitchPlayers(), gui.GUITactic.getPlayersOnPitchQueue(), gui.GUITactic.getReservePlayersQueue(),
-                    gui.GUITactic.getCurrentTacticStyle());
-            SaveManager.saveGame(saveData, "autosave"); 
-        });
+        Button menuButton = new Button("Menü ⚙");
+        menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
+        menuButton.setOnMouseEntered(e -> menuButton.setStyle("-fx-background-color: #ffb732; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
+        menuButton.setOnMouseExited(e -> menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
+        menuButton.setOnAction(e -> GUIMenu.show(primaryStage));
 
         // İlerle Butonu
-        Button continueButton = new Button("Devam Et ▶");
+        Button continueButton = new Button(isMatchDay ? "Maça Çık ⚽" : "Devam Et ▶");
         continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
         continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         
         continueButton.setOnAction(e -> {
-            System.out.println("Sonraki güne geçiliyor...");
+            if (!isMatchDay) {
+                if (playerTeam != null) GUITraining.applyWeeklyTrainingStatically(playerTeam);
+                isMatchDay = true;
+            } else {
+                if (activeCalendar != null) activeCalendar.advanceToNextWeek();
+                isMatchDay = false;
+            }
+            mainLayout.setTop(createTopBar());
+            mainLayout.setCenter(createDashboard());
         });
 
-        topBar.getChildren().addAll(infoBox, spacer, dateLabel, autoSaveButton, continueButton);
+        topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
         return topBar;
     }
 
@@ -160,6 +169,14 @@ public class GUIMain {
                         new GUITactic(primaryStage, playerTeam);
                     } else {
                         System.out.println("Takım yüklenmemiş!");
+                    }
+                } else if (item.equals("Lig Tablosu")) {
+                    if (activeLeague != null && playerTeam != null) {
+                        new GUILeagueRanking(primaryStage, playerTeam, activeLeague);
+                    }
+                } else if (item.equals("Antrenman")) {
+                    if (playerTeam != null) {
+                        new GUITraining(primaryStage, playerTeam);
                     }
                 }
                 

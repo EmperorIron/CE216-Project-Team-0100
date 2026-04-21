@@ -92,10 +92,14 @@ public class GUILoadGame {
         footer.setPadding(new Insets(20, 0, 30, 0));
         root.setBottom(footer);
 
-        // Sahneyi ayarla
-        Scene scene = new Scene(root, 900, 700);
         primaryStage.setTitle("Sports Manager - Load Game");
-        primaryStage.setScene(scene);
+        
+        if (primaryStage.getScene() == null) {
+            primaryStage.setScene(new Scene(root, 1280, 720));
+        } else {
+            primaryStage.getScene().setRoot(root);
+        }
+        
         primaryStage.show();
     }
 

@@ -61,8 +61,11 @@ public class GUITeamSelection {
 
         layout.getChildren().addAll(title, scrollPane, backBtn);
 
-        Scene scene = new Scene(layout, 1280, 720);
-        primaryStage.setScene(scene);
+        if (primaryStage.getScene() == null) {
+            primaryStage.setScene(new Scene(layout, 1280, 720));
+        } else {
+            primaryStage.getScene().setRoot(layout);
+        }
     }
 
     private HBox createTeamCard(ITeam team) {

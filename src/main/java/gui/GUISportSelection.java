@@ -89,9 +89,14 @@ public class GUISportSelection {
         footer.setPadding(new Insets(20, 0, 40, 0)); 
         root.setBottom(footer);
 
-        Scene scene = new Scene(root, 900, 700);
         primaryStage.setTitle("Sports Manager - Select Sport");
-        primaryStage.setScene(scene);
+        
+        if (primaryStage.getScene() == null) {
+            primaryStage.setScene(new Scene(root, 1280, 720));
+        } else {
+            primaryStage.getScene().setRoot(root);
+        }
+        
         primaryStage.show();
     }
 

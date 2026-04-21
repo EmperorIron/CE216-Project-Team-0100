@@ -7,6 +7,9 @@ public class Main extends Application {
     
     @Override
     public void start(Stage primaryStage) {
+        // Uygulamanın penceresini ekranı kaplayacak şekilde (maximized) ayarlar
+        primaryStage.setMaximized(true);
+        
         GUITitlescreen titleScreen = new GUITitlescreen();
         titleScreen.show(primaryStage);
     }

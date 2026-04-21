@@ -41,16 +41,22 @@ public class GUITitlescreen {
             loadGameMenu.show(primaryStage);
         });
 
-        btnGuide.setOnAction(e -> System.out.println("Opening Guide..."));
+        btnGuide.setOnAction(e -> {
+            new GUIGuide(primaryStage, null, () -> this.show(primaryStage));
+        });
        
 
         // Add all buttons to the layout
         root.getChildren().addAll(btnNewGame, btnLoadGame, btnGuide);
 
-        // Create the scene and set it to the stage
-        Scene scene = new Scene(root, 800, 700, Color.BLACK); // Slightly increased height to 700
         primaryStage.setTitle("Sports Manager - Main Menu");
-        primaryStage.setScene(scene);
+        
+        if (primaryStage.getScene() == null) {
+            primaryStage.setScene(new Scene(root, 1280, 720, Color.BLACK));
+        } else {
+            primaryStage.getScene().setRoot(root);
+        }
+        
         primaryStage.show();
     }
 

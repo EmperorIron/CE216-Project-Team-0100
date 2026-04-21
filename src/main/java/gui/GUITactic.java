@@ -158,9 +158,13 @@ public class GUITactic {
         content.getChildren().addAll(pitchContainer, rightPanel);
         mainLayout.setCenter(content);
 
-        Scene scene = new Scene(mainLayout, 1280, 720);
         primaryStage.setTitle("Spor Menajerlik - Taktikler");
-        primaryStage.setScene(scene);
+        
+        if (primaryStage.getScene() == null) {
+            primaryStage.setScene(new Scene(mainLayout, 1280, 720));
+        } else {
+            primaryStage.getScene().setRoot(mainLayout);
+        }
     }
 
     // --- GUIMAIN BİREBİR ÜST BAR ---
@@ -183,30 +187,34 @@ public class GUITactic {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label dateLabel = new Label("1 Mart");
+        String weekText = GUIMain.activeCalendar != null ? "Hafta " + (GUIMain.activeCalendar.getCurrentWeek() + 1) : "";
+        Label dateLabel = new Label(weekText + (GUIMain.isMatchDay ? " - Maç Günü" : " - Antrenman Haftası"));
         dateLabel.setTextFill(Color.WHITE);
         dateLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
         
-        Button autoSaveButton = new Button("Hızlı Kaydet");
-        autoSaveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        autoSaveButton.setOnMouseEntered(e -> autoSaveButton.setStyle("-fx-background-color: #66BB6A; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        autoSaveButton.setOnMouseExited(e -> autoSaveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        autoSaveButton.setOnAction(e -> {
-            SaveGame saveData = new SaveGame("autosave", GUIMain.activeLeague, GUIMain.activeCalendar, playerTeam,
-                    pitchPlayers, playersOnPitchQueue, reservePlayersQueue, currentTacticStyle);
-            SaveManager.saveGame(saveData, "autosave"); 
-        });
+        Button menuButton = new Button("Menü ⚙");
+        menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
+        menuButton.setOnMouseEntered(e -> menuButton.setStyle("-fx-background-color: #ffb732; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
+        menuButton.setOnMouseExited(e -> menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
+        menuButton.setOnAction(e -> GUIMenu.show(primaryStage));
 
-        Button continueButton = new Button("Devam Et ▶");
+        Button continueButton = new Button(GUIMain.isMatchDay ? "Maça Çık ⚽" : "Devam Et ▶");
         continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
         continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         
         continueButton.setOnAction(e -> {
-            System.out.println("Sonraki güne geçiliyor...");
+            if (!GUIMain.isMatchDay) {
+                if (playerTeam != null) GUITraining.applyWeeklyTrainingStatically(playerTeam);
+                GUIMain.isMatchDay = true;
+            } else {
+                if (GUIMain.activeCalendar != null) GUIMain.activeCalendar.advanceToNextWeek();
+                GUIMain.isMatchDay = false;
+            }
+            show();
         });
 
-        topBar.getChildren().addAll(infoBox, spacer, dateLabel, autoSaveButton, continueButton);
+        topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
         return topBar;
     }
 
@@ -238,6 +246,14 @@ public class GUITactic {
                 } else if (item.equals("Fikstür")) {
                     if (GUIMain.activeCalendar != null && playerTeam != null) {
                         new GUIFixture(primaryStage, playerTeam, GUIMain.activeCalendar);
+                    }
+                } else if (item.equals("Lig Tablosu")) {
+                    if (GUIMain.activeLeague != null && playerTeam != null) {
+                        new GUILeagueRanking(primaryStage, playerTeam, GUIMain.activeLeague);
+                    }
+                } else if (item.equals("Antrenman")) {
+                    if (playerTeam != null) {
+                        new GUITraining(primaryStage, playerTeam);
                     }
                 }
             });
@@ -277,15 +293,24 @@ public class GUITactic {
             for (int logicalY = 0; logicalY < Positions.GRID_HEIGHT; logicalY++) {
                 
                 int visualY = getInvertedY(logicalY);
+                int posId = Positions.getPositionId(x, logicalY);
+                PositionsFootball posInfo = new PositionsFootball();
+                boolean isValid = posInfo.getValidPositions().contains(posId);
 
                 highlightBoxes[x][logicalY] = new Region();
-                highlightBoxes[x][logicalY].setStyle("-fx-background-color: transparent; -fx-background-radius: 5;");
+                if (!isValid) {
+                    highlightBoxes[x][logicalY].setStyle("-fx-background-color: #000000; -fx-opacity: 0.6; -fx-background-radius: 5;");
+                } else {
+                    highlightBoxes[x][logicalY].setStyle("-fx-background-color: transparent; -fx-background-radius: 5;");
+                }
                 GridPane.setMargin(highlightBoxes[x][logicalY], new Insets(1));
                 grid10x10.add(highlightBoxes[x][logicalY], x, visualY);
 
                 gridSlots[x][logicalY] = new StackPane();
                 
-                if (pitchPlayers[x][logicalY] != null) {
+                if (!isValid) {
+                    // Geçersiz alanlar (siyah bölgeler) etkileşimsiz ve boş kalır
+                } else if (pitchPlayers[x][logicalY] != null) {
                     fillSlotWithPlayerUI(gridSlots[x][logicalY], pitchPlayers[x][logicalY], x, logicalY);
                 } else {
                     resetSlot(x, logicalY);
@@ -380,6 +405,37 @@ public class GUITactic {
     }
 
     private void placePlayerOnPitch(IPlayer player, int destX, int destY) {
+        int targetPosId = Positions.getPositionId(destX, destY);
+        
+        // --- Max 1 Kaleci Kuralı Kontrolü ---
+        if (PositionsFootball.isGoalkeeperPosition(targetPosId)) {
+            for (int i = 0; i < Positions.GRID_WIDTH; i++) {
+                for (int j = 0; j < Positions.GRID_HEIGHT; j++) {
+                    if (pitchPlayers[i][j] != null && (i != destX || j != destY)) {
+                        if (PositionsFootball.isGoalkeeperPosition(Positions.getPositionId(i, j))) {
+                            IPlayer otherGk = pitchPlayers[i][j];
+                            playersOnPitchQueue.remove(otherGk);
+                            pitchPlayers[i][j] = null;
+                            resetSlot(i, j);
+                            
+                            if (!reservePlayersQueue.contains(otherGk)) {
+                                reservePlayersQueue.add(otherGk);
+                                if (reservePlayersQueue.size() > maxReservePlayers) {
+                                    reservePlayersQueue.removeFirst();
+                                }
+                            }
+                            
+                            if (otherGk instanceof Classes.Player) {
+                                ((Classes.Player) otherGk).setCurrentPositionId(otherGk.getPrimaryPositionId());
+                                otherGk.setxG(0f);
+                                otherGk.setxGA(0f);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         IPlayer existingPlayer = pitchPlayers[destX][destY];
         if (existingPlayer != null && !existingPlayer.equals(player)) {
             playersOnPitchQueue.remove(existingPlayer);
@@ -474,11 +530,14 @@ public class GUITactic {
     }
 
     private void removePlayerFromMatrix(IPlayer player) {
+        PositionsFootball posInfo = new PositionsFootball();
         for (int i = 0; i < Positions.GRID_WIDTH; i++) {
             for (int j = 0; j < Positions.GRID_HEIGHT; j++) {
                 if (pitchPlayers[i][j] != null && pitchPlayers[i][j].equals(player)) {
                     pitchPlayers[i][j] = null; 
-                    resetSlot(i, j); 
+                    if (posInfo.getValidPositions().contains(Positions.getPositionId(i, j))) {
+                        resetSlot(i, j); 
+                    }
                 }
             }
         }
@@ -556,10 +615,15 @@ public class GUITactic {
     }
 
     private void drawHeatMap(IPlayer player) {
+        PositionsFootball posInfo = new PositionsFootball();
         if (player == null) {
             for (int x = 0; x < Positions.GRID_WIDTH; x++) {
                 for (int logicalY = 0; logicalY < Positions.GRID_HEIGHT; logicalY++) {
-                    highlightBoxes[x][logicalY].setStyle("-fx-background-color: transparent; -fx-background-radius: 5;");
+                    if (!posInfo.getValidPositions().contains(Positions.getPositionId(x, logicalY))) {
+                        highlightBoxes[x][logicalY].setStyle("-fx-background-color: #000000; -fx-opacity: 0.6; -fx-background-radius: 5;");
+                    } else {
+                        highlightBoxes[x][logicalY].setStyle("-fx-background-color: transparent; -fx-background-radius: 5;");
+                    }
                 }
             }
             return;
@@ -570,7 +634,9 @@ public class GUITactic {
 
         for (int x = 0; x < Positions.GRID_WIDTH; x++) {
             for (int logicalY = 0; logicalY < Positions.GRID_HEIGHT; logicalY++) {
-                int prof = player.getProficiencyAt(Positions.getPositionId(x, logicalY));
+                int posId = Positions.getPositionId(x, logicalY);
+                if (!posInfo.getValidPositions().contains(posId)) continue;
+                int prof = player.getProficiencyAt(posId);
                 if (prof > max1) {
                     max2 = max1;
                     max1 = prof;
@@ -583,7 +649,9 @@ public class GUITactic {
         boolean allMax1Full = true;
         for (int x = 0; x < Positions.GRID_WIDTH; x++) {
             for (int logicalY = 0; logicalY < Positions.GRID_HEIGHT; logicalY++) {
-                int prof = player.getProficiencyAt(Positions.getPositionId(x, logicalY));
+                int posId = Positions.getPositionId(x, logicalY);
+                if (!posInfo.getValidPositions().contains(posId)) continue;
+                int prof = player.getProficiencyAt(posId);
                 if (prof == max1) {
                     boolean isAvailable = (pitchPlayers[x][logicalY] == null || pitchPlayers[x][logicalY] == player);
                     if (isAvailable) {
@@ -596,7 +664,9 @@ public class GUITactic {
 
         for (int x = 0; x < Positions.GRID_WIDTH; x++) {
             for (int logicalY = 0; logicalY < Positions.GRID_HEIGHT; logicalY++) {
-                int prof = player.getProficiencyAt(Positions.getPositionId(x, logicalY));
+                int posId = Positions.getPositionId(x, logicalY);
+                if (!posInfo.getValidPositions().contains(posId)) continue;
+                int prof = player.getProficiencyAt(posId);
                 
                 String bgColor;
                 String borderStyle = "";
