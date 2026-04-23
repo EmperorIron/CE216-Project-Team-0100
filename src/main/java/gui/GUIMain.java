@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import Interface.ITeam;
 import Sport.CalendarFootball;
 import Sport.GameRulesFootball;
+import Sport.GameFootball;
 import Sport.LeagueFootball;
 import io.SaveGame;
 import io.SaveManager;
@@ -26,6 +27,7 @@ public class GUIMain {
     public static LeagueFootball activeLeague;
     public static CalendarFootball activeCalendar;
     public static boolean isMatchDay = false;
+    public static boolean tacticConfirmedForMatch = false;
     
     public GUIMain(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -56,6 +58,64 @@ public class GUIMain {
         
         System.out.println("Game Loaded successfully! Transitioning to Menu...");
         new GUIMain(stage);
+    }
+
+    public static void handleContinueAction(Stage primaryStage) {
+        if (!isMatchDay) {
+            if (playerTeam != null) GUITraining.applyWeeklyTrainingStatically(playerTeam);
+            isMatchDay = true;
+            tacticConfirmedForMatch = false;
+            new GUIMain(primaryStage);
+        } else {
+            if (!tacticConfirmedForMatch) {
+                // Maç günüyse ve taktik onaylanmadıysa direkt taktik ekranına gönder
+                new GUITactic(primaryStage, playerTeam);
+                return;
+            }
+
+            if (activeCalendar != null && playerTeam != null) {
+                int currentWeek = activeCalendar.getCurrentWeek() + 1;
+                java.util.Map<Integer, java.util.List<Classes.Game>> schedule = activeCalendar.getSchedule();
+                
+                if (schedule != null && schedule.containsKey(currentWeek)) {
+                    java.util.List<Classes.Game> weekGames = schedule.get(currentWeek);
+                    Classes.Game playerGame = null;
+                    
+                    for (Classes.Game g : weekGames) {
+                        if (g.getHomeTeam().equals(playerTeam) || g.getAwayTeam().equals(playerTeam)) {
+                            playerGame = g;
+                        } else {
+                            if (!g.isCompleted()) g.play(); // Diğer maçları anında simüle et
+                        }
+                    }
+                    
+                    if (playerGame != null && !playerGame.isCompleted()) {
+                        // Ekstra Güvenlik: Kadro tam mı kontrolü
+                        Sport.GameRulesFootball rules = new Sport.GameRulesFootball();
+                        if (gui.GUITactic.getPlayersOnPitchQueue().size() != rules.getFieldPlayerCount() || 
+                            gui.GUITactic.getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
+                            
+                            tacticConfirmedForMatch = false;
+                            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING);
+                            alert.setTitle("Eksik Kadro");
+                            alert.setHeaderText("Kadro Tamamlanmadı!");
+                            alert.setContentText("Maça çıkabilmek için İlk 11'in ve " + rules.getReservePlayerCount() + " yedeğin tam olması gerekmektedir! Lütfen kadronuzu kurun.");
+                            alert.showAndWait();
+                            
+                            new gui.GUITactic(primaryStage, playerTeam);
+                            return;
+                        }
+                        
+                        new GUIGame(primaryStage, (GameFootball) playerGame);
+                    } else {
+                        activeCalendar.advanceToNextWeek();
+                        isMatchDay = false;
+                        tacticConfirmedForMatch = false;
+                        new GUIMain(primaryStage);
+                    }
+                }
+            }
+        }
     }
 
     private void initialize() {
@@ -118,17 +178,7 @@ public class GUIMain {
         continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         
-        continueButton.setOnAction(e -> {
-            if (!isMatchDay) {
-                if (playerTeam != null) GUITraining.applyWeeklyTrainingStatically(playerTeam);
-                isMatchDay = true;
-            } else {
-                if (activeCalendar != null) activeCalendar.advanceToNextWeek();
-                isMatchDay = false;
-            }
-            mainLayout.setTop(createTopBar());
-            mainLayout.setCenter(createDashboard());
-        });
+        continueButton.setOnAction(e -> handleContinueAction(primaryStage));
 
         topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
         return topBar;

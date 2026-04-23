@@ -33,15 +33,12 @@ public class GUITraining {
     private Stage primaryStage;
     private ITeam playerTeam;
     
-    // Günlere karşılık gelen seçili antrenman türlerini tutan harita
     public static Map<String, TrainingCategory> weeklySchedule = new HashMap<>();
 
-    // Antrenör tablosu sıralama değişkenleri
     private String activeCoachSortColumn = "AD";
     private boolean coachSortAscending = true;
     private VBox coachListContainer;
 
-    // Rapor Tablosu Değişkenleri
     private VBox reportTableContainer;
     public static Map<IPlayer, Double> oldOvrMap = new HashMap<>();
     public static Map<IPlayer, Map<String, Integer>> oldTraitLevelMap = new HashMap<>();
@@ -72,16 +69,13 @@ public class GUITraining {
         BorderPane mainLayout = new BorderPane();
         mainLayout.setStyle("-fx-background-color: #1b1b2f;");
 
-        // GUIMain ile Birebir Aynı Üst Bar ve Sol Menü
         mainLayout.setTop(createTopBar());
         mainLayout.setLeft(createSidebar());
 
-        // Orta İçerik (3 Sütunlu Tasarım)
         HBox content = new HBox(15);
         content.setPadding(new Insets(20));
         content.setAlignment(Pos.TOP_LEFT);
 
-        // Sol Panel: Takvim
         VBox leftPanel = new VBox(15);
         leftPanel.setAlignment(Pos.TOP_CENTER);
         leftPanel.setPrefWidth(300);
@@ -97,11 +91,9 @@ public class GUITraining {
         VBox scheduleContainer = createScheduleContainer();
         leftPanel.getChildren().addAll(title, subTitle, scheduleContainer);
 
-        // Orta Panel: Rapor
         VBox middlePanel = createReportContainer();
         HBox.setHgrow(middlePanel, Priority.ALWAYS);
 
-        // Sağ Panel: Antrenör Tablosu
         VBox rightPanel = createCoachTableContainer();
 
         content.getChildren().addAll(leftPanel, middlePanel, rightPanel);
@@ -116,7 +108,6 @@ public class GUITraining {
         }
     }
 
-    // --- ANTRENMAN SEÇİM LİSTESİ ---
     private VBox createScheduleContainer() {
         VBox container = new VBox(8);
         container.setAlignment(Pos.CENTER);
@@ -182,7 +173,6 @@ public class GUITraining {
         return container;
     }
 
-    // --- ANTRENÖR TABLOSU EKRANI ---
     private VBox createCoachTableContainer() {
         VBox panel = new VBox(10);
         panel.setPrefWidth(420);
@@ -492,6 +482,7 @@ public class GUITraining {
         lbl.setPrefWidth(width);
         lbl.setTextFill(Color.WHITE);
         lbl.setFont(Font.font("Segoe UI", isBold ? FontWeight.BOLD : FontWeight.NORMAL, 13));
+        lbl.setTooltip(new Tooltip(text));
         return lbl;
     }
 
@@ -571,9 +562,6 @@ public class GUITraining {
     }
 
 
-    // =========================================================================================
-    // GUIMAIN İLE BİREBİR AYNI OLAN ÜST BAR VE SOL MENÜ KODLARI
-    // =========================================================================================
 
     private HBox createTopBar() {
         HBox topBar = new HBox(20);
@@ -610,16 +598,7 @@ public class GUITraining {
         continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
         continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         
-        continueButton.setOnAction(e -> {
-            if (!GUIMain.isMatchDay) {
-                applyWeeklyTraining();
-                GUIMain.isMatchDay = true;
-            } else {
-                if (GUIMain.activeCalendar != null) GUIMain.activeCalendar.advanceToNextWeek();
-                GUIMain.isMatchDay = false;
-            }
-            show();
-        });
+        continueButton.setOnAction(e -> GUIMain.handleContinueAction(primaryStage));
 
         topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
         return topBar;

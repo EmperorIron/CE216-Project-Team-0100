@@ -208,16 +208,7 @@ public class GUIFixture {
         continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         
-        continueButton.setOnAction(e -> {
-            if (!GUIMain.isMatchDay) {
-                if (playerTeam != null) GUITraining.applyWeeklyTrainingStatically(playerTeam);
-                GUIMain.isMatchDay = true;
-            } else {
-                if (calendar != null) calendar.advanceToNextWeek();
-                GUIMain.isMatchDay = false;
-            }
-            show();
-        });
+        continueButton.setOnAction(e -> GUIMain.handleContinueAction(primaryStage));
 
         topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
         return topBar;

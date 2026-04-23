@@ -263,7 +263,7 @@ public class GUILeagueRanking {
         continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         
-        continueButton.setOnAction(e -> System.out.println("Sonraki güne geçiliyor..."));
+        continueButton.setOnAction(e -> GUIMain.handleContinueAction(primaryStage));
 
         topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
         return topBar;
