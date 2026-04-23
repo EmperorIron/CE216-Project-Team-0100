@@ -9,10 +9,13 @@ import Interface.ITeam;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameFootball extends Game {
 
     private float homeOffense, homeDefense, awayOffense, awayDefense;    
+    private Map<IPlayer, Integer> playerYellowCards = new HashMap<>();
 
     public GameFootball(ITeam homeTeam, ITeam awayTeam, GameRules rules, ITactic homeTactic, ITactic awayTactic) {
         super(homeTeam, awayTeam, rules, homeTactic, awayTactic);
@@ -71,6 +74,7 @@ public class GameFootball extends Game {
         }
         
         onField.add(playerIn);
+        bench.add(playerOut);
         
         addLogEntry(minute + "'. " + reason + " (" + team.getName() + ") -> Çıkan: " + playerOut.getFullName() + " | Giren: " + playerIn.getFullName());
         
@@ -86,20 +90,42 @@ public class GameFootball extends Game {
 
         for (int minute = startMinute; minute <= endMinute; minute++) {
 
-            if (getRandom().nextDouble() < 0.01) {
-                if (getRandom().nextBoolean() && homeSubsLeft > 0) {
-                    performSubstitution(homeTeam, homeTactic, minute, "MECBURİ DEĞİŞİKLİK (Sakatlık)");
-                    homeSubsLeft--;
-                } else if (awaySubsLeft > 0) {
-                    performSubstitution(awayTeam, awayTactic, minute, "MECBURİ DEĞİŞİKLİK (Sakatlık)");
-                    awaySubsLeft--;
+            if (getRandom().nextDouble() < 0.03) {
+                if (getRandom().nextBoolean()) {
+                    if (homeTeam.isManagerAI()) {
+                        if (homeSubsLeft > 0) {
+                            performSubstitution(homeTeam, homeTactic, minute, "MECBURİ DEĞİŞİKLİK (Sakatlık)");
+                            homeSubsLeft--;
+                        }
+                    } else {
+                        handlePlayerInjury(homeTeam, homeTactic, minute);
+                    }
+                } else {
+                    if (awayTeam.isManagerAI()) {
+                        if (awaySubsLeft > 0) {
+                            performSubstitution(awayTeam, awayTactic, minute, "MECBURİ DEĞİŞİKLİK (Sakatlık)");
+                            awaySubsLeft--;
+                        }
+                    } else {
+                        handlePlayerInjury(awayTeam, awayTactic, minute);
+                    }
                 }
             }
 
-            if (getRandom().nextDouble() < 0.001) {
+            double yellowCardChance = 0.025; // Her dakika %0.5 sarı kart çıkma ihtimali
+            double directRedCardChance = 0.01; // %0.1 ihtimalle doğrudan kırmızı kart
+
+            // Ev sahibi için kart kontrolü
+            if (getRandom().nextDouble() < yellowCardChance) {
+                handleYellowCard(homeTeam, homeTactic, minute);
+            } else if (getRandom().nextDouble() < directRedCardChance) {
                 handleRedCard(homeTeam, homeTactic, minute);
             }
-            if (getRandom().nextDouble() < 0.001) {
+
+            // Deplasman için kart kontrolü
+            if (getRandom().nextDouble() < yellowCardChance) {
+                handleYellowCard(awayTeam, awayTactic, minute);
+            } else if (getRandom().nextDouble() < directRedCardChance) {
                 handleRedCard(awayTeam, awayTactic, minute);
             }
 
@@ -126,6 +152,49 @@ public class GameFootball extends Game {
         Sport.PositionsFootball.resolvePositionCollisions(tactic);
         recalculateTeamStrengths();
         logFormationGrid(team, tactic, minute + "'. Kırmızı Kart Sonrası");
+    }
+
+    private void handleYellowCard(ITeam team, ITactic tactic, int minute) {
+     List<IPlayer> onField = tactic.getStartingLineup();
+     if (onField.isEmpty()) return;
+
+     int playerIndex = getRandom().nextInt(onField.size());
+     IPlayer bookedPlayer = onField.get(playerIndex);
+
+     // Oyuncunun mevcut sarı kart sayısını al ve 1 artır
+     int currentYellows = playerYellowCards.getOrDefault(bookedPlayer, 0) + 1;
+     playerYellowCards.put(bookedPlayer, currentYellows);
+
+     addLogEntry(minute + "'. SARI KART! (" + team.getName() + ") -> Oyuncu: " + bookedPlayer.getFullName());
+
+     // Eğer 2 sarı karta (GameRulesFootball'dan gelir) ulaştıysa oyundan at
+     if (currentYellows >= rules.getYellowCardsForRed()) {
+         addLogEntry(minute + "'. İKİNCİ SARI KARTTAN KIRMIZI KART! (" + team.getName() + ") -> Oyundan Atılan: " + bookedPlayer.getFullName());
+         onField.remove(playerIndex);
+         Sport.PositionsFootball.resolvePositionCollisions(tactic);
+         recalculateTeamStrengths();
+         logFormationGrid(team, tactic, minute + "'. Kırmızı Kart Sonrası");
+     }
+ }
+
+    private void handlePlayerInjury(ITeam team, ITactic tactic, int minute) {
+        List<IPlayer> onField = tactic.getStartingLineup();
+        List<IPlayer> bench = tactic.getSubstitutes();
+        if (onField.isEmpty()) return;
+        
+        int outIndex = getRandom().nextInt(onField.size());
+        IPlayer injured = onField.remove(outIndex);
+        
+        if (injured instanceof Classes.Player) {
+            ((Classes.Player) injured).setInjuryDuration(1);
+        }
+        
+        bench.add(injured);
+        
+        addLogEntry(minute + "'. SAKATLIK! (" + team.getName() + ") -> Sakatlanan: " + injured.getFullName() + ". Oyuncu tedavi için kenara alındı.");
+        Sport.PositionsFootball.resolvePositionCollisions(tactic);
+        recalculateTeamStrengths();
+        logFormationGrid(team, tactic, minute + "'. Sakatlık Sonrası");
     }
 
     @Override

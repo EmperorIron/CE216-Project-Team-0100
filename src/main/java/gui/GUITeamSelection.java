@@ -81,7 +81,7 @@ public class GUITeamSelection {
         nameLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
         nameLabel.setPrefWidth(300);
 
-        // Güç Bilgileri (Main.java'daki printf mantığı)
+     
         VBox stats = new VBox(5);
         Label offLabel = new Label("Hücum: " + String.format("%.1f", team.getTotalOffensiveRating()));
         offLabel.setTextFill(Color.web("#4CAF50"));
@@ -98,12 +98,12 @@ public class GUITeamSelection {
         
         selectBtn.setOnAction(e -> {
             System.out.println(team.getName() + " seçildi. Oyun başlıyor...");
-            team.setManagerAI(false);  // Takımı oyuncu (Human) yönetecek
-            GUIMain.playerTeam = team; // Ana ekrana seçilen takımı kaydet
+            team.setManagerAI(false); 
+            GUIMain.playerTeam = team; 
             new GUIMain(primaryStage); 
         });
 
-        // Hover Efekti
+       
         card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 10; -fx-border-color: #e43f5a; -fx-border-width: 2;"));
         card.setOnMouseExited(e -> card.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;"));
 

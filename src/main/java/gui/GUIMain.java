@@ -92,7 +92,7 @@ public class GUIMain {
                     if (playerGame != null && !playerGame.isCompleted()) {
                         // Ekstra Güvenlik: Kadro tam mı kontrolü
                         Sport.GameRulesFootball rules = new Sport.GameRulesFootball();
-                        if (gui.GUITactic.getPlayersOnPitchQueue().size() != rules.getFieldPlayerCount() || 
+                        if (gui.GUITactic.getPlayersOnPitchQueue().size() != (rules.getFieldPlayerCount() - gui.GUITactic.redCardedPlayers.size()) || 
                             gui.GUITactic.getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
                             
                             tacticConfirmedForMatch = false;

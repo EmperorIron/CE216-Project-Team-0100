@@ -295,12 +295,24 @@ public class GUIGame {
             while (currentLogIndex < matchLogs.size()) {
                 String log = matchLogs.get(currentLogIndex);
                 if (log.startsWith(minute + "'.")) {
+                    
                     String type = "INFO";
                     if (log.contains("GOOOAALLL")) {
                         type = "GOAL";
                         if (log.contains(homeTeam.getName())) homeScore++;
                         else awayScore++;
                         updateScore();
+                    } else if (log.contains("SARI KART!") && !log.contains("KIRMIZI KART!")) { 
+                        type = "YELLOW";
+                        if (log.contains(GUIMain.playerTeam.getName())) {
+                            for (IPlayer p : GUIMain.playerTeam.getPlayers()) {
+                                if (log.contains(p.getFullName())) {
+                                    if (!GUITactic.yellowCardedPlayers.contains(p)) {
+                                        GUITactic.yellowCardedPlayers.add(p);
+                                    }
+                                }
+                            }
+                        }
                     } else if (log.contains("KIRMIZI KART!")) {
                         type = "RED";
                         if (log.contains(GUIMain.playerTeam.getName())) {
@@ -310,7 +322,7 @@ public class GUIGame {
                                 }
                             }
                         }
-                    } else if (log.contains("Sakatlık") || log.contains("MECBURİ")) {
+                    } else if (log.contains("Sakatlık") || log.contains("MECBURİ") || log.contains("SAKATLIK!")) {
                         type = "INJURY";
                         if (log.contains(GUIMain.playerTeam.getName())) {
                             pauseForInjury = true;
@@ -318,8 +330,34 @@ public class GUIGame {
                     } else if (log.contains("Değişiklik")) {
                         type = "SUB";
                     }
+                    
+                    // Oyuncu değişikliği loglarını (Sakatlık dahil) GUITactic'e senkronize et
+                    if (log.contains("Çıkan: ") && log.contains("Giren: ") && log.contains(GUIMain.playerTeam.getName())) {
+                        IPlayer pOut = null;
+                        IPlayer pIn = null;
+                        for (IPlayer p : GUIMain.playerTeam.getPlayers()) {
+                            if (log.contains("Çıkan: " + p.getFullName())) pOut = p;
+                            if (log.contains("Giren: " + p.getFullName())) pIn = p;
+                        }
+                        if (pOut != null && pIn != null) {
+                            if (type.equals("INJURY") && pOut instanceof Classes.Player) {
+                                ((Classes.Player) pOut).setInjuryDuration(1); // Gerçekten sakatla (Örn: 1 haftalık)
+                            }
+                            GUITactic.performAutomaticSub(pOut, pIn);
+                        }
+                    } else if (log.contains("SAKATLIK!") && log.contains("Sakatlanan: ") && log.contains(GUIMain.playerTeam.getName())) {
+                        IPlayer pInjured = null;
+                        for (IPlayer p : GUIMain.playerTeam.getPlayers()) {
+                            if (log.contains("Sakatlanan: " + p.getFullName())) pInjured = p;
+                        }
+                        if (pInjured != null) {
+                            GUITactic.performAutomaticInjuryRemoval(pInjured);
+                        }
+                    }
+
                     addEvent(type, log);
                     currentLogIndex++;
+                    
                 } else if (log.matches("^\\d+'\\..*")) {
                     try {
                         int logMin = Integer.parseInt(log.substring(0, log.indexOf("'.")));
@@ -341,12 +379,11 @@ public class GUIGame {
                 Button tacticBtn = new Button(btnText);
                 tacticBtn.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
                 tacticBtn.setOnAction(evt -> {
-                    mainLayout.setBottom(null); // Butonu kaldır
+                    mainLayout.setBottom(null); 
                     GUITactic.isMidMatch = true;
                     GUITactic.onResumeMatch = () -> {
                         GUITactic.isMidMatch = false;
                         
-                        // Güncel Kadroyu Taktik Ekranından Maç Motoruna Aktar (Senkronizasyon)
                         Interface.ITactic playerTactic = homeTeam.equals(GUIMain.playerTeam) ? match.getHomeTactic() : match.getAwayTactic();
                         playerTactic.setStartingLineup(new ArrayList<>(GUITactic.getPlayersOnPitchQueue()));
                         playerTactic.setSubstitutes(new ArrayList<>(GUITactic.getReservePlayersQueue()));
@@ -378,6 +415,7 @@ public class GUIGame {
                 Button endMatchBtn = new Button("Maçı Bitir ve Devam Et ▶");
                 endMatchBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
                 endMatchBtn.setOnAction(evt -> {
+                    GUITactic.postMatchCleanup();
                     if (GUIMain.activeCalendar != null) GUIMain.activeCalendar.advanceToNextWeek();
                     GUIMain.isMatchDay = false;
                     new GUIMain(primaryStage);
