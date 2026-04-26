@@ -610,7 +610,7 @@ public class GUITraining {
         sidebar.setStyle("-fx-background-color: #1f4068;");
         sidebar.setPrefWidth(220);
 
-        String[] menuItems = {"Ana Sayfa", "Kadro", "Taktikler", "Antrenman", "Fikstür", "Lig Tablosu"};
+        String[] menuItems = {"Ana Sayfa", "Taktikler", "Antrenman", "Fikstür", "Lig Tablosu"};
         
         for (String item : menuItems) {
             Button btn = new Button(item);
