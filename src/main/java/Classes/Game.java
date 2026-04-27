@@ -22,7 +22,7 @@ public abstract class Game implements IGame {
     protected int awayScore;
     protected boolean isCompleted;
     protected final List<String> gameLog;
-    protected final Random random;
+    protected transient Random random;
     protected int homeSubsLeft;
     protected int awaySubsLeft;
 
@@ -40,7 +40,6 @@ public abstract class Game implements IGame {
         this.awayScore = 0;
         this.isCompleted = false;
         this.gameLog = new ArrayList<>();
-        this.random = new Random();
     }
 
     // Setters and Getters 
@@ -70,6 +69,13 @@ public abstract class Game implements IGame {
 
     public void setAwayManager(Interface.IManager awayManager) {
         this.awayManager = awayManager;
+    }
+
+    protected Random getRandom() {
+        if (random == null) {
+            random = new Random();
+        }
+        return random;
     }
     
     @Override

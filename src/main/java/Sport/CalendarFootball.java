@@ -187,7 +187,7 @@ public class CalendarFootball extends Calendar {
                 // It's a training day
                 System.out.println("Simulating a day of training...");
                 for (ITeam team : this.teams) {
-                    if (!team.getName().equals("BYE")) {
+                    if (!team.getName().equals("BYE") && team.isManagerAI()) {
                         genericTraining.apply(team);
                     }
                 }

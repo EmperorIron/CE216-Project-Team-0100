@@ -20,6 +20,7 @@ public abstract class Team implements ITeam {
     private int goalsConceded;
     private final List<IPlayer> players;
     private final List<ICoach> coaches; //trainers they effect training class.
+    private String emblemPath;
 
     public Team(String name, String country, String league) {
         this.name = name;
@@ -34,6 +35,7 @@ public abstract class Team implements ITeam {
         this.goalsScored = 0;
         this.goalsConceded = 0;
         this.manager = true; // Default to AI controlled
+        this.emblemPath = "images/default_emblem.png";
     }
     // Setters and Getters
     @Override
@@ -50,7 +52,13 @@ public abstract class Team implements ITeam {
     public String getLeague() {
         return league;
     }
-   
+
+    public String getEmblemPath() {
+        return emblemPath;
+    }
+    public void setEmblemPath(String emblemPath) {
+        this.emblemPath = emblemPath;
+    }
 
   
     @Override

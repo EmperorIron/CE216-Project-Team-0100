@@ -12,6 +12,7 @@ public class TeamGeneratorFootball extends TeamGenerator {
         String[] identity = generateTeamIdentity();
 
         TeamFootball team = new TeamFootball(identity[0], identity[1], "Global Football League");
+        team.setEmblemPath(identity[2]);
 
         int totalSquadSize = rules.getPlayerCount() + rules.getReservePlayerCount();
 

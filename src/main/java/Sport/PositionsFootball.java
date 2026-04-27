@@ -13,7 +13,7 @@ import Classes.Positions;
 
 public class PositionsFootball extends Positions {
     private static final Set<Integer> VALID_POSITIONS = definePitch();
-    private static final Set<Integer> GK_POSITIONS = defineZone(4, 5, 0, 0); // Goalkeeper (Kaleci)
+    private static final Set<Integer> GK_POSITIONS = defineZone(4, 4, 0, 0); // Goalkeeper (Kaleci) Sadece 1 pozisyon
     
     // --- DEFENSE (Y: between 1-3) ---
     private static final Set<Integer> LB_POSITIONS = defineZone(1, 2, 1, 3); // Left Back
@@ -42,11 +42,12 @@ public class PositionsFootball extends Positions {
 
     private static Set<Integer> definePitch() {
         Set<Integer> pitch = new HashSet<>();
-        for (int y = 0; y < GRID_HEIGHT; y++) {
+        for (int y = 1; y < GRID_HEIGHT; y++) {
             for (int x = 1; x < GRID_WIDTH - 1; x++) {
                 pitch.add(getPositionId(x, y));
             }
         }
+        pitch.add(getPositionId(4, 0)); // Sadece tam ortadaki Kaleci noktası geçerli
         return pitch;
     }
 
@@ -126,5 +127,57 @@ public class PositionsFootball extends Positions {
             map.put(i, multiplier);
         }
         return map;
+    }
+
+    public static void resolvePositionCollisions(Interface.ITactic tactic) {
+        java.util.Set<Integer> occupied = new java.util.HashSet<>();
+        PositionsFootball posInfo = new PositionsFootball();
+        java.util.Set<Integer> validPositions = posInfo.getValidPositions();
+
+        for (Interface.IPlayer p : tactic.getStartingLineup()) {
+            if (p instanceof Classes.Player) {
+                Classes.Player player = (Classes.Player) p;
+                int pos = player.getCurrentPositionId();
+                
+                if (occupied.contains(pos) || !validPositions.contains(pos)) {
+                    int bestPos = pos;
+                    double minDistance = Double.MAX_VALUE;
+                    int px = pos % 10;
+                    int py = pos / 10;
+                    boolean isGkPos = isGoalkeeperPosition(pos);
+                    
+                    for (int i = 0; i < 100; i++) {
+                        if (!occupied.contains(i) && validPositions.contains(i)) {
+                            boolean checkIsGk = isGoalkeeperPosition(i);
+                            if (isGkPos == checkIsGk) {
+                                int cx = i % 10;
+                                int cy = i / 10;
+                                double dist = Math.sqrt(Math.pow(px - cx, 2) + Math.pow(py - cy, 2));
+                                if (dist < minDistance) {
+                                    minDistance = dist;
+                                    bestPos = i;
+                                }
+                            }
+                        }
+                    }
+                    if (bestPos == pos) {
+                        for (int i = 0; i < 100; i++) {
+                            if (!occupied.contains(i) && validPositions.contains(i)) {
+                                int cx = i % 10;
+                                int cy = i / 10;
+                                double dist = Math.sqrt(Math.pow(px - cx, 2) + Math.pow(py - cy, 2));
+                                if (dist < minDistance) {
+                                    minDistance = dist;
+                                    bestPos = i;
+                                }
+                            }
+                        }
+                    }
+                    pos = bestPos;
+                    player.setCurrentPositionId(pos);
+                }
+                occupied.add(pos);
+            }
+        }
     }
 }

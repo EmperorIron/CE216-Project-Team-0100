@@ -92,6 +92,20 @@ public class PlayerGeneratorFootball extends PlayerGenerator {
 
         Map<Integer, Integer> proficiencyMap = Positions.generateProficiencyMap(primaryPositionId, primaryProficiency, falloffRate);
 
+        if (exactPosition.equalsIgnoreCase("GK") || exactPosition.equalsIgnoreCase("GOALKEEPER")) {
+            for (int i = 0; i < Positions.TOTAL_POSITIONS; i++) {
+                if (!PositionsFootball.isGoalkeeperPosition(i)) {
+                    proficiencyMap.put(i, 0);
+                }
+            }
+        } else {
+            for (int i = 0; i < Positions.TOTAL_POSITIONS; i++) {
+                if (PositionsFootball.isGoalkeeperPosition(i)) {
+                    proficiencyMap.put(i, 0);
+                }
+            }
+        }
+
         return new PlayerFootball(firstName, lastName, country, "Free Agent", id, proficiencyMap, 
                                   defVal, pasVal, sutVal, hizVal, fizVal, menVal, gkVal, 
                                   rules.getExpToLevelUpBase(), rules.getExpGrowthRate());
