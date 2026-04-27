@@ -61,11 +61,55 @@ public class GUILoadGame {
         
         if (files != null && files.length > 0) {
             SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-            for (File file : files) {
-                String fileName = file.getName().replace(".json", "");
-                String dateStr = sdf.format(new Date(file.lastModified()));
-                VBox saveCard = createSaveCard(fileName, dateStr, "Click to load", file.getPath());
+            
+            // 1. First, add Quick Save (Autosave) if it exists
+            File autoSaveFile = new File(saveDir, "autosave.json");
+            if (autoSaveFile.exists()) {
+                String dateStr = sdf.format(new Date(autoSaveFile.lastModified()));
+                String clubName = "";
+                String gameTime = "";
+                SaveGame tempSave = SaveManager.loadGame(autoSaveFile.getPath());
+                if (tempSave != null) {
+                    if (tempSave.getPlayerTeam() != null) clubName = tempSave.getPlayerTeam().getName();
+                    if (tempSave.getCalendar() != null) gameTime = "Hafta " + (tempSave.getCalendar().getCurrentWeek() + 1);
+                }
+                VBox saveCard = createSaveCard("Quick Save (Autosave)", dateStr, clubName, gameTime, autoSaveFile.getPath());
                 saveList.getChildren().add(saveCard);
+            }
+            
+            // 2. Then add slot 1-10 in order
+            for (int i = 1; i <= 10; i++) {
+                File slotFile = new File(saveDir, "slot_" + i + ".json");
+                if (slotFile.exists()) {
+                    String dateStr = sdf.format(new Date(slotFile.lastModified()));
+                    String clubName = "";
+                    String gameTime = "";
+                    SaveGame tempSave = SaveManager.loadGame(slotFile.getPath());
+                    if (tempSave != null) {
+                        if (tempSave.getPlayerTeam() != null) clubName = tempSave.getPlayerTeam().getName();
+                        if (tempSave.getCalendar() != null) gameTime = "Hafta " + (tempSave.getCalendar().getCurrentWeek() + 1);
+                    }
+                    VBox saveCard = createSaveCard("Save Slot " + i, dateStr, clubName, gameTime, slotFile.getPath());
+                    saveList.getChildren().add(saveCard);
+                }
+            }
+            
+            // 3. Add any other custom saves (legacy support)
+            for (File file : files) {
+                String name = file.getName();
+                if (!name.equals("autosave.json") && !name.matches("slot_([1-9]|10)\\.json")) {
+                    String title = name.replace(".json", "");
+                    String dateStr = sdf.format(new Date(file.lastModified()));
+                    String clubName = "";
+                    String gameTime = "";
+                    SaveGame tempSave = SaveManager.loadGame(file.getPath());
+                    if (tempSave != null) {
+                        if (tempSave.getPlayerTeam() != null) clubName = tempSave.getPlayerTeam().getName();
+                        if (tempSave.getCalendar() != null) gameTime = "Hafta " + (tempSave.getCalendar().getCurrentWeek() + 1);
+                    }
+                    VBox saveCard = createSaveCard(title, dateStr, clubName, gameTime, file.getPath());
+                    saveList.getChildren().add(saveCard);
+                }
             }
         } else {
             Label emptyLabel = new Label("No save files found.");
@@ -106,7 +150,7 @@ public class GUILoadGame {
     /**
      * Her bir kayıt dosyası için görsel bir kutu (kart) oluşturur.
      */
-    private VBox createSaveCard(String title, String date, String detail, String filePath) {
+    private VBox createSaveCard(String title, String date, String clubName, String gameTime, String filePath) {
         VBox card = new VBox(5);
         card.setPadding(new Insets(15, 20, 15, 20));
         card.setPrefHeight(80);
@@ -120,10 +164,14 @@ public class GUILoadGame {
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        Label lblDate = new Label(date + " | " + detail);
-        lblDate.setStyle("-fx-font-size: 14px; -fx-text-fill: #aaaaaa;");
+        String details = "";
+        if (clubName != null && !clubName.isEmpty()) details += clubName + " | ";
+        if (gameTime != null && !gameTime.isEmpty()) details += gameTime + " | ";
+        details += "Last saved: " + date;
+        Label lblDetails = new Label(details);
+        lblDetails.setStyle("-fx-font-size: 14px; -fx-text-fill: #aaaaaa;");
 
-        card.getChildren().addAll(lblTitle, lblDate);
+        card.getChildren().addAll(lblTitle, lblDetails);
 
         // Hover animasyonları ve tıklama
         card.setOnMouseEntered(e -> card.setStyle(hoverStyle));

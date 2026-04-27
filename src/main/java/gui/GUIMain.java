@@ -92,17 +92,37 @@ public class GUIMain {
                     if (playerGame != null && !playerGame.isCompleted()) {
                         // Ekstra Güvenlik: Kadro tam mı kontrolü
                         Sport.GameRulesFootball rules = new Sport.GameRulesFootball();
-                        if (gui.GUITactic.getPlayersOnPitchQueue().size() != (rules.getFieldPlayerCount() - gui.GUITactic.redCardedPlayers.size()) || 
-                            gui.GUITactic.getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
+                        if (gui.GUITactic.getPlayersOnPitchQueue().size() != (rules.getFieldPlayerCount() - gui.GUITactic.redCardedPlayers.size())) {
                             
                             tacticConfirmedForMatch = false;
-                            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING);
-                            alert.setTitle("Eksik Kadro");
-                            alert.setHeaderText("Kadro Tamamlanmadı!");
-                            alert.setContentText("Maça çıkabilmek için İlk 11'in ve " + rules.getReservePlayerCount() + " yedeğin tam olması gerekmektedir! Lütfen kadronuzu kurun.");
-                            alert.showAndWait();
+                            gui.GUIPopup.showMessage(primaryStage, "Eksik Kadro", "Kadro Tamamlanmadı!", "Maça çıkabilmek için İlk 11'in tam olması gerekmektedir! Lütfen kadronuzu kurun.");
                             
                             new gui.GUITactic(primaryStage, playerTeam);
+                            return;
+                        }
+                        
+                        boolean hasInjuredStarter = false;
+                        for (Interface.IPlayer p : gui.GUITactic.getPlayersOnPitchQueue()) {
+                            if (p.isInjured()) {
+                                hasInjuredStarter = true;
+                                break;
+                            }
+                        }
+                        if (hasInjuredStarter) {
+                            tacticConfirmedForMatch = false;
+                            gui.GUIPopup.showMessage(primaryStage, "Sakat Oyuncu", "İlk 11'de Sakat Oyuncu Var!", "Maça çıkabilmek için sahada sakat oyuncu bulunmamalıdır. Lütfen sakat oyuncuyu değiştirin.");
+                            
+                            new gui.GUITactic(primaryStage, playerTeam);
+                            return;
+                        }
+                        
+                        final Classes.Game finalPlayerGame = playerGame;
+                        if (gui.GUITactic.getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
+                            gui.GUIPopup.showConfirmation(primaryStage, "Eksik Yedekler", "Yedek Kulübesi Tam Değil!", 
+                                "Yedek kulübesinde " + rules.getReservePlayerCount() + " oyuncu yok. Yine de maça çıkmak istiyor musunuz?", 
+                                () -> new GUIGame(primaryStage, (GameFootball) finalPlayerGame),
+                                () -> { tacticConfirmedForMatch = false; new gui.GUITactic(primaryStage, playerTeam); }
+                            );
                             return;
                         }
                         
@@ -124,8 +144,8 @@ public class GUIMain {
         mainLayout.setStyle("-fx-background-color: #1b1b2f;");
 
         // Panellerin Eklenmesi
-        mainLayout.setTop(createTopBar());
-        mainLayout.setLeft(createSidebar());
+        mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
+        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Ana Sayfa"));
         mainLayout.setCenter(createDashboard());
 
         primaryStage.setTitle("Spor Menajerlik - Ana Ekran");
@@ -139,105 +159,6 @@ public class GUIMain {
         primaryStage.show();
     }
 
-    private HBox createTopBar() {
-        HBox topBar = new HBox(20);
-        topBar.setPadding(new Insets(15, 20, 15, 20));
-        topBar.setStyle("-fx-background-color: #162447; -fx-border-color: #d82bbc; -fx-border-width: 0 0 2 0;");
-        topBar.setAlignment(Pos.CENTER_LEFT);
-
-        // Kulüp ve Menajer Bilgileri
-        VBox infoBox = new VBox(5);
-        Label teamLabel = new Label(playerTeam != null ? playerTeam.getName() : "Takım Seçilmedi");
-        teamLabel.setTextFill(Color.WHITE);
-        teamLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
-
-        Label managerLabel = new Label("Menajer: Abdullah");
-        managerLabel.setTextFill(Color.web("#a5a5b0"));
-        managerLabel.setFont(Font.font("Segoe UI", 14));
-        infoBox.getChildren().addAll(teamLabel, managerLabel);
-
-        // Arayı açmak için esnek boşluk
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        // Zaman Çizelgesi
-        String weekText = activeCalendar != null ? "Hafta " + (activeCalendar.getCurrentWeek() + 1) : "";
-        Label dateLabel = new Label(weekText + (isMatchDay ? " - Maç Günü" : " - Antrenman Haftası"));
-        dateLabel.setTextFill(Color.WHITE);
-        dateLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-        
-        Button menuButton = new Button("Menü ⚙");
-        menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        menuButton.setOnMouseEntered(e -> menuButton.setStyle("-fx-background-color: #ffb732; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
-        menuButton.setOnMouseExited(e -> menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        menuButton.setOnAction(e -> GUIMenu.show(primaryStage));
-
-        // İlerle Butonu
-        Button continueButton = new Button(isMatchDay ? "Maça Çık ⚽" : "Devam Et ▶");
-        continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        
-        continueButton.setOnAction(e -> handleContinueAction(primaryStage));
-
-        topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
-        return topBar;
-    }
-
-    private VBox createSidebar() {
-        VBox sidebar = new VBox(10);
-        sidebar.setPadding(new Insets(20, 10, 20, 10));
-        sidebar.setStyle("-fx-background-color: #1f4068;");
-        sidebar.setPrefWidth(220);
-
-        String[] menuItems = {"Ana Sayfa", "Taktikler", "Antrenman", "Fikstür", "Lig Tablosu"};
-        
-        for (String item : menuItems) {
-            Button btn = new Button(item);
-            btn.setMaxWidth(Double.MAX_VALUE);
-            btn.setPrefHeight(40);
-            btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15;");
-            
-            btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: #162447; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15; -fx-background-radius: 5;"));
-            btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15;"));
-            
-          
-            btn.setOnAction(e -> {
-                System.out.println(item + " sekmesine tıklandı.");
-                
-                if (item.equals("Fikstür")) {
-                    if (activeCalendar != null && playerTeam != null) {
-                        new GUIFixture(primaryStage, playerTeam, activeCalendar);
-                    } else {
-                        System.out.println("Takvim veya takım yüklenmemiş!");
-                    }
-                } else if (item.equals("Ana Sayfa")) {
-                    // Ana sayfa butonuna basınca Dashboard geri gelir
-                    mainLayout.setCenter(createDashboard());
-                } else if (item.equals("Taktikler")) {
-                    if (playerTeam != null) {
-                        new GUITactic(primaryStage, playerTeam);
-                    } else {
-                        System.out.println("Takım yüklenmemiş!");
-                    }
-                } else if (item.equals("Lig Tablosu")) {
-                    if (activeLeague != null && playerTeam != null) {
-                        new GUILeagueRanking(primaryStage, playerTeam, activeLeague);
-                    }
-                } else if (item.equals("Antrenman")) {
-                    if (playerTeam != null) {
-                        new GUITraining(primaryStage, playerTeam);
-                    }
-                }
-                
-            });
-
-            sidebar.getChildren().add(btn);
-        }
-
-        return sidebar;
-    }
-
     private VBox createDashboard() {
         VBox dashboard = new VBox(25);
         dashboard.setPadding(new Insets(30));
@@ -246,35 +167,168 @@ public class GUIMain {
         welcomeLabel.setTextFill(Color.WHITE);
         welcomeLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 28));
 
-        HBox widgetsBox = new HBox(25);
-        
-        VBox nextMatchWidget = createWidget("Sıradaki Maç", "Rakip: Belirlenmedi\nDurum: Bekleniyor", "#e43f5a");
-        VBox leagueWidget = createWidget("Lig Durumu", "Sıra: -\nPuan: 0", "#4CAF50");
-        VBox teamWidget = createWidget("Takım Durumu", "Moral: Yüksek\nSakatlık: Yok", "#f0a500");
+        VBox nextMatchWidget = createNextMatchWidget();
+        VBox trainingWidget = createTrainingPerformanceWidget();
+        VBox injuryWidget = createInjuryWidget();
 
-        widgetsBox.getChildren().addAll(nextMatchWidget, leagueWidget, teamWidget);
-        dashboard.getChildren().addAll(welcomeLabel, widgetsBox);
+        HBox bottomWidgetsBox = new HBox(25);
+        bottomWidgetsBox.getChildren().addAll(trainingWidget, injuryWidget);
+
+        dashboard.getChildren().addAll(welcomeLabel, nextMatchWidget, bottomWidgetsBox);
         
         return dashboard;
     }
 
-    private VBox createWidget(String title, String content, String accentColor) {
+    private VBox createNextMatchWidget() {
+        VBox widget = createBaseWidget("Sıradaki Maç", "#e43f5a");
+        widget.setPrefWidth(725); // Makes it span the width of the two bottom widgets
+        
+        HBox matchLayout = new HBox(60);
+        matchLayout.setAlignment(Pos.CENTER);
+        VBox.setVgrow(matchLayout, Priority.ALWAYS);
+        
+        if (activeCalendar != null && playerTeam != null) {
+            int week = activeCalendar.getCurrentWeek() + 1;
+            java.util.Map<Integer, java.util.List<Classes.Game>> schedule = activeCalendar.getSchedule();
+            if (schedule != null && schedule.containsKey(week)) {
+                Classes.Game nextGame = null;
+                for (Classes.Game g : schedule.get(week)) {
+                    if (g.getHomeTeam().equals(playerTeam) || g.getAwayTeam().equals(playerTeam)) {
+                        nextGame = g;
+                        break;
+                    }
+                }
+                
+                if (nextGame != null) {
+                    VBox homeBox = new VBox(15);
+                    homeBox.setAlignment(Pos.CENTER);
+                    javafx.scene.Node homeEmblem = GUILeftandTopBarHelper.createEmblem(nextGame.getHomeTeam(), 80);
+                    Label homeName = new Label(nextGame.getHomeTeam().getName());
+                    homeName.setTextFill(Color.WHITE);
+                    homeName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+                    homeBox.getChildren().addAll(homeEmblem, homeName);
+
+                    VBox vsBox = new VBox(10);
+                    vsBox.setAlignment(Pos.CENTER);
+                    Label weekLabel = new Label("Hafta " + week);
+                    weekLabel.setTextFill(Color.web("#a5a5b0"));
+                    weekLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+                    Label vsLabel = new Label("VS");
+                    vsLabel.setTextFill(Color.web("#e43f5a"));
+                    vsLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 28));
+                    vsBox.getChildren().addAll(weekLabel, vsLabel);
+
+                    VBox awayBox = new VBox(15);
+                    awayBox.setAlignment(Pos.CENTER);
+                    javafx.scene.Node awayEmblem = GUILeftandTopBarHelper.createEmblem(nextGame.getAwayTeam(), 80);
+                    Label awayName = new Label(nextGame.getAwayTeam().getName());
+                    awayName.setTextFill(Color.WHITE);
+                    awayName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+                    awayBox.getChildren().addAll(awayEmblem, awayName);
+
+                    matchLayout.getChildren().addAll(homeBox, vsBox, awayBox);
+                    widget.getChildren().add(matchLayout);
+                    return widget;
+                }
+            } else if (week > activeCalendar.getSchedule().size()) {
+                Label contentLabel = new Label("Sezon Sona Erdi.");
+                contentLabel.setTextFill(Color.web("#e0e0e0"));
+                contentLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+                matchLayout.getChildren().add(contentLabel);
+                widget.getChildren().add(matchLayout);
+                return widget;
+            }
+        }
+        
+        Label contentLabel = new Label("Maç bulunamadı.");
+        contentLabel.setTextFill(Color.web("#e0e0e0"));
+        contentLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+        matchLayout.getChildren().add(contentLabel);
+        widget.getChildren().add(matchLayout);
+        return widget;
+    }
+
+    private VBox createTrainingPerformanceWidget() {
+        VBox widget = createBaseWidget("En İyi Gelişenler (Haftalık)", "#4CAF50");
+        VBox list = new VBox(8);
+        
+        if (playerTeam != null && playerTeam.getPlayers() != null) {
+            java.util.List<Interface.IPlayer> players = new java.util.ArrayList<>(playerTeam.getPlayers());
+            players.sort((p1, p2) -> {
+                double gain1 = p1.calculateOverallRating() - gui.GUITraining.oldOvrMap.getOrDefault(p1, p1.calculateOverallRating());
+                double gain2 = p2.calculateOverallRating() - gui.GUITraining.oldOvrMap.getOrDefault(p2, p2.calculateOverallRating());
+                return Double.compare(gain2, gain1);
+            });
+            
+            int count = 0;
+            for (Interface.IPlayer p : players) {
+                double gain = p.calculateOverallRating() - gui.GUITraining.oldOvrMap.getOrDefault(p, p.calculateOverallRating());
+                if (gain > 0) {
+                    Label l = new Label("↑ " + p.getFullName() + " (+ " + String.format(java.util.Locale.US, "%.1f", gain) + " OVR)");
+                    l.setTextFill(Color.web("#4CAF50"));
+                    l.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+                    list.getChildren().add(l);
+                    count++;
+                }
+                if (count >= 5) break;
+            }
+            if (count == 0) {
+                Label l = new Label("Henüz antrenman verisi yok veya\ngelişen oyuncu bulunmuyor.");
+                l.setTextFill(Color.web("#a5a5b0"));
+                l.setFont(Font.font("Segoe UI", 14));
+                list.getChildren().add(l);
+            }
+        }
+        widget.getChildren().add(list);
+        return widget;
+    }
+
+    private VBox createInjuryWidget() {
+        VBox widget = createBaseWidget("Sakat Oyuncular", "#f0a500");
+        VBox list = new VBox(8);
+        
+        if (playerTeam != null && playerTeam.getPlayers() != null) {
+            int count = 0;
+            for (Interface.IPlayer p : playerTeam.getPlayers()) {
+                if (p.isInjured()) {
+                    Label l = new Label("🚑 " + p.getFullName() + " (" + p.getInjuryDuration() + " Hafta)");
+                    l.setTextFill(Color.web("#e43f5a"));
+                    l.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+                    list.getChildren().add(l);
+                    count++;
+                }
+            }
+            if (count == 0) {
+                Label l = new Label("Takımda sakat oyuncu bulunmuyor.");
+                l.setTextFill(Color.web("#4CAF50"));
+                l.setFont(Font.font("Segoe UI", 14));
+                list.getChildren().add(l);
+            }
+        }
+        
+        javafx.scene.control.ScrollPane scroll = new javafx.scene.control.ScrollPane(list);
+        scroll.setFitToWidth(true);
+        scroll.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scroll.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scroll.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setPrefHeight(180);
+        
+        widget.getChildren().add(scroll);
+        return widget;
+    }
+
+    private VBox createBaseWidget(String title, String accentColor) {
         VBox widget = new VBox(15);
         widget.setPadding(new Insets(20));
         widget.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);");
-        widget.setPrefWidth(280);
-        widget.setPrefHeight(180);
+        widget.setPrefWidth(350);
+        widget.setPrefHeight(250);
 
         Label titleLabel = new Label(title);
         titleLabel.setTextFill(Color.web(accentColor));
         titleLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
-
-        Label contentLabel = new Label(content);
-        contentLabel.setTextFill(Color.web("#e0e0e0"));
-        contentLabel.setFont(Font.font("Segoe UI", 14));
-        contentLabel.setWrapText(true);
-
-        widget.getChildren().addAll(titleLabel, contentLabel);
+        
+        widget.getChildren().add(titleLabel);
         return widget;
     }
 }

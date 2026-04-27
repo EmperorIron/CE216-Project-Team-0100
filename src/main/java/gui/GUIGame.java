@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Slider;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -46,6 +47,7 @@ public class GUIGame {
     private Label homePossession, awayPossession;
     private Label homeShots, awayShots;
     private Label homeXG, awayXG;
+    private Slider speedSlider;
 
     private GameFootball match;
     private List<String> matchLogs;
@@ -67,7 +69,6 @@ public class GUIGame {
         setupGameLogic();
         
         show();
-        startMatchSimulation();
     }
 
     private void setupGameLogic() {
@@ -116,8 +117,8 @@ public class GUIGame {
         mainLayout.setStyle("-fx-background-color: #1b1b2f;");
 
         // Üst Bar ve Sol Menü Entegrasyonu
-        mainLayout.setTop(createTopBar());
-        mainLayout.setLeft(createSidebar());
+        mainLayout.setTop(new HBox());
+        mainLayout.setLeft(new VBox());
 
         HBox matchContent = new HBox(30);
         matchContent.setPadding(new Insets(20));
@@ -131,6 +132,18 @@ public class GUIGame {
 
         matchContent.getChildren().addAll(leftPanel, rightPanel);
         mainLayout.setCenter(matchContent);
+
+        Button startBtn = new Button("Maça Başla ▶");
+        startBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
+        startBtn.setOnAction(e -> {
+            mainLayout.setBottom(null);
+            startMatchSimulation();
+        });
+        
+        HBox bottomBox = new HBox(startBtn);
+        bottomBox.setAlignment(Pos.CENTER);
+        bottomBox.setPadding(new Insets(0, 0, 20, 0));
+        mainLayout.setBottom(bottomBox);
 
         primaryStage.setTitle("Canlı Maç - " + homeTeam.getName() + " vs " + awayTeam.getName());
         if (primaryStage.getScene() == null) {
@@ -151,11 +164,11 @@ public class GUIGame {
         scoreboard.setAlignment(Pos.CENTER);
         scoreboard.setStyle("-fx-background-color: #1f4068; -fx-padding: 20; -fx-background-radius: 10;");
 
-        VBox homeBox = createTeamHeader(homeTeam.getName(), "#e43f5a");
+        VBox homeBox = createTeamHeader(homeTeam, "#e43f5a");
         scoreLabel = new Label("0 - 0");
         scoreLabel.setTextFill(Color.WHITE);
         scoreLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
-        VBox awayBox = createTeamHeader(awayTeam.getName(), "#4CAF50");
+        VBox awayBox = createTeamHeader(awayTeam, "#4CAF50");
 
         scoreboard.getChildren().addAll(homeBox, scoreLabel, awayBox);
 
@@ -180,7 +193,25 @@ public class GUIGame {
             createStatRow("Gol Beklentisi (xG)", homeXG, awayXG)
         );
 
-        panel.getChildren().addAll(scoreboard, minuteLabel, statsTitle, statsList);
+        Label speedLabel = new Label("Oyun Hızı (1x - 100x)");
+        speedLabel.setTextFill(Color.web("#a5a5b0"));
+        speedLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+
+        speedSlider = new Slider(1, 100, 100);
+        speedSlider.setShowTickLabels(true);
+        speedSlider.setShowTickMarks(true);
+        speedSlider.setMajorTickUnit(25);
+        speedSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (matchTimeline != null) {
+                matchTimeline.setRate(newVal.doubleValue());
+            }
+        });
+
+        VBox speedBox = new VBox(5, speedLabel, speedSlider);
+        speedBox.setAlignment(Pos.CENTER);
+        speedBox.setPadding(new Insets(15, 0, 0, 0));
+
+        panel.getChildren().addAll(scoreboard, minuteLabel, statsTitle, statsList, speedBox);
         panel.setAlignment(Pos.TOP_CENTER);
         return panel;
     }
@@ -251,22 +282,13 @@ public class GUIGame {
         }
 
         // Maç Başı Gerçekçi İstatistiklerin Hesaplanması
-        double hOff = homeTeam.getTotalOffensiveRating();
-        double aOff = awayTeam.getTotalOffensiveRating();
-        double hDef = homeTeam.getTotalDefensiveRating();
-        double aDef = awayTeam.getTotalDefensiveRating();
-
-        double hXG = (hOff / (hOff + aDef)) * 2.25;
-        double aXG = (aOff / (aOff + hDef)) * 2.25;
-        if (Double.isNaN(hXG) || Double.isInfinite(hXG)) hXG = 1.0;
-        if (Double.isNaN(aXG) || Double.isInfinite(aXG)) aXG = 1.0;
+        double hXG = match.getHomeXG();
+        double aXG = match.getAwayXG();
 
         homeXG.setText(String.format("%.2f", hXG));
         awayXG.setText(String.format("%.2f", aXG));
 
-        possH = (int) Math.round((hOff / (hOff + aOff)) * 100);
-        if (possH < 10) possH = 50;
-        if (possH > 90) possH = 90;
+        possH = match.getHomePossession();
         homePossession.setText(possH + "%");
         awayPossession.setText((100 - possH) + "%");
 
@@ -279,12 +301,11 @@ public class GUIGame {
             Random rand = new Random();
             int shotsHome = Integer.parseInt(homeShots.getText());
             int shotsAway = Integer.parseInt(awayShots.getText());
-            if (rand.nextDouble() < (possH / 100.0) * 0.15) shotsHome++;
-            if (rand.nextDouble() < ((100 - possH) / 100.0) * 0.15) shotsAway++;
+            if (rand.nextDouble() < match.getHomeShotChance(possH)) shotsHome++;
+            if (rand.nextDouble() < match.getAwayShotChance(possH)) shotsAway++;
             homeShots.setText(String.valueOf(shotsHome));
             awayShots.setText(String.valueOf(shotsAway));
 
-            boolean pauseForInjury = false;
             boolean pauseForHalfTime = false;
             
             if (minute % periodDuration == 0 && minute < totalMatchMinutes) {
@@ -296,59 +317,56 @@ public class GUIGame {
                 String log = matchLogs.get(currentLogIndex);
                 if (log.startsWith(minute + "'.")) {
                     
-                    String type = "INFO";
-                    if (log.contains("GOOOAALLL")) {
-                        type = "GOAL";
+                    String type = match.getEventType(log);
+                    if (type.equals("GOAL")) {
                         if (log.contains(homeTeam.getName())) homeScore++;
                         else awayScore++;
                         updateScore();
-                    } else if (log.contains("SARI KART!") && !log.contains("KIRMIZI KART!")) { 
-                        type = "YELLOW";
-                        if (log.contains(GUIMain.playerTeam.getName())) {
+                    } else if (type.equals("YELLOW")) { 
+                        if (log.contains(GUIMain.playerTeam.getName()) && log.contains("Oyuncu: ")) {
+                            String playerName = log.substring(log.indexOf("Oyuncu: ") + 8).trim();
                             for (IPlayer p : GUIMain.playerTeam.getPlayers()) {
-                                if (log.contains(p.getFullName())) {
+                                if (p.getFullName().equals(playerName)) {
                                     if (!GUITactic.yellowCardedPlayers.contains(p)) {
                                         GUITactic.yellowCardedPlayers.add(p);
                                     }
+                                    break;
                                 }
                             }
                         }
-                    } else if (log.contains("KIRMIZI KART!")) {
-                        type = "RED";
-                        if (log.contains(GUIMain.playerTeam.getName())) {
+                    } else if (type.equals("RED")) {
+                        if (log.contains(GUIMain.playerTeam.getName()) && log.contains("Oyundan Atılan: ")) {
+                            String playerName = log.substring(log.indexOf("Oyundan Atılan: ") + 16).trim();
                             for (IPlayer p : GUIMain.playerTeam.getPlayers()) {
-                                if (log.contains(p.getFullName())) {
+                                if (p.getFullName().equals(playerName)) {
                                     GUITactic.applyRedCard(p);
+                                    break;
                                 }
                             }
                         }
-                    } else if (log.contains("Sakatlık") || log.contains("MECBURİ") || log.contains("SAKATLIK!")) {
-                        type = "INJURY";
-                        if (log.contains(GUIMain.playerTeam.getName())) {
-                            pauseForInjury = true;
-                        }
-                    } else if (log.contains("Değişiklik")) {
-                        type = "SUB";
                     }
                     
                     // Oyuncu değişikliği loglarını (Sakatlık dahil) GUITactic'e senkronize et
                     if (log.contains("Çıkan: ") && log.contains("Giren: ") && log.contains(GUIMain.playerTeam.getName())) {
+                        String outName = log.substring(log.indexOf("Çıkan: ") + 7, log.indexOf(" | Giren: ")).trim();
+                        String inName = log.substring(log.indexOf("Giren: ") + 7).trim();
                         IPlayer pOut = null;
                         IPlayer pIn = null;
                         for (IPlayer p : GUIMain.playerTeam.getPlayers()) {
-                            if (log.contains("Çıkan: " + p.getFullName())) pOut = p;
-                            if (log.contains("Giren: " + p.getFullName())) pIn = p;
+                            if (p.getFullName().equals(outName)) pOut = p;
+                            if (p.getFullName().equals(inName)) pIn = p;
                         }
                         if (pOut != null && pIn != null) {
-                            if (type.equals("INJURY") && pOut instanceof Classes.Player) {
-                                ((Classes.Player) pOut).setInjuryDuration(1); // Gerçekten sakatla (Örn: 1 haftalık)
-                            }
                             GUITactic.performAutomaticSub(pOut, pIn);
                         }
                     } else if (log.contains("SAKATLIK!") && log.contains("Sakatlanan: ") && log.contains(GUIMain.playerTeam.getName())) {
+                        String injuredName = log.substring(log.indexOf("Sakatlanan: ") + 12, log.indexOf(". Oyuncu tedavi")).trim();
                         IPlayer pInjured = null;
                         for (IPlayer p : GUIMain.playerTeam.getPlayers()) {
-                            if (log.contains("Sakatlanan: " + p.getFullName())) pInjured = p;
+                            if (p.getFullName().equals(injuredName)) {
+                                pInjured = p;
+                                break;
+                            }
                         }
                         if (pInjured != null) {
                             GUITactic.performAutomaticInjuryRemoval(pInjured);
@@ -372,10 +390,10 @@ public class GUIGame {
                 }
             }
 
-            if (pauseForHalfTime || pauseForInjury) {
+            if (pauseForHalfTime) {
                 matchTimeline.pause();
                 
-                String btnText = pauseForHalfTime ? "Devre Arası! Taktik Ekranına Git ⚙" : "Sakatlık Var! Değişiklik İçin Tıklayın ⚙";
+                String btnText = "Devre Arası! Taktik Ekranına Git ⚙";
                 Button tacticBtn = new Button(btnText);
                 tacticBtn.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
                 tacticBtn.setOnAction(evt -> {
@@ -428,6 +446,7 @@ public class GUIGame {
         }));
         
         matchTimeline.setCycleCount(Timeline.INDEFINITE);
+        matchTimeline.setRate(speedSlider.getValue());
         matchTimeline.play();
     }
 
@@ -437,11 +456,11 @@ public class GUIGame {
 
     // --- YARDIMCI GÖRSEL METODLAR ---
 
-    private VBox createTeamHeader(String name, String color) {
+    private VBox createTeamHeader(ITeam team, String color) {
         VBox box = new VBox(10);
         box.setAlignment(Pos.CENTER);
-        Circle logo = new Circle(30, Color.web(color));
-        Label nameLbl = new Label(name);
+        javafx.scene.Node logo = GUILeftandTopBarHelper.createEmblem(team, 60);
+        Label nameLbl = new Label(team.getName());
         nameLbl.setTextFill(Color.WHITE);
         nameLbl.setFont(Font.font("Segoe UI", FontWeight.BOLD, 8));
         box.getChildren().addAll(logo, nameLbl);
@@ -462,8 +481,4 @@ public class GUIGame {
         row.getChildren().addAll(homeVal, titleLbl, awayVal);
         return row;
     }
-
-    // GUIMain'den gelen standart metodlar
-    private HBox createTopBar() { /* GUIMain'deki ile aynı */ return new HBox(); }
-    private VBox createSidebar() { /* GUIMain'deki ile aynı */ return new VBox(); }
 }

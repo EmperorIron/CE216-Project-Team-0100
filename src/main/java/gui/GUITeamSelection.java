@@ -75,11 +75,15 @@ public class GUITeamSelection {
         card.setMaxWidth(800);
         card.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
 
-        // Takım İsmi
+        // Takım İsmi ve Amblem
+        HBox nameBox = new HBox(15);
+        nameBox.setAlignment(Pos.CENTER_LEFT);
+        nameBox.setPrefWidth(350);
+        javafx.scene.Node emblem = GUILeftandTopBarHelper.createEmblem(team, 60);
         Label nameLabel = new Label(team.getName());
         nameLabel.setTextFill(Color.WHITE);
         nameLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
-        nameLabel.setPrefWidth(300);
+        nameBox.getChildren().addAll(emblem, nameLabel);
 
      
         VBox stats = new VBox(5);
@@ -107,7 +111,7 @@ public class GUITeamSelection {
         card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 10; -fx-border-color: #e43f5a; -fx-border-width: 2;"));
         card.setOnMouseExited(e -> card.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;"));
 
-        card.getChildren().addAll(nameLabel, stats, spacer, selectBtn);
+        card.getChildren().addAll(nameBox, stats, spacer, selectBtn);
         return card;
     }
 }

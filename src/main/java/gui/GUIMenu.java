@@ -45,6 +45,7 @@ public class GUIMenu {
         Button btnSave = createMenuButton("Kaydet (Save Game)", "#4CAF50");
         Button btnQuickSave = createMenuButton("Hızlı Kaydet (Quick Save)", "#66BB6A");
         Button btnLoad = createMenuButton("Oyunu Yükle (Load Game)", "#f0a500");
+        Button btnQuickLoad = createMenuButton("Hızlı Yükle (Quick Load)", "#FFCA28");
         Button btnGuide = createMenuButton("Rehber (Guide)", "#4e4e6a");
         Button btnMainMenu = createMenuButton("Ana Menüye Dön", "#e43f5a");
         Button btnExit = createMenuButton("Masaüstüne Çık", "#d82bbc");
@@ -80,13 +81,45 @@ public class GUIMenu {
             // İsteğe bağlı: Ekranda küçük bir onay mesajı gösterilebilir.
         });
 
+        btnQuickLoad.setOnAction(e -> {
+            java.io.File autoSaveFile = new java.io.File("saves/autosave.json");
+            if (autoSaveFile.exists()) {
+                SaveGame loadedGame = SaveManager.loadGame("saves/autosave.json");
+                if (loadedGame != null) {
+                    popupStage.close();
+                    GUIMain.loadSavedGame(loadedGame, ownerStage);
+                }
+            } else {
+                GUIPopup.showMessage(ownerStage, "Uyarı", "Hızlı Kayıt Bulunamadı", "Henüz bir hızlı kayıt (autosave) oluşturulmamış.");
+            }
+        });
+
+        btnLoad.setOnAction(e -> {
+            popupStage.close();
+            javafx.scene.Parent currentRoot = ownerStage.getScene().getRoot();
+            String currentTitle = ownerStage.getTitle();
+            GUILoadGame loadGameMenu = new GUILoadGame(
+                () -> {
+                    ownerStage.getScene().setRoot(currentRoot);
+                    ownerStage.setTitle(currentTitle);
+                },
+                (SaveGame loadedGame) -> GUIMain.loadSavedGame(loadedGame, ownerStage)
+            );
+            loadGameMenu.show(ownerStage);
+        });
+
         btnSave.setOnAction(e -> {
-            System.out.println("Kayıt ekranı açılıyor...");
-            // SaveManager.saveGame(..., ...);
+            popupStage.close();
+            javafx.scene.Parent currentRoot = ownerStage.getScene().getRoot();
+            String currentTitle = ownerStage.getTitle();
+            new GUISaveGame(() -> {
+                ownerStage.getScene().setRoot(currentRoot);
+                ownerStage.setTitle(currentTitle);
+            }).show(ownerStage);
         });
 
         // Butonları kutuya ekle
-        menuBox.getChildren().addAll(title, btnSave, btnQuickSave, btnLoad, btnGuide, btnMainMenu, btnExit, new Region(), btnClose);
+        menuBox.getChildren().addAll(title, btnSave, btnQuickSave, btnLoad, btnQuickLoad, btnGuide, btnMainMenu, btnExit, new Region(), btnClose);
 
         // Kapatma butonundan önce biraz boşluk bırakmak için Region kullandık
         VBox.setVgrow(menuBox.getChildren().get(menuBox.getChildren().size() - 2), Priority.ALWAYS);

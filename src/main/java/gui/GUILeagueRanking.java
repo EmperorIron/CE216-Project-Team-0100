@@ -41,8 +41,8 @@ public class GUILeagueRanking {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #1b1b2f;");
 
-        root.setTop(createTopBar());
-        root.setLeft(createSidebar());
+        root.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
+        root.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Lig Tablosu"));
 
         VBox content = new VBox(20);
         content.setPadding(new Insets(25, 40, 20, 40));
@@ -194,7 +194,12 @@ public class GUILeagueRanking {
         if (position <= 3) posLbl.setTextFill(Color.web("#4CAF50")); // Şampiyonlar Ligi / Avrupa potası
         else if (position >= activeLeague.getTeamRanking().size() - 2) posLbl.setTextFill(Color.web("#e43f5a")); // Küme düşme potası
         
-        Label nameLbl = createLabel(team.getName(), 250, true);
+        HBox nameBox = new HBox(10);
+        nameBox.setAlignment(Pos.CENTER_LEFT);
+        nameBox.setPrefWidth(250);
+        javafx.scene.Node emblem = GUILeftandTopBarHelper.createEmblem(team, 25);
+        Label nameLbl = createLabel(team.getName(), 200, true);
+        nameBox.getChildren().addAll(emblem, nameLbl);
         
         int played = team.getWins() + team.getDraws() + team.getLosses();
         Label pLbl = createLabel(String.valueOf(played), 50, false);
@@ -208,7 +213,7 @@ public class GUILeagueRanking {
         Label ptsLbl = createLabel(String.valueOf(team.getPoints()), 50, true);
         ptsLbl.setTextFill(Color.web("#f0a500"));
 
-        row.getChildren().addAll(posLbl, nameLbl, pLbl, wLbl, dLbl, lLbl, gfLbl, gaLbl, gdLbl, ptsLbl);
+        row.getChildren().addAll(posLbl, nameBox, pLbl, wLbl, dLbl, lLbl, gfLbl, gaLbl, gdLbl, ptsLbl);
 
         if (!team.equals(playerTeam)) {
             row.setOnMouseEntered(e -> row.setStyle("-fx-background-color: #213663; -fx-background-radius: 5;"));
@@ -227,79 +232,4 @@ public class GUILeagueRanking {
         return lbl;
     }
 
-    // --- GUIMAIN BİREBİR ÜST BAR ---
-    private HBox createTopBar() {
-        HBox topBar = new HBox(20);
-        topBar.setPadding(new Insets(15, 20, 15, 20));
-        topBar.setStyle("-fx-background-color: #162447; -fx-border-color: #d82bbc; -fx-border-width: 0 0 2 0;");
-        topBar.setAlignment(Pos.CENTER_LEFT);
-
-        VBox infoBox = new VBox(5);
-        Label teamLabel = new Label(playerTeam != null ? playerTeam.getName() : "Takım Seçilmedi");
-        teamLabel.setTextFill(Color.WHITE);
-        teamLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
-
-        Label managerLabel = new Label("Menajer: Abdullah");
-        managerLabel.setTextFill(Color.web("#a5a5b0"));
-        managerLabel.setFont(Font.font("Segoe UI", 14));
-        infoBox.getChildren().addAll(teamLabel, managerLabel);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        String weekText = GUIMain.activeCalendar != null ? "Hafta " + (GUIMain.activeCalendar.getCurrentWeek() + 1) : "";
-        Label dateLabel = new Label(weekText + (GUIMain.isMatchDay ? " - Maç Günü" : " - Antrenman Haftası"));
-        dateLabel.setTextFill(Color.WHITE);
-        dateLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-        
-        Button menuButton = new Button("Menü ⚙");
-        menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        menuButton.setOnMouseEntered(e -> menuButton.setStyle("-fx-background-color: #ffb732; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
-        menuButton.setOnMouseExited(e -> menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        menuButton.setOnAction(e -> GUIMenu.show(primaryStage));
-
-        Button continueButton = new Button("Devam Et ▶");
-        continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        
-        continueButton.setOnAction(e -> GUIMain.handleContinueAction(primaryStage));
-
-        topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
-        return topBar;
-    }
-
-    // --- GUIMAIN BİREBİR SOL MENÜ ---
-    private VBox createSidebar() {
-        VBox sidebar = new VBox(10);
-        sidebar.setPadding(new Insets(20, 10, 20, 10));
-        sidebar.setStyle("-fx-background-color: #1f4068;");
-        sidebar.setPrefWidth(220);
-
-        String[] menuItems = {"Ana Sayfa", "Taktikler", "Antrenman", "Fikstür", "Lig Tablosu"};
-        
-        for (String item : menuItems) {
-            Button btn = new Button(item);
-            btn.setMaxWidth(Double.MAX_VALUE);
-            btn.setPrefHeight(40);
-            
-            if (item.equals("Lig Tablosu")) {
-                btn.setStyle("-fx-background-color: #162447; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15; -fx-background-radius: 5;");
-            } else {
-                btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15;");
-                btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: #162447; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15; -fx-background-radius: 5;"));
-                btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15;"));
-            }
-            
-            btn.setOnAction(e -> {
-                if (item.equals("Ana Sayfa")) new GUIMain(primaryStage);
-                else if (item.equals("Taktikler") && playerTeam != null) new GUITactic(primaryStage, playerTeam);
-                else if (item.equals("Fikstür") && GUIMain.activeCalendar != null && playerTeam != null) new GUIFixture(primaryStage, playerTeam, GUIMain.activeCalendar);
-                else if (item.equals("Antrenman") && playerTeam != null) new GUITraining(primaryStage, playerTeam);
-            });
-
-            sidebar.getChildren().add(btn);
-        }
-        return sidebar;
-    }
 }

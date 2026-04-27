@@ -69,6 +69,16 @@ public class GameFootball extends Game {
         IPlayer playerOut = onField.remove(outIndex);
         IPlayer playerIn = bench.remove(inIndex);
         
+        if (playerOut instanceof Classes.Player) {
+            if (reason.contains("Sakatlık")) {
+                double randChance = getRandom().nextDouble();
+                int duration = 3;
+                if (randChance < 0.05) duration = 1;
+                else if (randChance < 0.10) duration = 2;
+                ((Classes.Player) playerOut).setInjuryDuration(duration);
+            }
+        }
+
         if (playerOut instanceof Classes.Player && playerIn instanceof Classes.Player) {
             ((Classes.Player) playerIn).setCurrentPositionId(((Classes.Player) playerOut).getCurrentPositionId());
         }
@@ -179,17 +189,19 @@ public class GameFootball extends Game {
 
     private void handlePlayerInjury(ITeam team, ITactic tactic, int minute) {
         List<IPlayer> onField = tactic.getStartingLineup();
-        List<IPlayer> bench = tactic.getSubstitutes();
         if (onField.isEmpty()) return;
         
         int outIndex = getRandom().nextInt(onField.size());
         IPlayer injured = onField.remove(outIndex);
         
         if (injured instanceof Classes.Player) {
-            ((Classes.Player) injured).setInjuryDuration(1);
+            double randChance = getRandom().nextDouble();
+            int duration = 3;
+            if (randChance < 0.05) duration = 1;
+            else if (randChance < 0.10) duration = 2;
+            ((Classes.Player) injured).setInjuryDuration(duration);
         }
         
-        bench.add(injured);
         
         addLogEntry(minute + "'. SAKATLIK! (" + team.getName() + ") -> Sakatlanan: " + injured.getFullName() + ". Oyuncu tedavi için kenara alındı.");
         Sport.PositionsFootball.resolvePositionCollisions(tactic);
@@ -263,6 +275,46 @@ public class GameFootball extends Game {
         }
         addLogEntry("+----------------------------------------+");
         addLogEntry("");
+    }
+
+    public double getHomeXG() {
+        double hOff = homeTeam.getTotalOffensiveRating();
+        double aDef = awayTeam.getTotalDefensiveRating();
+        double hXG = (hOff / (hOff + aDef)) * 2.25;
+        return Double.isNaN(hXG) || Double.isInfinite(hXG) ? 1.0 : hXG;
+    }
+
+    public double getAwayXG() {
+        double aOff = awayTeam.getTotalOffensiveRating();
+        double hDef = homeTeam.getTotalDefensiveRating();
+        double aXG = (aOff / (aOff + hDef)) * 2.25;
+        return Double.isNaN(aXG) || Double.isInfinite(aXG) ? 1.0 : aXG;
+    }
+
+    public int getHomePossession() {
+        double hOff = homeTeam.getTotalOffensiveRating();
+        double aOff = awayTeam.getTotalOffensiveRating();
+        int possH = (int) Math.round((hOff / (hOff + aOff)) * 100);
+        if (possH < 10) return 50;
+        if (possH > 90) return 90;
+        return possH;
+    }
+
+    public double getHomeShotChance(int homePossession) {
+        return (homePossession / 100.0) * 0.15;
+    }
+
+    public double getAwayShotChance(int homePossession) {
+        return ((100 - homePossession) / 100.0) * 0.15;
+    }
+
+    public String getEventType(String log) {
+        if (log.contains("GOOOAALLL")) return "GOAL";
+        if (log.contains("SARI KART!") && !log.contains("KIRMIZI KART!")) return "YELLOW";
+        if (log.contains("KIRMIZI KART!")) return "RED";
+        if (log.contains("Sakatlık") || log.contains("MECBURİ") || log.contains("SAKATLIK!")) return "INJURY";
+        if (log.contains("Değişiklik")) return "SUB";
+        return "INFO";
     }
 
     @Override
