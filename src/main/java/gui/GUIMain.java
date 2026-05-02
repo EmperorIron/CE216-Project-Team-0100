@@ -13,9 +13,13 @@ import javafx.stage.Stage;
 
 import Interface.ITeam;
 import Sport.CalendarFootball;
+import Sport.CalendarVolleyball;
 import Sport.GameRulesFootball;
+import Sport.GameRulesVolleyball;
 import Sport.GameFootball;
+import Sport.GameVolleyball;
 import Sport.LeagueFootball;
+import Sport.LeagueVolleyball;
 import io.SaveGame;
 import io.SaveManager;
 
@@ -26,6 +30,10 @@ public class GUIMain {
     public static ITeam playerTeam;
     public static LeagueFootball activeLeague;
     public static CalendarFootball activeCalendar;
+    // Volleyball counterparts
+    public static LeagueVolleyball activeVolleyballLeague;
+    public static CalendarVolleyball activeVolleyballCalendar;
+    public static String activeSport = "FOOTBALL"; // tracks which sport is active
     public static boolean isMatchDay = false;
     public static boolean tacticConfirmedForMatch = false;
     
@@ -35,6 +43,7 @@ public class GUIMain {
     }
 
     public static void startNewGame(String sport, Stage stage) {
+        activeSport = sport;
         if ("FOOTBALL".equals(sport)) {
             GameRulesFootball rules = new GameRulesFootball();
             activeLeague = new LeagueFootball("Süper Lig", "Türkiye", 10, rules); 
@@ -43,6 +52,14 @@ public class GUIMain {
             
             System.out.println("Football game initialized! Transitioning to Team Selection...");
             new GUITeamSelection(stage); 
+        } else if ("VOLLEYBALL".equals(sport)) {
+            GameRulesVolleyball rules = new GameRulesVolleyball();
+            activeVolleyballLeague = new LeagueVolleyball("Voleybol Ligi", "Türkiye", 10, rules);
+            activeVolleyballCalendar = new CalendarVolleyball(rules);
+            activeVolleyballCalendar.generateFixtures(activeVolleyballLeague.getTeamRanking());
+
+            System.out.println("Volleyball game initialized! Transitioning to Team Selection...");
+            new GUITeamSelection(stage);
         } else {
             System.out.println(sport + " is not fully implemented yet.");
         }
@@ -67,8 +84,39 @@ public class GUIMain {
             tacticConfirmedForMatch = false;
             new GUIMain(primaryStage);
         } else {
+            // ── VOLLEYBALL branch ─────────────────────────────────────────────
+            if ("VOLLEYBALL".equals(activeSport)) {
+                if (activeVolleyballCalendar != null && playerTeam != null) {
+                    int currentWeek = activeVolleyballCalendar.getCurrentWeek() + 1;
+                    java.util.Map<Integer, java.util.List<Classes.Game>> schedule = activeVolleyballCalendar.getSchedule();
+
+                    if (schedule != null && schedule.containsKey(currentWeek)) {
+                        java.util.List<Classes.Game> weekGames = schedule.get(currentWeek);
+                        Classes.Game playerGame = null;
+
+                        for (Classes.Game g : weekGames) {
+                            if (g.getHomeTeam().equals(playerTeam) || g.getAwayTeam().equals(playerTeam)) {
+                                playerGame = g;
+                            } else {
+                                if (!g.isCompleted()) g.play();
+                            }
+                        }
+
+                        if (playerGame != null && !playerGame.isCompleted()) {
+                            new GUIGame(primaryStage, (GameVolleyball) playerGame);
+                        } else {
+                            activeVolleyballCalendar.advanceToNextWeek();
+                            isMatchDay = false;
+                            tacticConfirmedForMatch = false;
+                            new GUIMain(primaryStage);
+                        }
+                    }
+                }
+                return;
+            }
+
+            // ── FOOTBALL branch (original logic) ─────────────────────────────
             if (!tacticConfirmedForMatch) {
-                // Maç günüyse ve taktik onaylanmadıysa direkt taktik ekranına gönder
                 new GUITactic(primaryStage, playerTeam);
                 return;
             }
@@ -85,33 +133,26 @@ public class GUIMain {
                         if (g.getHomeTeam().equals(playerTeam) || g.getAwayTeam().equals(playerTeam)) {
                             playerGame = g;
                         } else {
-                            if (!g.isCompleted()) g.play(); // Diğer maçları anında simüle et
+                            if (!g.isCompleted()) g.play();
                         }
                     }
                     
                     if (playerGame != null && !playerGame.isCompleted()) {
-                        // Ekstra Güvenlik: Kadro tam mı kontrolü
                         Sport.GameRulesFootball rules = new Sport.GameRulesFootball();
                         if (gui.GUITactic.getPlayersOnPitchQueue().size() != (rules.getFieldPlayerCount() - gui.GUITactic.redCardedPlayers.size())) {
-                            
                             tacticConfirmedForMatch = false;
                             gui.GUIPopup.showMessage(primaryStage, "Eksik Kadro", "Kadro Tamamlanmadı!", "Maça çıkabilmek için İlk 11'in tam olması gerekmektedir! Lütfen kadronuzu kurun.");
-                            
                             new gui.GUITactic(primaryStage, playerTeam);
                             return;
                         }
                         
                         boolean hasInjuredStarter = false;
                         for (Interface.IPlayer p : gui.GUITactic.getPlayersOnPitchQueue()) {
-                            if (p.isInjured()) {
-                                hasInjuredStarter = true;
-                                break;
-                            }
+                            if (p.isInjured()) { hasInjuredStarter = true; break; }
                         }
                         if (hasInjuredStarter) {
                             tacticConfirmedForMatch = false;
                             gui.GUIPopup.showMessage(primaryStage, "Sakat Oyuncu", "İlk 11'de Sakat Oyuncu Var!", "Maça çıkabilmek için sahada sakat oyuncu bulunmamalıdır. Lütfen sakat oyuncuyu değiştirin.");
-                            
                             new gui.GUITactic(primaryStage, playerTeam);
                             return;
                         }
@@ -181,15 +222,18 @@ public class GUIMain {
 
     private VBox createNextMatchWidget() {
         VBox widget = createBaseWidget("Sıradaki Maç", "#e43f5a");
-        widget.setPrefWidth(725); // Makes it span the width of the two bottom widgets
+        widget.setPrefWidth(725);
         
         HBox matchLayout = new HBox(60);
         matchLayout.setAlignment(Pos.CENTER);
         VBox.setVgrow(matchLayout, Priority.ALWAYS);
-        
-        if (activeCalendar != null && playerTeam != null) {
-            int week = activeCalendar.getCurrentWeek() + 1;
-            java.util.Map<Integer, java.util.List<Classes.Game>> schedule = activeCalendar.getSchedule();
+
+        // Pick the right calendar depending on active sport
+        Classes.Calendar cal = "VOLLEYBALL".equals(activeSport) ? activeVolleyballCalendar : activeCalendar;
+
+        if (cal != null && playerTeam != null) {
+            int week = cal.getCurrentWeek() + 1;
+            java.util.Map<Integer, java.util.List<Classes.Game>> schedule = cal.getSchedule();
             if (schedule != null && schedule.containsKey(week)) {
                 Classes.Game nextGame = null;
                 for (Classes.Game g : schedule.get(week)) {
@@ -230,7 +274,7 @@ public class GUIMain {
                     widget.getChildren().add(matchLayout);
                     return widget;
                 }
-            } else if (week > activeCalendar.getSchedule().size()) {
+            } else if (week > cal.getSchedule().size()) {
                 Label contentLabel = new Label("Sezon Sona Erdi.");
                 contentLabel.setTextFill(Color.web("#e0e0e0"));
                 contentLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));

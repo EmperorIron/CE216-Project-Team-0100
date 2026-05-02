@@ -36,7 +36,9 @@ public class GUITeamSelection {
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 32));
 
         // GUIMain'de oluşturulan aktif ligden takımları çekiyoruz
-        List<ITeam> teams = GUIMain.activeLeague.getTeamRanking();
+        List<ITeam> teams = "VOLLEYBALL".equals(GUIMain.activeSport)
+                ? GUIMain.activeVolleyballLeague.getTeamRanking()
+                : GUIMain.activeLeague.getTeamRanking();
 
         // Takım Listesi (Kaydırılabilir alan)
         VBox teamList = new VBox(15);
