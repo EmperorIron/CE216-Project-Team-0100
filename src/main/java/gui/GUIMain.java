@@ -12,14 +12,14 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import Interface.ITeam;
-import Sport.CalendarFootball;
-import Sport.CalendarVolleyball;
-import Sport.GameRulesFootball;
-import Sport.GameRulesVolleyball;
-import Sport.GameFootball;
-import Sport.GameVolleyball;
-import Sport.LeagueFootball;
-import Sport.LeagueVolleyball;
+import Sport.Football.CalendarFootball;
+import Sport.Volleyball.CalendarVolleyball;
+import Sport.Football.GameRulesFootball;
+import Sport.Volleyball.GameRulesVolleyball;
+import Sport.Football.GameFootball;
+import Sport.Volleyball.GameVolleyball;
+import Sport.Football.LeagueFootball;
+import Sport.Volleyball.LeagueVolleyball;
 import io.SaveGame;
 import io.SaveManager;
 
@@ -71,7 +71,7 @@ public class GUIMain {
         playerTeam = saveGame.getPlayerTeam();
         
         // Taktik verilerini yükle (Statik değişkenlere aktar)
-        gui.GUITactic.loadTacticData(saveGame.getPitchPlayers(), saveGame.getPlayersOnPitchQueue(), saveGame.getReservePlayersQueue(), playerTeam, saveGame.getTacticStyle());
+        gui.GUISquadManager.loadTacticData(saveGame.getPitchPlayers(), saveGame.getPlayersOnPitchQueue(), saveGame.getReservePlayersQueue(), playerTeam, saveGame.getTacticStyle());
         
         System.out.println("Game Loaded successfully! Transitioning to Menu...");
         new GUIMain(stage);
@@ -84,6 +84,11 @@ public class GUIMain {
             tacticConfirmedForMatch = false;
             new GUIMain(primaryStage);
         } else {
+            if (!tacticConfirmedForMatch) {
+                new GUITactic(primaryStage, playerTeam);
+                return;
+            }
+
             // ── VOLLEYBALL branch ─────────────────────────────────────────────
             if ("VOLLEYBALL".equals(activeSport)) {
                 if (activeVolleyballCalendar != null && playerTeam != null) {
@@ -103,6 +108,43 @@ public class GUIMain {
                         }
 
                         if (playerGame != null && !playerGame.isCompleted()) {
+                            Classes.GameRules rules = new Sport.Volleyball.GameRulesVolleyball();
+                            if (gui.GUISquadManager.getPlayersOnPitchQueue().size() != rules.getFieldPlayerCount()) {
+                                tacticConfirmedForMatch = false;
+                                gui.GUIPopup.showMessage(primaryStage, "Incomplete Squad", "Squad Incomplete!", "Starting " + rules.getFieldPlayerCount() + " must be full to play the match! Please set your squad.");
+                                new gui.GUITactic(primaryStage, playerTeam);
+                                return;
+                            }
+                            
+                            boolean hasInjuredStarter = false;
+                            for (Interface.IPlayer p : gui.GUISquadManager.getPlayersOnPitchQueue()) {
+                                if (p.isInjured()) { hasInjuredStarter = true; break; }
+                            }
+                            if (hasInjuredStarter) {
+                                tacticConfirmedForMatch = false;
+                                gui.GUIPopup.showMessage(primaryStage, "Injured Player", "Injured Player in Starting " + rules.getFieldPlayerCount() + "!", "There must be no injured players on the pitch to play the match. Please substitute the injured player.");
+                                new gui.GUITactic(primaryStage, playerTeam);
+                                return;
+                            }
+                            
+                            String validationMsg = gui.GUISquadManager.getFormationValidationMessage();
+                            if (validationMsg != null) {
+                                tacticConfirmedForMatch = false;
+                                gui.GUIPopup.showMessage(primaryStage, "Invalid Formation", "Formation Rule Violated!", validationMsg);
+                                new gui.GUITactic(primaryStage, playerTeam);
+                                return;
+                            }
+                            
+                            final Classes.Game finalPlayerGame = playerGame;
+                            if (gui.GUISquadManager.getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
+                                gui.GUIPopup.showConfirmation(primaryStage, "Incomplete Bench", "Bench is not full!", 
+                                    "There are not " + rules.getReservePlayerCount() + " players on the bench. Do you still want to play the match?", 
+                                    () -> new GUIGame(primaryStage, (GameVolleyball) finalPlayerGame),
+                                    () -> { tacticConfirmedForMatch = false; new gui.GUITactic(primaryStage, playerTeam); }
+                                );
+                                return;
+                            }
+                            
                             new GUIGame(primaryStage, (GameVolleyball) playerGame);
                         } else {
                             activeVolleyballCalendar.advanceToNextWeek();
@@ -116,11 +158,6 @@ public class GUIMain {
             }
 
             // ── FOOTBALL branch (original logic) ─────────────────────────────
-            if (!tacticConfirmedForMatch) {
-                new GUITactic(primaryStage, playerTeam);
-                return;
-            }
-
             if (activeCalendar != null && playerTeam != null) {
                 int currentWeek = activeCalendar.getCurrentWeek() + 1;
                 java.util.Map<Integer, java.util.List<Classes.Game>> schedule = activeCalendar.getSchedule();
@@ -138,29 +175,37 @@ public class GUIMain {
                     }
                     
                     if (playerGame != null && !playerGame.isCompleted()) {
-                        Sport.GameRulesFootball rules = new Sport.GameRulesFootball();
-                        if (gui.GUITactic.getPlayersOnPitchQueue().size() != (rules.getFieldPlayerCount() - gui.GUITactic.redCardedPlayers.size())) {
+                        Classes.GameRules rules = "VOLLEYBALL".equals(activeSport) ? new Sport.Volleyball.GameRulesVolleyball() : new Sport.Football.GameRulesFootball();
+                        if (gui.GUISquadManager.getPlayersOnPitchQueue().size() != (rules.getFieldPlayerCount() - gui.GUISquadManager.redCardedPlayers.size())) {
                             tacticConfirmedForMatch = false;
-                            gui.GUIPopup.showMessage(primaryStage, "Eksik Kadro", "Kadro Tamamlanmadı!", "Maça çıkabilmek için İlk 11'in tam olması gerekmektedir! Lütfen kadronuzu kurun.");
+                            gui.GUIPopup.showMessage(primaryStage, "Incomplete Squad", "Squad Incomplete!", "Starting " + rules.getFieldPlayerCount() + " must be full to play the match! Please set your squad.");
                             new gui.GUITactic(primaryStage, playerTeam);
                             return;
                         }
                         
                         boolean hasInjuredStarter = false;
-                        for (Interface.IPlayer p : gui.GUITactic.getPlayersOnPitchQueue()) {
+                        for (Interface.IPlayer p : gui.GUISquadManager.getPlayersOnPitchQueue()) {
                             if (p.isInjured()) { hasInjuredStarter = true; break; }
                         }
                         if (hasInjuredStarter) {
                             tacticConfirmedForMatch = false;
-                            gui.GUIPopup.showMessage(primaryStage, "Sakat Oyuncu", "İlk 11'de Sakat Oyuncu Var!", "Maça çıkabilmek için sahada sakat oyuncu bulunmamalıdır. Lütfen sakat oyuncuyu değiştirin.");
+                            gui.GUIPopup.showMessage(primaryStage, "Injured Player", "Injured Player in Starting " + rules.getFieldPlayerCount() + "!", "There must be no injured players on the pitch to play the match. Please substitute the injured player.");
+                            new gui.GUITactic(primaryStage, playerTeam);
+                            return;
+                        }
+                        
+                        String validationMsg = gui.GUISquadManager.getFormationValidationMessage();
+                        if (validationMsg != null) {
+                            tacticConfirmedForMatch = false;
+                            gui.GUIPopup.showMessage(primaryStage, "Invalid Formation", "Formation Rule Violated!", validationMsg);
                             new gui.GUITactic(primaryStage, playerTeam);
                             return;
                         }
                         
                         final Classes.Game finalPlayerGame = playerGame;
-                        if (gui.GUITactic.getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
-                            gui.GUIPopup.showConfirmation(primaryStage, "Eksik Yedekler", "Yedek Kulübesi Tam Değil!", 
-                                "Yedek kulübesinde " + rules.getReservePlayerCount() + " oyuncu yok. Yine de maça çıkmak istiyor musunuz?", 
+                        if (gui.GUISquadManager.getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
+                            gui.GUIPopup.showConfirmation(primaryStage, "Incomplete Bench", "Bench is not full!", 
+                                "There are not " + rules.getReservePlayerCount() + " players on the bench. Do you still want to play the match?", 
                                 () -> new GUIGame(primaryStage, (GameFootball) finalPlayerGame),
                                 () -> { tacticConfirmedForMatch = false; new gui.GUITactic(primaryStage, playerTeam); }
                             );
@@ -186,10 +231,10 @@ public class GUIMain {
 
         // Panellerin Eklenmesi
         mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
-        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Ana Sayfa"));
+        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Home"));
         mainLayout.setCenter(createDashboard());
 
-        primaryStage.setTitle("Spor Menajerlik - Ana Ekran");
+        primaryStage.setTitle("Sports Manager - Dashboard");
         
         if (primaryStage.getScene() == null) {
             primaryStage.setScene(new Scene(mainLayout, 1280, 720));
@@ -204,7 +249,7 @@ public class GUIMain {
         VBox dashboard = new VBox(25);
         dashboard.setPadding(new Insets(30));
 
-        Label welcomeLabel = new Label("Yönetim Özeti");
+        Label welcomeLabel = new Label("Management Summary");
         welcomeLabel.setTextFill(Color.WHITE);
         welcomeLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 28));
 
@@ -221,7 +266,7 @@ public class GUIMain {
     }
 
     private VBox createNextMatchWidget() {
-        VBox widget = createBaseWidget("Sıradaki Maç", "#e43f5a");
+        VBox widget = createBaseWidget("Next Match", "#e43f5a");
         widget.setPrefWidth(725);
         
         HBox matchLayout = new HBox(60);
@@ -254,7 +299,7 @@ public class GUIMain {
 
                     VBox vsBox = new VBox(10);
                     vsBox.setAlignment(Pos.CENTER);
-                    Label weekLabel = new Label("Hafta " + week);
+                    Label weekLabel = new Label("Week " + week);
                     weekLabel.setTextFill(Color.web("#a5a5b0"));
                     weekLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
                     Label vsLabel = new Label("VS");
@@ -275,7 +320,7 @@ public class GUIMain {
                     return widget;
                 }
             } else if (week > cal.getSchedule().size()) {
-                Label contentLabel = new Label("Sezon Sona Erdi.");
+                Label contentLabel = new Label("Season Ended.");
                 contentLabel.setTextFill(Color.web("#e0e0e0"));
                 contentLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
                 matchLayout.getChildren().add(contentLabel);
@@ -284,7 +329,7 @@ public class GUIMain {
             }
         }
         
-        Label contentLabel = new Label("Maç bulunamadı.");
+        Label contentLabel = new Label("No match found.");
         contentLabel.setTextFill(Color.web("#e0e0e0"));
         contentLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
         matchLayout.getChildren().add(contentLabel);
@@ -293,7 +338,7 @@ public class GUIMain {
     }
 
     private VBox createTrainingPerformanceWidget() {
-        VBox widget = createBaseWidget("En İyi Gelişenler (Haftalık)", "#4CAF50");
+        VBox widget = createBaseWidget("Top Improvers (Weekly)", "#4CAF50");
         VBox list = new VBox(8);
         
         if (playerTeam != null && playerTeam.getPlayers() != null) {
@@ -317,7 +362,7 @@ public class GUIMain {
                 if (count >= 5) break;
             }
             if (count == 0) {
-                Label l = new Label("Henüz antrenman verisi yok veya\ngelişen oyuncu bulunmuyor.");
+                Label l = new Label("No training data yet or\nno players improved.");
                 l.setTextFill(Color.web("#a5a5b0"));
                 l.setFont(Font.font("Segoe UI", 14));
                 list.getChildren().add(l);
@@ -328,14 +373,14 @@ public class GUIMain {
     }
 
     private VBox createInjuryWidget() {
-        VBox widget = createBaseWidget("Sakat Oyuncular", "#f0a500");
+        VBox widget = createBaseWidget("Injured Players", "#f0a500");
         VBox list = new VBox(8);
         
         if (playerTeam != null && playerTeam.getPlayers() != null) {
             int count = 0;
             for (Interface.IPlayer p : playerTeam.getPlayers()) {
                 if (p.isInjured()) {
-                    Label l = new Label("🚑 " + p.getFullName() + " (" + p.getInjuryDuration() + " Hafta)");
+                    Label l = new Label("🚑 " + p.getFullName() + " (" + p.getInjuryDuration() + " Weeks)");
                     l.setTextFill(Color.web("#e43f5a"));
                     l.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
                     list.getChildren().add(l);
@@ -343,7 +388,7 @@ public class GUIMain {
                 }
             }
             if (count == 0) {
-                Label l = new Label("Takımda sakat oyuncu bulunmuyor.");
+                Label l = new Label("No injured players in the team.");
                 l.setTextFill(Color.web("#4CAF50"));
                 l.setFont(Font.font("Segoe UI", 14));
                 list.getChildren().add(l);

@@ -39,7 +39,7 @@ public class GUIPopup {
         content.setWrapText(true);
         content.setAlignment(Pos.CENTER);
 
-        Button btnClose = createMenuButton("Tamam", "#4CAF50");
+        Button btnClose = createMenuButton("OK", "#4CAF50");
         btnClose.setOnAction(e -> popupStage.close());
 
         menuBox.getChildren().addAll(title, header, content, new Region(), btnClose);
@@ -68,8 +68,8 @@ public class GUIPopup {
         content.setWrapText(true);
         content.setAlignment(Pos.CENTER);
 
-        Button btnYes = createMenuButton("Evet", "#4CAF50");
-        Button btnNo = createMenuButton("Hayır", "#e43f5a");
+        Button btnYes = createMenuButton("Yes", "#4CAF50");
+        Button btnNo = createMenuButton("No", "#e43f5a");
 
         btnYes.setOnAction(e -> { popupStage.close(); if (onConfirm != null) onConfirm.run(); });
         btnNo.setOnAction(e -> { popupStage.close(); if (onCancel != null) onCancel.run(); });
@@ -113,7 +113,7 @@ public class GUIPopup {
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        Button btnCancel = createMenuButton("İptal", "#e43f5a");
+        Button btnCancel = createMenuButton("Cancel", "#e43f5a");
         btnCancel.setOnAction(e -> popupStage.close());
 
         menuBox.getChildren().addAll(title, header, scrollPane, new Region(), btnCancel);

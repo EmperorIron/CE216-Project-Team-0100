@@ -1,7 +1,7 @@
 package io; // Kendi paket yapına göre ayarla
 
-import Sport.LeagueFootball;
-import Sport.HumanManagerFootball;
+import Sport.Football.LeagueFootball;
+import Sport.Football.HumanManagerFootball;
 
 public class SaveData {
     // Sadece kaydedilmesini istediğin ana değişkenleri buraya koyuyorsun

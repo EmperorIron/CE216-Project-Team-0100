@@ -3,7 +3,7 @@ package gui;
 import Interface.IGame;
 import Interface.ITeam;
 import Classes.Game;
-import Sport.CalendarFootball;
+import Sport.Football.CalendarFootball;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.Insets;
@@ -40,7 +40,7 @@ public class GUIFixture {
 
         // Üst ve Sol Menüleri Ekle
         root.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
-        root.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Fikstür"));
+        root.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Fixture"));
 
         // İçerik Alanı
         VBox content = new VBox(20);
@@ -50,11 +50,11 @@ public class GUIFixture {
         VBox header = new VBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Label title = new Label("FİKSTÜR VE MAÇ TAKVİMİ");
+        Label title = new Label("FIXTURE AND MATCH CALENDAR");
         title.setTextFill(Color.WHITE);
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 28));
 
-        Label subtitle = new Label("Sezon Boyunca Oynanacak Tüm Karşılaşmalar");
+        Label subtitle = new Label("All matches to be played throughout the season");
         subtitle.setTextFill(Color.web("#a5a5b0"));
         subtitle.setFont(Font.font("Segoe UI", 14));
 
@@ -103,7 +103,7 @@ public class GUIFixture {
         content.getChildren().addAll(header, scrollPane);
         root.setCenter(content);
 
-        primaryStage.setTitle("Fikstür - " + playerTeam.getName());
+        primaryStage.setTitle("Fixture - " + playerTeam.getName());
         
         if (primaryStage.getScene() == null) {
             primaryStage.setScene(new Scene(root, 1280, 720));
@@ -152,7 +152,7 @@ public class GUIFixture {
         VBox weekContainer = new VBox(10);
         
         // Hafta Başlığı
-        Label weekLabel = new Label(weekNum + ". HAFTA");
+        Label weekLabel = new Label("WEEK " + weekNum);
         weekLabel.setTextFill(Color.web("#e43f5a"));
         weekLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
         weekLabel.setPadding(new Insets(0, 0, 5, 5));

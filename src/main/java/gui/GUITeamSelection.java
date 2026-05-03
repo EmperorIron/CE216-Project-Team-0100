@@ -31,7 +31,7 @@ public class GUITeamSelection {
         layout.setStyle("-fx-background-color: #1b1b2f;"); // Koyu tema
 
         // Başlık
-        Label title = new Label("YÖNETECEĞİNİZ TAKIMI SEÇİN");
+        Label title = new Label("SELECT THE TEAM YOU WILL MANAGE");
         title.setTextFill(Color.WHITE);
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 32));
 
@@ -54,7 +54,7 @@ public class GUITeamSelection {
         scrollPane.setPrefHeight(500);
 
         // Geri Dön Butonu
-        Button backBtn = new Button("Ana Menüye Dön");
+        Button backBtn = new Button("Back to Main Menu");
         backBtn.setStyle("-fx-background-color: #4e4e6a; -fx-text-fill: white; -fx-font-size: 14px;");
         backBtn.setOnAction(e -> {
             GUITitlescreen titleScreen = new GUITitlescreen();
@@ -89,9 +89,9 @@ public class GUITeamSelection {
 
      
         VBox stats = new VBox(5);
-        Label offLabel = new Label("Hücum: " + String.format("%.1f", team.getTotalOffensiveRating()));
+        Label offLabel = new Label("Offense: " + String.format("%.1f", team.getTotalOffensiveRating()));
         offLabel.setTextFill(Color.web("#4CAF50"));
-        Label defLabel = new Label("Savunma: " + String.format("%.1f", team.getTotalDefensiveRating()));
+        Label defLabel = new Label("Defense: " + String.format("%.1f", team.getTotalDefensiveRating()));
         defLabel.setTextFill(Color.web("#e43f5a"));
         stats.getChildren().addAll(offLabel, defLabel);
 
@@ -99,11 +99,11 @@ public class GUITeamSelection {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         // Seç Butonu
-        Button selectBtn = new Button("TAKIMI YÖNET");
+        Button selectBtn = new Button("MANAGE TEAM");
         selectBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
         
         selectBtn.setOnAction(e -> {
-            System.out.println(team.getName() + " seçildi. Oyun başlıyor...");
+            System.out.println(team.getName() + " selected. Game starting...");
             team.setManagerAI(false); 
             GUIMain.playerTeam = team; 
             new GUIMain(primaryStage); 

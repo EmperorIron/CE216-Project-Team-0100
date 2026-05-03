@@ -36,20 +36,20 @@ public class GUIMenu {
         menuBox.setMaxWidth(350);
         menuBox.setStyle("-fx-background-color: #162447; -fx-background-radius: 15; -fx-border-color: #e43f5a; -fx-border-width: 2; -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 20, 0, 0, 0);");
 
-        Label title = new Label("OYUN MENÜSÜ");
+        Label title = new Label("GAME MENU");
         title.setTextFill(Color.WHITE);
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
         VBox.setMargin(title, new Insets(0, 0, 20, 0));
 
         // Butonları oluştur (Tasarım temasına uygun renklerle)
-        Button btnSave = createMenuButton("Kaydet (Save Game)", "#4CAF50");
-        Button btnQuickSave = createMenuButton("Hızlı Kaydet (Quick Save)", "#66BB6A");
-        Button btnLoad = createMenuButton("Oyunu Yükle (Load Game)", "#f0a500");
-        Button btnQuickLoad = createMenuButton("Hızlı Yükle (Quick Load)", "#FFCA28");
-        Button btnGuide = createMenuButton("Rehber (Guide)", "#4e4e6a");
-        Button btnMainMenu = createMenuButton("Ana Menüye Dön", "#e43f5a");
-        Button btnExit = createMenuButton("Masaüstüne Çık", "#d82bbc");
-        Button btnClose = createMenuButton("Oyuna Dön", "#1f4068");
+        Button btnSave = createMenuButton("Save Game", "#4CAF50");
+        Button btnQuickSave = createMenuButton("Quick Save", "#66BB6A");
+        Button btnLoad = createMenuButton("Load Game", "#f0a500");
+        Button btnQuickLoad = createMenuButton("Quick Load", "#FFCA28");
+        Button btnGuide = createMenuButton("Guide", "#4e4e6a");
+        Button btnMainMenu = createMenuButton("Back to Main Menu", "#e43f5a");
+        Button btnExit = createMenuButton("Exit to Desktop", "#d82bbc");
+        Button btnClose = createMenuButton("Back to Game", "#1f4068");
 
         // --- BUTON İŞLEVLERİ ---
         btnClose.setOnAction(e -> popupStage.close());
@@ -74,10 +74,10 @@ public class GUIMenu {
 
         btnQuickSave.setOnAction(e -> {
             SaveGame saveData = new SaveGame("autosave", GUIMain.activeLeague, GUIMain.activeCalendar, GUIMain.playerTeam,
-                    gui.GUITactic.getPitchPlayers(), gui.GUITactic.getPlayersOnPitchQueue(), gui.GUITactic.getReservePlayersQueue(),
-                    gui.GUITactic.getCurrentTacticStyle());
+                    gui.GUISquadManager.getPitchPlayers(), gui.GUISquadManager.getPlayersOnPitchQueue(), gui.GUISquadManager.getReservePlayersQueue(),
+                    gui.GUISquadManager.getCurrentTacticStyle());
             SaveManager.saveGame(saveData, "autosave");
-            System.out.println("Oyun hızlı kaydedildi: autosave.json");
+            System.out.println("Game quick saved: autosave.json");
             // İsteğe bağlı: Ekranda küçük bir onay mesajı gösterilebilir.
         });
 
@@ -90,7 +90,7 @@ public class GUIMenu {
                     GUIMain.loadSavedGame(loadedGame, ownerStage);
                 }
             } else {
-                GUIPopup.showMessage(ownerStage, "Uyarı", "Hızlı Kayıt Bulunamadı", "Henüz bir hızlı kayıt (autosave) oluşturulmamış.");
+                GUIPopup.showMessage(ownerStage, "Warning", "Quick Save Not Found", "No quick save (autosave) has been created yet.");
             }
         });
 

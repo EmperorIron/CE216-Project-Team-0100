@@ -2,11 +2,16 @@ package gui;
 
 import Classes.TrainingCategory;
 import Interface.ITeam;
-import Sport.TrainingDefensiveFootball;
-import Sport.TrainingOffensiveFootball;
-import Sport.TrainingPhysicalFootball;
-import Sport.TrainingMentalFootball; // Eğer bu sınıfınız varsa, yoksa aşağıdan silin
-import Sport.GameRulesFootball;
+import Sport.Football.TrainingDefensiveFootball;
+import Sport.Football.TrainingOffensiveFootball;
+import Sport.Football.TrainingPhysicalFootball;
+import Sport.Football.TrainingMentalFootball;
+import Sport.Volleyball.TrainingDefensiveVolleyball;
+import Sport.Volleyball.TrainingOffensiveVolleyball;
+import Sport.Volleyball.TrainingPhysicalVolleyball;
+import Sport.Volleyball.TrainingMentalVolleyball;
+import Sport.Football.GameRulesFootball;
+import Sport.Volleyball.GameRulesVolleyball;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.Insets;
@@ -35,20 +40,22 @@ public class GUITraining {
     
     public static Map<String, TrainingCategory> weeklySchedule = new HashMap<>();
 
-    private String activeCoachSortColumn = "AD";
+    private String activeCoachSortColumn = "NAME";
     private boolean coachSortAscending = true;
     private VBox coachListContainer;
 
     private VBox reportTableContainer;
+    private List<String> coachTraitNames = new ArrayList<>();
+    private List<String> playerTraitNames = new ArrayList<>();
     public static Map<IPlayer, Double> oldOvrMap = new HashMap<>();
     public static Map<IPlayer, Map<String, Integer>> oldTraitLevelMap = new HashMap<>();
     public static int xpOffensive = 0, xpDefensive = 0, xpPhysical = 0, xpMental = 0;
     public static String lastTrainedCategory = "-";
 
     static {
-        GameRulesFootball rules = new GameRulesFootball();
+        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
         String scheduleStr = rules.getTrainingormatch();
-        String[] days = {"Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"};
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
         
         for (int i = 0; i < 7; i++) {
             if (scheduleStr.charAt(i) == '0') {
@@ -61,6 +68,26 @@ public class GUITraining {
     public GUITraining(Stage primaryStage, ITeam playerTeam) {
         this.primaryStage = primaryStage;
         this.playerTeam = playerTeam;
+        
+        if (playerTeam != null && playerTeam.getCoaches() != null && !playerTeam.getCoaches().isEmpty()) {
+            coachTraitNames.addAll(playerTeam.getCoaches().get(0).getTraits().keySet());
+        } else {
+            if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
+                coachTraitNames.addAll(java.util.Arrays.asList("Serve Coaching", "Attack Coaching", "Defense Coaching", "Player Management", "Motivation"));
+            } else {
+                coachTraitNames.addAll(java.util.Arrays.asList("Offensive Coaching", "Defensive Coaching", "Player Management", "Motivation", "Youth Development"));
+            }
+        }
+
+        if (playerTeam != null && playerTeam.getPlayers() != null && !playerTeam.getPlayers().isEmpty()) {
+            playerTraitNames.addAll(playerTeam.getPlayers().get(0).getTraits().keySet());
+        } else {
+            if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
+                playerTraitNames.addAll(java.util.Arrays.asList("Serving", "Spiking", "Setting", "Blocking", "Digging", "Speed", "Physical", "Mental"));
+            } else {
+                playerTraitNames.addAll(java.util.Arrays.asList("Defense", "Passing", "Shooting", "Speed", "Physical", "Mental", "Goalkeeping"));
+            }
+        }
 
         show();
     }
@@ -70,7 +97,7 @@ public class GUITraining {
         mainLayout.setStyle("-fx-background-color: #1b1b2f;");
 
         mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
-        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Antrenman"));
+        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Training"));
 
         HBox content = new HBox(15);
         content.setPadding(new Insets(20));
@@ -80,11 +107,11 @@ public class GUITraining {
         leftPanel.setAlignment(Pos.TOP_CENTER);
         leftPanel.setPrefWidth(300);
 
-        Label title = new Label("ANTRENMANLAR");
+        Label title = new Label("TRAINING SESSIONS");
         title.setTextFill(Color.WHITE);
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
         
-        Label subTitle = new Label("Haftalık odak türünü seçin.");
+        Label subTitle = new Label("Select the weekly focus type.");
         subTitle.setTextFill(Color.web("#a5a5b0"));
         subTitle.setFont(Font.font("Segoe UI", 16));
 
@@ -99,7 +126,7 @@ public class GUITraining {
         content.getChildren().addAll(leftPanel, middlePanel, rightPanel);
         mainLayout.setCenter(content);
 
-        primaryStage.setTitle("Spor Menajerlik - Antrenman");
+        primaryStage.setTitle("Sports Manager - Training");
         
         if (primaryStage.getScene() == null) {
             primaryStage.setScene(new Scene(mainLayout, 1280, 720));
@@ -113,8 +140,8 @@ public class GUITraining {
         container.setAlignment(Pos.CENTER);
         container.setMaxWidth(300);
 
-        String[] days = {"Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"};
-        GameRulesFootball rules = new GameRulesFootball();
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
         String scheduleStr = rules.getTrainingormatch();
 
         for (int i = 0; i < days.length; i++) {
@@ -133,7 +160,7 @@ public class GUITraining {
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
             if (scheduleStr.charAt(i) == '1') {
-                Label matchLabel = new Label("MAÇ GÜNÜ");
+                Label matchLabel = new Label("MATCH DAY");
                 matchLabel.setTextFill(Color.web("#e43f5a"));
                 matchLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
                 dayRow.getChildren().addAll(dayLabel, spacer, matchLabel);
@@ -179,7 +206,7 @@ public class GUITraining {
         panel.setPadding(new Insets(15));
         panel.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
 
-        Label title = new Label("ANTRENÖRLER VE ÖZELLİKLERİ");
+        Label title = new Label("COACHES AND TRAITS");
         title.setTextFill(Color.web("#f0a500"));
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
 
@@ -205,21 +232,17 @@ public class GUITraining {
 
         List<ICoach> coaches = new ArrayList<>(playerTeam.getCoaches());
 
-        ICoach bestOff = getBestCoach("Offensive Coaching");
-        ICoach bestDef = getBestCoach("Defensive Coaching");
-        ICoach bestPhy = getBestCoach("Motivation");
-        ICoach bestMen = getBestCoach("Player Management");
+        Map<String, ICoach> bestCoaches = new HashMap<>();
+        for (String trait : coachTraitNames) {
+            bestCoaches.put(trait, getBestCoach(trait));
+        }
 
         Comparator<ICoach> comparator = (c1, c2) -> {
             int res = 0;
-            switch (activeCoachSortColumn) {
-                case "AD": res = c1.getName().compareToIgnoreCase(c2.getName()); break;
-                case "HÜC": res = Integer.compare(getTraitVal(c1, "Offensive Coaching"), getTraitVal(c2, "Offensive Coaching")); break;
-                case "SAV": res = Integer.compare(getTraitVal(c1, "Defensive Coaching"), getTraitVal(c2, "Defensive Coaching")); break;
-                case "MOT": res = Integer.compare(getTraitVal(c1, "Motivation"), getTraitVal(c2, "Motivation")); break;
-                case "YÖN": res = Integer.compare(getTraitVal(c1, "Player Management"), getTraitVal(c2, "Player Management")); break;
-                case "ALTY": res = Integer.compare(getTraitVal(c1, "Youth Development"), getTraitVal(c2, "Youth Development")); break;
-                default: break;
+            if (activeCoachSortColumn.equals("NAME")) {
+                res = c1.getName().compareToIgnoreCase(c2.getName());
+            } else {
+                res = Integer.compare(getTraitVal(c1, activeCoachSortColumn), getTraitVal(c2, activeCoachSortColumn));
             }
             return coachSortAscending ? res : -res;
         };
@@ -228,11 +251,12 @@ public class GUITraining {
 
         for (ICoach c : coaches) {
             StringBuilder roleBuilder = new StringBuilder();
-            if (c == bestOff) roleBuilder.append("Hücum\n");
-            if (c == bestDef) roleBuilder.append("Savunma\n");
-            if (c == bestPhy) roleBuilder.append("Fiziksel\n");
-            if (c == bestMen) roleBuilder.append("Zihinsel\n");
-            
+            for (String trait : coachTraitNames) {
+                if (c == bestCoaches.get(trait)) {
+                    roleBuilder.append(getShortTraitName(trait)).append("\n");
+                }
+            }
+
             String role = roleBuilder.toString().trim();
             if (role.isEmpty()) role = "-";
 
@@ -259,19 +283,28 @@ public class GUITraining {
         return best;
     }
 
+    private String getShortTraitName(String traitName) {
+        if (traitName == null) return "";
+        if (traitName.length() <= 4) return traitName.toUpperCase();
+        String[] parts = traitName.split(" ");
+        if (parts.length > 1) {
+            return (parts[0].substring(0, Math.min(3, parts[0].length())) + " " + parts[1].substring(0, Math.min(3, parts[1].length()))).toUpperCase();
+        }
+        return traitName.substring(0, 4).toUpperCase();
+    }
+
     private HBox createCoachHeaderRow() {
         HBox row = new HBox(5);
         row.setPadding(new Insets(10, 5, 10, 5));
         row.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 5;");
         row.setAlignment(Pos.CENTER_LEFT);
 
-        row.getChildren().add(createCoachHeaderBtn("Ad Soyad", "AD", 95));
-        row.getChildren().add(createCoachHeaderBtn("Görev", "AD", 60));
-        row.getChildren().add(createCoachHeaderBtn("HÜC", "HÜC", 35));
-        row.getChildren().add(createCoachHeaderBtn("SAV", "SAV", 35));
-        row.getChildren().add(createCoachHeaderBtn("MOT", "MOT", 35));
-        row.getChildren().add(createCoachHeaderBtn("YÖN", "YÖN", 35));
-        row.getChildren().add(createCoachHeaderBtn("ALTY", "ALTY", 35));
+        row.getChildren().add(createCoachHeaderBtn("Full Name", "NAME", 95));
+        row.getChildren().add(createCoachHeaderBtn("Role", "NAME", 60));
+        
+        for (String trait : coachTraitNames) {
+            row.getChildren().add(createCoachHeaderBtn(getShortTraitName(trait), trait, 40));
+        }
 
         return row;
     }
@@ -292,7 +325,7 @@ public class GUITraining {
                 coachSortAscending = !coachSortAscending;
             } else {
                 activeCoachSortColumn = sortKey;
-                coachSortAscending = sortKey.equals("AD"); 
+                coachSortAscending = sortKey.equals("NAME"); 
             }
             refreshCoachList();
         });
@@ -321,11 +354,12 @@ public class GUITraining {
         roleLbl.setWrapText(true);
 
         row.getChildren().addAll(nameLbl, roleLbl);
-        row.getChildren().add(createCoachStatBox(getTraitVal(c, "Offensive Coaching")));
-        row.getChildren().add(createCoachStatBox(getTraitVal(c, "Defensive Coaching")));
-        row.getChildren().add(createCoachStatBox(getTraitVal(c, "Motivation")));
-        row.getChildren().add(createCoachStatBox(getTraitVal(c, "Player Management")));
-        row.getChildren().add(createCoachStatBox(getTraitVal(c, "Youth Development")));
+        
+        for (String trait : coachTraitNames) {
+            StackPane statBox = createCoachStatBox(getTraitVal(c, trait));
+            statBox.setPrefWidth(40);
+            row.getChildren().add(statBox);
+        }
 
         row.setOnMouseEntered(e -> row.setStyle("-fx-background-color: #213663; -fx-background-radius: 5;"));
         row.setOnMouseExited(e -> row.setStyle("-fx-background-color: #1a294c; -fx-border-color: #1f4068; -fx-border-width: 0 0 1 0;"));
@@ -375,7 +409,7 @@ public class GUITraining {
         panel.setPadding(new Insets(15));
         panel.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
 
-        Label title = new Label("OYUNCU GELİŞİM TABLOSU");
+        Label title = new Label("PLAYER DEVELOPMENT TABLE");
         title.setTextFill(Color.web("#f0a500"));
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
 
@@ -403,13 +437,12 @@ public class GUITraining {
         header.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 5;");
         header.setAlignment(Pos.CENTER_LEFT);
 
-        header.getChildren().add(createReportLabel("OYUNCU", 130, true));
+        header.getChildren().add(createReportLabel("PLAYER", 130, true));
         header.getChildren().add(createReportLabel("OVR", 90, true));
-        header.getChildren().add(createReportLabel("EĞİTİM", 80, true));
+        header.getChildren().add(createReportLabel("TRAINING", 80, true));
         
-        String[] traitLabels = {"PAS", "ŞUT", "SAV", "HIZ", "FİZ", "ZİH"};
-        for (String tLabel : traitLabels) {
-            header.getChildren().add(createReportLabel(tLabel, 145, true));
+        for (String tName : playerTraitNames) {
+            header.getChildren().add(createReportLabel(getShortTraitName(tName), 145, true));
         }
         
         reportTableContainer.getChildren().add(header);
@@ -439,8 +472,7 @@ public class GUITraining {
             lblCat.setTextFill(Color.web("#f0a500"));
             row.getChildren().add(lblCat);
 
-            String[] traits = {"Passing", "Shooting", "Defense", "Speed", "Physical", "Mental"};
-            for (String tName : traits) {
+            for (String tName : playerTraitNames) {
                 Trait t = p.getTrait(tName);
                 int level = t != null ? t.getCurrentLevel() : 0;
                 int oldLevel = oldTraitLevelMap.containsKey(p) ? oldTraitLevelMap.get(p).getOrDefault(tName, level) : level;
@@ -450,10 +482,14 @@ public class GUITraining {
                 int maxExp = t != null ? (int) t.getExpToLevelUp() : 0;
                 
                 int xpGainedForThisTrait = 0;
-                if (tName.equals("Passing") || tName.equals("Shooting")) xpGainedForThisTrait = xpOffensive;
-                if (tName.equals("Defense")) xpGainedForThisTrait = xpDefensive;
-                if (tName.equals("Speed") || tName.equals("Physical")) xpGainedForThisTrait = xpPhysical;
-                if (tName.equals("Mental")) xpGainedForThisTrait = xpMental;
+                if (t != null && t.getCategory() != null) {
+                    switch (t.getCategory()) {
+                        case OFFENSE: xpGainedForThisTrait = xpOffensive; break;
+                        case DEFENSE: xpGainedForThisTrait = xpDefensive; break;
+                        case PHYSICAL: xpGainedForThisTrait = xpPhysical; break;
+                        case MENTAL: xpGainedForThisTrait = xpMental; break;
+                    }
+                }
 
                 String levelStr = String.valueOf(level);
                 if (levelDiff > 0) {
@@ -495,7 +531,7 @@ public class GUITraining {
     public static void applyWeeklyTrainingStatically(ITeam team) {
         if (team == null) return;
 
-        System.out.println("--- HAFTALIK ANTRENMAN BAŞLADI ---");
+        System.out.println("--- WEEKLY TRAINING STARTED ---");
 
         oldOvrMap.clear();
         oldTraitLevelMap.clear();
@@ -503,17 +539,16 @@ public class GUITraining {
             oldOvrMap.put(p, p.calculateOverallRating());
             
             Map<String, Integer> tMap = new HashMap<>();
-            String[] traitsToTrack = {"Passing", "Shooting", "Defense", "Speed", "Physical", "Mental"};
-            for (String tName : traitsToTrack) {
+            for (String tName : p.getTraits().keySet()) {
                 Trait t = p.getTrait(tName);
                 tMap.put(tName, t != null ? t.getCurrentLevel() : 0);
             }
             oldTraitLevelMap.put(p, tMap);
         }
 
-        GameRulesFootball rules = new GameRulesFootball();
+        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
         String scheduleStr = rules.getTrainingormatch();
-        String[] days = {"Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"};
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
         xpOffensive = 0;
         xpDefensive = 0;
@@ -529,35 +564,42 @@ public class GUITraining {
                 try {
                     switch (category) {
                         case OFFENSIVE:
-                            new TrainingOffensiveFootball().apply(team);
-                            xpOffensive += getExpectedXPStatically(team, "Offensive Coaching");
+                            if ("VOLLEYBALL".equals(GUIMain.activeSport)) new TrainingOffensiveVolleyball().apply(team);
+                            else new TrainingOffensiveFootball().apply(team);
+                            String offTrait = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Attack Coaching" : "Offensive Coaching";
+                            xpOffensive += getExpectedXPStatically(team, offTrait);
                             break;
                         case DEFENSIVE:
-                            new TrainingDefensiveFootball().apply(team);
-                            xpDefensive += getExpectedXPStatically(team, "Defensive Coaching");
+                            if ("VOLLEYBALL".equals(GUIMain.activeSport)) new TrainingDefensiveVolleyball().apply(team);
+                            else new TrainingDefensiveFootball().apply(team);
+                            String defTrait = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Defense Coaching" : "Defensive Coaching";
+                            xpDefensive += getExpectedXPStatically(team, defTrait);
                             break;
                         case PHYSICAL:
-                            new TrainingPhysicalFootball().apply(team);
-                            xpPhysical += getExpectedXPStatically(team, "Motivation");
+                            if ("VOLLEYBALL".equals(GUIMain.activeSport)) new TrainingPhysicalVolleyball().apply(team);
+                            else new TrainingPhysicalFootball().apply(team);
+                            String phyTrait = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Motivation" : "Motivation";
+                            xpPhysical += getExpectedXPStatically(team, phyTrait);
                             break;
                         case MENTAL:
-                            new TrainingMentalFootball().apply(team);
+                            if ("VOLLEYBALL".equals(GUIMain.activeSport)) new TrainingMentalVolleyball().apply(team);
+                            else new TrainingMentalFootball().apply(team);
                             xpMental += getExpectedXPStatically(team, "Player Management");
                             break;
                     }
                 } catch (Exception ex) {
-                    System.out.println("HATA: " + ex.getMessage());
+                    System.out.println("ERROR: " + ex.getMessage());
                 }
             }
         }
 
-        System.out.println("--- ANTRENMAN HAFTASI BİTTİ. OYUNCU GELİŞİMLERİ KAYDEDİLDİ. ---");
+        System.out.println("--- TRAINING WEEK ENDED. PLAYER DEVELOPMENTS SAVED. ---");
 
         StringBuilder cats = new StringBuilder();
-        if (xpOffensive > 0) cats.append("HÜC ");
-        if (xpDefensive > 0) cats.append("SAV ");
-        if (xpPhysical > 0) cats.append("FİZ ");
-        if (xpMental > 0) cats.append("ZİH ");
+        if (xpOffensive > 0) cats.append("OFF ");
+        if (xpDefensive > 0) cats.append("DEF ");
+        if (xpPhysical > 0) cats.append("PHY ");
+        if (xpMental > 0) cats.append("MEN ");
         lastTrainedCategory = cats.length() > 0 ? cats.toString().trim() : "-";
     }
 

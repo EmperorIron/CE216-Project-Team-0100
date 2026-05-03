@@ -2,8 +2,8 @@ package io;
 
 import Interface.IPlayer;
 import Interface.ITeam;
-import Sport.CalendarFootball;
-import Sport.LeagueFootball;
+import Sport.Football.CalendarFootball;
+import Sport.Football.LeagueFootball;
 
 import java.util.LinkedList;
 
