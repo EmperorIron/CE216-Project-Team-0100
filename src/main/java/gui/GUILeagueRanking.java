@@ -1,7 +1,7 @@
 package gui;
 
 import Interface.ITeam;
-import Sport.LeagueFootball;
+import Sport.Football.LeagueFootball;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.Insets;
@@ -42,7 +42,7 @@ public class GUILeagueRanking {
         root.setStyle("-fx-background-color: #1b1b2f;");
 
         root.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
-        root.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Lig Tablosu"));
+        root.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "League Table"));
 
         VBox content = new VBox(20);
         content.setPadding(new Insets(25, 40, 20, 40));
@@ -51,11 +51,11 @@ public class GUILeagueRanking {
         VBox header = new VBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Label title = new Label("LİG TABLOSU");
+        Label title = new Label("LEAGUE TABLE");
         title.setTextFill(Color.WHITE);
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 28));
 
-        Label subtitle = new Label(activeLeague != null ? activeLeague.getName() + " Puan Durumu" : "Puan Durumu");
+        Label subtitle = new Label(activeLeague != null ? activeLeague.getName() + " Standings" : "Standings");
         subtitle.setTextFill(Color.web("#a5a5b0"));
         subtitle.setFont(Font.font("Segoe UI", 14));
 
@@ -79,7 +79,7 @@ public class GUILeagueRanking {
         content.getChildren().addAll(header, tableLayout);
         root.setCenter(content);
 
-        primaryStage.setTitle("Lig Tablosu - " + playerTeam.getName());
+        primaryStage.setTitle("Sports Manager - League Table - " + playerTeam.getName());
         
         if (primaryStage.getScene() == null) {
             primaryStage.setScene(new Scene(root, 1280, 720));
@@ -99,15 +99,15 @@ public class GUILeagueRanking {
         Comparator<ITeam> comparator = (t1, t2) -> {
             int result = 0;
             switch (activeSortColumn) {
-                case "TAKIM": result = t1.getName().compareToIgnoreCase(t2.getName()); break;
-                case "O": result = Integer.compare(t1.getWins() + t1.getDraws() + t1.getLosses(), t2.getWins() + t2.getDraws() + t2.getLosses()); break;
-                case "G": result = Integer.compare(t1.getWins(), t2.getWins()); break;
-                case "B": result = Integer.compare(t1.getDraws(), t2.getDraws()); break;
-                case "M": result = Integer.compare(t1.getLosses(), t2.getLosses()); break;
-                case "AG": result = Integer.compare(t1.getGoalsScored(), t2.getGoalsScored()); break;
-                case "YG": result = Integer.compare(t1.getGoalsConceded(), t2.getGoalsConceded()); break;
-                case "AV": result = Integer.compare(t1.getGoalDifference(), t2.getGoalDifference()); break;
-                case "P":
+                case "TEAM": result = t1.getName().compareToIgnoreCase(t2.getName()); break;
+                case "P": result = Integer.compare(t1.getWins() + t1.getDraws() + t1.getLosses(), t2.getWins() + t2.getDraws() + t2.getLosses()); break;
+                case "W": result = Integer.compare(t1.getWins(), t2.getWins()); break;
+                case "D": result = Integer.compare(t1.getDraws(), t2.getDraws()); break;
+                case "L": result = Integer.compare(t1.getLosses(), t2.getLosses()); break;
+                case "GF": result = Integer.compare(t1.getGoalsScored(), t2.getGoalsScored()); break;
+                case "GA": result = Integer.compare(t1.getGoalsConceded(), t2.getGoalsConceded()); break;
+                case "GD": result = Integer.compare(t1.getGoalDifference(), t2.getGoalDifference()); break;
+                case "PTS":
                 default:
                     result = Integer.compare(t1.getPoints(), t2.getPoints());
                     if (result == 0) result = Integer.compare(t1.getGoalDifference(), t2.getGoalDifference());
@@ -131,22 +131,22 @@ public class GUILeagueRanking {
         row.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 5;");
         row.setAlignment(Pos.CENTER_LEFT);
 
-        Label posLbl = new Label("SIRA");
+        Label posLbl = new Label("POS");
         posLbl.setPrefWidth(50);
         posLbl.setTextFill(Color.web("#a5a5b0"));
         posLbl.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
         posLbl.setAlignment(Pos.CENTER);
         row.getChildren().add(posLbl);
 
-        row.getChildren().add(createHeaderButton("TAKIM", "TAKIM", 250));
-        row.getChildren().add(createHeaderButton("O", "O", 50));
-        row.getChildren().add(createHeaderButton("G", "G", 50));
-        row.getChildren().add(createHeaderButton("B", "B", 50));
-        row.getChildren().add(createHeaderButton("M", "M", 50));
-        row.getChildren().add(createHeaderButton("AG", "AG", 50));
-        row.getChildren().add(createHeaderButton("YG", "YG", 50));
-        row.getChildren().add(createHeaderButton("AV", "AV", 50));
+        row.getChildren().add(createHeaderButton("TEAM", "TEAM", 250));
         row.getChildren().add(createHeaderButton("P", "P", 50));
+        row.getChildren().add(createHeaderButton("W", "W", 50));
+        row.getChildren().add(createHeaderButton("D", "D", 50));
+        row.getChildren().add(createHeaderButton("L", "L", 50));
+        row.getChildren().add(createHeaderButton("GF", "GF", 50));
+        row.getChildren().add(createHeaderButton("GA", "GA", 50));
+        row.getChildren().add(createHeaderButton("GD", "GD", 50));
+        row.getChildren().add(createHeaderButton("PTS", "PTS", 50));
 
         return row;
     }
@@ -167,7 +167,7 @@ public class GUILeagueRanking {
                 sortAscending = !sortAscending;
             } else {
                 activeSortColumn = sortKey;
-                sortAscending = sortKey.equals("TAKIM"); 
+                sortAscending = sortKey.equals("TEAM"); 
             }
             refreshTable();
         });

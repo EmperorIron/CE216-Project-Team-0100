@@ -20,14 +20,14 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import Sport.GameFootball;
-import Sport.GameVolleyball;
-import Sport.GameRulesFootball;
-import Sport.GameRulesVolleyball;
-import Sport.TacticFootball;
-import Sport.TacticVolleyball;
-import Sport.AIAdaptableEasyFootball;
-import Sport.AIAdaptableEasyVolleyball;
+import Sport.Football.GameFootball;
+import Sport.Volleyball.GameVolleyball;
+import Sport.Football.GameRulesFootball;
+import Sport.Volleyball.GameRulesVolleyball;
+import Sport.Football.TacticFootball;
+import Sport.Volleyball.TacticVolleyball;
+import Sport.Football.AIAdaptableEasyFootball;
+import Sport.Volleyball.AIAdaptableEasyVolleyball;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -71,7 +71,7 @@ public class GUIGame {
 
     // ─── Futbol constructor ───────────────────────────────────────────────────
     public GUIGame(Stage primaryStage, GameFootball match) {
-        GUITactic.redCardedPlayers.clear();
+        GUISquadManager.redCardedPlayers.clear();
         this.primaryStage = primaryStage;
         this.match = match;
         this.homeTeam = match.getHomeTeam();
@@ -93,41 +93,9 @@ public class GUIGame {
 
     // ─── Setup: Football ──────────────────────────────────────────────────────
     private void setupGameLogic() {
-        GameRulesFootball rules = new GameRulesFootball();
+        Classes.GameRules rules = match.getRules();
         this.periodDuration = rules.getPeriodDuration();
         this.totalMatchMinutes = rules.getPeriodCount() * this.periodDuration;
-
-        if (homeTeam.equals(GUIMain.playerTeam) && !GUITactic.getPlayersOnPitchQueue().isEmpty()) {
-            match.setHomeManager(new Interface.IManager() {
-                @Override public ITeam getTeam() { return homeTeam; }
-                @Override public Interface.ITactic generateStartingTactic() {
-                    TacticFootball t = new TacticFootball("1-4-4-2");
-                    t.setStartingLineup(new ArrayList<>(GUITactic.getPlayersOnPitchQueue()));
-                    t.setSubstitutes(new ArrayList<>(GUITactic.getReservePlayersQueue()));
-                    t.applyTacticStyle(GUITactic.getCurrentTacticStyle());
-                    return t;
-                }
-                @Override public void handlePeriodBreak(Interface.IGame g, Interface.ITactic t, int p) {}
-            });
-        } else {
-            match.setHomeManager(new AIAdaptableEasyFootball(homeTeam));
-        }
-
-        if (awayTeam.equals(GUIMain.playerTeam) && !GUITactic.getPlayersOnPitchQueue().isEmpty()) {
-            match.setAwayManager(new Interface.IManager() {
-                @Override public ITeam getTeam() { return awayTeam; }
-                @Override public Interface.ITactic generateStartingTactic() {
-                    TacticFootball t = new TacticFootball("1-4-4-2");
-                    t.setStartingLineup(new ArrayList<>(GUITactic.getPlayersOnPitchQueue()));
-                    t.setSubstitutes(new ArrayList<>(GUITactic.getReservePlayersQueue()));
-                    t.applyTacticStyle(GUITactic.getCurrentTacticStyle());
-                    return t;
-                }
-                @Override public void handlePeriodBreak(Interface.IGame g, Interface.ITactic t, int p) {}
-            });
-        } else {
-            match.setAwayManager(new AIAdaptableEasyFootball(awayTeam));
-        }
 
         match.play();
         matchLogs = match.getGameLog();
@@ -135,47 +103,9 @@ public class GUIGame {
 
     // ─── Setup: Volleyball ────────────────────────────────────────────────────
     private void setupVolleyballLogic() {
-        GameRulesVolleyball rules = new GameRulesVolleyball();
+        Classes.GameRules rules = volleyballMatch.getRules();
         this.periodDuration = rules.getPeriodDuration();       // 30 rally ticks per set
         this.totalMatchMinutes = rules.getPeriodCount() * this.periodDuration; // 150
-
-        if (homeTeam.equals(GUIMain.playerTeam)) {
-            volleyballMatch.setHomeManager(new Interface.IManager() {
-                @Override public ITeam getTeam() { return homeTeam; }
-                @Override public Interface.ITactic generateStartingTactic() {
-                    TacticVolleyball t = new TacticVolleyball("5-1");
-                    List<IPlayer> squad = homeTeam.getPlayers().stream()
-                            .filter(p -> !p.isInjured())
-                            .sorted((a, b) -> Double.compare(b.calculateOverallRating(), a.calculateOverallRating()))
-                            .collect(java.util.stream.Collectors.toList());
-                    t.setStartingLineup(new ArrayList<>(squad.subList(0, Math.min(6, squad.size()))));
-                    if (squad.size() > 6) t.setSubstitutes(new ArrayList<>(squad.subList(6, squad.size())));
-                    return t;
-                }
-                @Override public void handlePeriodBreak(Interface.IGame g, Interface.ITactic t, int p) {}
-            });
-        } else {
-            volleyballMatch.setHomeManager(new AIAdaptableEasyVolleyball(homeTeam));
-        }
-
-        if (awayTeam.equals(GUIMain.playerTeam)) {
-            volleyballMatch.setAwayManager(new Interface.IManager() {
-                @Override public ITeam getTeam() { return awayTeam; }
-                @Override public Interface.ITactic generateStartingTactic() {
-                    TacticVolleyball t = new TacticVolleyball("5-1");
-                    List<IPlayer> squad = awayTeam.getPlayers().stream()
-                            .filter(p -> !p.isInjured())
-                            .sorted((a, b) -> Double.compare(b.calculateOverallRating(), a.calculateOverallRating()))
-                            .collect(java.util.stream.Collectors.toList());
-                    t.setStartingLineup(new ArrayList<>(squad.subList(0, Math.min(6, squad.size()))));
-                    if (squad.size() > 6) t.setSubstitutes(new ArrayList<>(squad.subList(6, squad.size())));
-                    return t;
-                }
-                @Override public void handlePeriodBreak(Interface.IGame g, Interface.ITactic t, int p) {}
-            });
-        } else {
-            volleyballMatch.setAwayManager(new AIAdaptableEasyVolleyball(awayTeam));
-        }
 
         volleyballMatch.play();
         matchLogs = volleyballMatch.getGameLog();
@@ -194,7 +124,7 @@ public class GUIGame {
         matchContent.getChildren().addAll(createLeftStatsPanel(), createRightEventPanel());
         mainLayout.setCenter(matchContent);
 
-        Button startBtn = new Button("Maça Başla ▶");
+        Button startBtn = new Button("Start Match ▶");
         startBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
         startBtn.setOnAction(e -> { mainLayout.setBottom(null); startMatchSimulation(); });
 
@@ -203,7 +133,7 @@ public class GUIGame {
         bottomBox.setPadding(new Insets(0, 0, 20, 0));
         mainLayout.setBottom(bottomBox);
 
-        primaryStage.setTitle("Canlı Maç - " + homeTeam.getName() + " vs " + awayTeam.getName());
+        primaryStage.setTitle("Live Match - " + homeTeam.getName() + " vs " + awayTeam.getName());
         if (primaryStage.getScene() == null) primaryStage.setScene(new Scene(mainLayout, 1280, 720));
         else primaryStage.getScene().setRoot(mainLayout);
     }
@@ -229,7 +159,7 @@ public class GUIGame {
         minuteLabel.setTextFill(Color.web("#f0a500"));
         minuteLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
 
-        Label statsTitle = new Label("MAÇ İSTATİSTİKLERİ");
+        Label statsTitle = new Label("MATCH STATISTICS");
         statsTitle.setTextFill(Color.WHITE);
         statsTitle.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
 
@@ -240,18 +170,18 @@ public class GUIGame {
         VBox statsList = new VBox(15);
         if (isVolleyball) {
             statsList.getChildren().addAll(
-                createStatRow("Kazanılan Set", homeShots, awayShots),
-                createStatRow("Toplam Rally", homeXG, awayXG)
+                createStatRow("Sets Won", homeShots, awayShots),
+                createStatRow("Total Rallies", homeXG, awayXG)
             );
         } else {
             statsList.getChildren().addAll(
-                createStatRow("Topla Oynama", homePossession, awayPossession),
-                createStatRow("Toplam Şut", homeShots, awayShots),
-                createStatRow("Gol Beklentisi (xG)", homeXG, awayXG)
+                createStatRow("Possession", homePossession, awayPossession),
+                createStatRow("Total Shots", homeShots, awayShots),
+                createStatRow("Expected Goals (xG)", homeXG, awayXG)
             );
         }
 
-        Label speedLabel = new Label("Oyun Hızı (1x - 100x)");
+        Label speedLabel = new Label("Game Speed (1x - 100x)");
         speedLabel.setTextFill(Color.web("#a5a5b0"));
         speedLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
 
@@ -274,7 +204,7 @@ public class GUIGame {
         panel.setPadding(new Insets(20));
         panel.setStyle("-fx-background-color: #162447; -fx-background-radius: 15; -fx-border-color: #1f4068; -fx-border-width: 2;");
 
-        Label title = new Label("CANLI ANLATIM & OLAYLAR");
+        Label title = new Label("LIVE COMMENTARY & EVENTS");
         title.setTextFill(Color.WHITE);
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
 
@@ -369,13 +299,13 @@ public class GUIGame {
                         if (log.contains(GUIMain.playerTeam.getName()) && log.contains("Oyuncu: ")) {
                             String pName = log.substring(log.indexOf("Oyuncu: ") + 8).trim();
                             for (IPlayer p : GUIMain.playerTeam.getPlayers())
-                                if (p.getFullName().equals(pName)) { GUITactic.yellowCardedPlayers.add(p); break; }
+                                if (p.getFullName().equals(pName)) { GUISquadManager.yellowCardedPlayers.add(p); break; }
                         }
                     } else if (type.equals("RED")) {
                         if (log.contains(GUIMain.playerTeam.getName()) && log.contains("Oyundan Atılan: ")) {
                             String pName = log.substring(log.indexOf("Oyundan Atılan: ") + 16).trim();
                             for (IPlayer p : GUIMain.playerTeam.getPlayers())
-                                if (p.getFullName().equals(pName)) { GUITactic.applyRedCard(p); break; }
+                                if (p.getFullName().equals(pName)) { GUISquadManager.applyRedCard(p); break; }
                         }
                     }
                     syncSubAndInjury(log);
@@ -392,7 +322,7 @@ public class GUIGame {
 
             // Devre arası
             if (minute % periodDuration == 0 && minute < totalMatchMinutes) {
-                showBreakButton("Devre Arası! Taktik Ekranına Git ⚙");
+                showBreakButton("Half Time! Go to Tactics ⚙");
             }
 
             // Maç sonu
@@ -416,7 +346,7 @@ public class GUIGame {
             currentLogIndex++;
         }
 
-        minuteLabel.setText("SET 1 BAŞLIYOR");
+        minuteLabel.setText("SET 1 STARTING");
 
         matchTimeline = new Timeline(new KeyFrame(Duration.seconds(0.3), e -> {
             if (isMatchEnded || isSetBreak) return;  // set arası veya maç bitti ise işleme
@@ -430,13 +360,13 @@ public class GUIGame {
                     if (log.contains(homeTeam.getName())) homeScore++;
                     else awayScore++;
                     updateScore();
-                    homeShots.setText(String.valueOf(volleyballMatch.getHomeSetsWon()));
-                    awayShots.setText(String.valueOf(volleyballMatch.getAwaySetsWon()));
+                    homeShots.setText(String.valueOf(homeScore));
+                    awayShots.setText(String.valueOf(awayScore));
                 }
 
                 if (log.startsWith("=== SET")) {
                     try {
-                        String setStr = log.replace("=", "").replace("SET", "").replace("BAŞLIYOR", "").trim();
+                        String setStr = log.replace("=", "").replace("SET", "").replace("STARTING", "").trim();
                         currentSetNumber = Integer.parseInt(setStr);
                         minuteLabel.setText("SET " + currentSetNumber + " ⚡");
                     } catch (Exception ignored) {}
@@ -446,19 +376,16 @@ public class GUIGame {
                 currentLogIndex++;
                 processed++;
 
-                if (log.startsWith("--- SET ") && log.contains("BİTTİ")) {
+                if (log.startsWith("--- SET ") && log.contains("ENDED")) {
                     try {
-                        String numStr = log.substring(8, log.indexOf(" BİTTİ")).trim();
+                        String numStr = log.substring(8, log.indexOf(" ENDED")).trim();
                         currentSetNumber = Integer.parseInt(numStr);
-                        minuteLabel.setText("SET " + currentSetNumber + " BİTTİ");
+                        minuteLabel.setText("SET " + currentSetNumber + " ENDED");
                     } catch (Exception ignored) {}
 
-                    int homeSets = volleyballMatch.getHomeSetsWon();
-                    int awaySets = volleyballMatch.getAwaySetsWon();
-
-                    if (homeSets < 3 && awaySets < 3) {
+                    if (homeScore < 3 && awayScore < 3) {
                         isSetBreak = true;  // flag — sonraki tick'leri engelle
-                        showBreakButton("SET " + currentSetNumber + " BİTTİ  —  Set Arası Taktik ⚙");
+                        showBreakButton("SET " + currentSetNumber + " ENDED  —  Set Break Tactics ⚙");
                     }
                     break;
                 }
@@ -482,9 +409,9 @@ public class GUIGame {
         tacticBtn.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
         tacticBtn.setOnAction(evt -> {
             mainLayout.setBottom(null);
-            GUITactic.isMidMatch = true;
-            GUITactic.onResumeMatch = () -> {
-                GUITactic.isMidMatch = false;
+            GUISquadManager.isMidMatch = true;
+            GUISquadManager.onResumeMatch = () -> {
+                GUISquadManager.isMidMatch = false;
                 isSetBreak = false;  // set arası bitti, simülasyon devam edebilir
 
                 // Oyuncunun seçtiği kadroyu/taktiği maça yansıt
@@ -492,22 +419,24 @@ public class GUIGame {
                     Interface.ITactic playerTactic = homeTeam.equals(GUIMain.playerTeam)
                             ? volleyballMatch.getHomeTactic()
                             : volleyballMatch.getAwayTactic();
-                    playerTactic.setStartingLineup(new ArrayList<>(GUITactic.getPlayersOnPitchQueue()));
-                    playerTactic.setSubstitutes(new ArrayList<>(GUITactic.getReservePlayersQueue()));
-                    if (playerTactic instanceof TacticVolleyball tv)
-                        tv.applyTacticStyle(GUITactic.getCurrentTacticStyle());
+                    if (homeTeam.equals(GUIMain.playerTeam) && volleyballMatch.getHomeManager() instanceof Classes.HumanManager hm) {
+                        hm.applyChangesFromGUI(playerTactic);
+                    } else if (awayTeam.equals(GUIMain.playerTeam) && volleyballMatch.getAwayManager() instanceof Classes.HumanManager hm) {
+                        hm.applyChangesFromGUI(playerTactic);
+                    }
                 } else {
                     Interface.ITactic playerTactic = homeTeam.equals(GUIMain.playerTeam)
                             ? match.getHomeTactic()
                             : match.getAwayTactic();
-                    playerTactic.setStartingLineup(new ArrayList<>(GUITactic.getPlayersOnPitchQueue()));
-                    playerTactic.setSubstitutes(new ArrayList<>(GUITactic.getReservePlayersQueue()));
-                    if (playerTactic instanceof TacticFootball tf)
-                        tf.applyTacticStyle(GUITactic.getCurrentTacticStyle());
+                    if (homeTeam.equals(GUIMain.playerTeam) && match.getHomeManager() instanceof Classes.HumanManager hm) {
+                        hm.applyChangesFromGUI(playerTactic);
+                    } else if (awayTeam.equals(GUIMain.playerTeam) && match.getAwayManager() instanceof Classes.HumanManager hm) {
+                        hm.applyChangesFromGUI(playerTactic);
+                    }
                 }
 
                 primaryStage.getScene().setRoot(mainLayout);
-                primaryStage.setTitle("Canlı Maç - " + homeTeam.getName() + " vs " + awayTeam.getName());
+                primaryStage.setTitle("Live Match - " + homeTeam.getName() + " vs " + awayTeam.getName());
                 matchTimeline.play();
             };
             new GUITactic(primaryStage, GUIMain.playerTeam);
@@ -526,10 +455,10 @@ public class GUIGame {
         while (currentLogIndex < matchLogs.size())
             addEvent("INFO", matchLogs.get(currentLogIndex++));
 
-        Button endBtn = new Button("Maçı Bitir ve Devam Et ▶");
+        Button endBtn = new Button("End Match and Continue ▶");
         endBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
         endBtn.setOnAction(evt -> {
-            if (!isVolleyball) GUITactic.postMatchCleanup();
+            if (!isVolleyball) GUISquadManager.postMatchCleanup();
             if ("VOLLEYBALL".equals(GUIMain.activeSport) && GUIMain.activeVolleyballCalendar != null)
                 GUIMain.activeVolleyballCalendar.advanceToNextWeek();
             else if (GUIMain.activeCalendar != null)
@@ -555,11 +484,11 @@ public class GUIGame {
                 if (p.getFullName().equals(outName)) pOut = p;
                 if (p.getFullName().equals(inName))  pIn  = p;
             }
-            if (pOut != null && pIn != null) GUITactic.performAutomaticSub(pOut, pIn);
+            if (pOut != null && pIn != null) GUISquadManager.performAutomaticSub(pOut, pIn);
         } else if (log.contains("SAKATLIK!") && log.contains("Sakatlanan: ") && log.contains(GUIMain.playerTeam.getName())) {
             String injName = log.substring(log.indexOf("Sakatlanan: ") + 12, log.indexOf(". Oyuncu tedavi")).trim();
             for (IPlayer p : GUIMain.playerTeam.getPlayers()) {
-                if (p.getFullName().equals(injName)) { GUITactic.performAutomaticInjuryRemoval(p); break; }
+                if (p.getFullName().equals(injName)) { GUISquadManager.performAutomaticInjuryRemoval(p); break; }
             }
         }
     }

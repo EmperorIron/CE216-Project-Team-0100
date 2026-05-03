@@ -1,8 +1,8 @@
 package gui;
 
 import Interface.ITeam;
-import Sport.CalendarFootball;
-import Sport.LeagueFootball;
+import Sport.Football.CalendarFootball;
+import Sport.Football.LeagueFootball;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.Insets;
@@ -33,7 +33,7 @@ public class GUIGuide {
         
         // Rehber içeriklerini hazırla
         for (int i = 1; i <= 10; i++) {
-            guideTexts.put("Guide " + i, "Text " + i + "\n\nBu alan " + i + ". rehber içeriği için ayrılmıştır. Buraya oyunla ilgili detaylı açıklamalarınızı ekleyebilirsiniz.");
+            guideTexts.put("Guide " + i, "Text " + i + "\n\nThis area is reserved for the " + i + "th guide content. You can add detailed explanations about the game here.");
         }
         
         show();
@@ -77,7 +77,7 @@ public class GUIGuide {
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
 
         // --- SAĞ TARAF: DEVASA TEXTBOX (Metin Alanı) ---
-        guideContentArea = new TextArea("Lütfen öğrenmek istediğiniz konuyu soldaki listeden seçin.");
+        guideContentArea = new TextArea("Please select a topic you want to learn from the list on the left.");
         guideContentArea.setEditable(false);
         guideContentArea.setWrapText(true);
         guideContentArea.setPrefHeight(600);
@@ -88,7 +88,7 @@ public class GUIGuide {
         contentBox.getChildren().addAll(scrollPane, guideContentArea);
         mainLayout.setCenter(contentBox);
 
-        primaryStage.setTitle("Spor Menajerlik - Rehber");
+        primaryStage.setTitle("Sports Manager - Guide");
         if (primaryStage.getScene() == null) {
             primaryStage.setScene(new Scene(mainLayout, 1280, 720));
         } else {
@@ -108,7 +108,7 @@ public class GUIGuide {
         teamLabel.setTextFill(Color.WHITE);
         teamLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
 
-        Label managerLabel = new Label("Oyun İçi Yardım ve Kurallar");
+        Label managerLabel = new Label("In-Game Help and Rules");
         managerLabel.setTextFill(Color.web("#a5a5b0"));
         managerLabel.setFont(Font.font("Segoe UI", 14));
         infoBox.getChildren().addAll(teamLabel, managerLabel);
@@ -116,7 +116,7 @@ public class GUIGuide {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button backBtn = new Button("Geri Dön ↩");
+        Button backBtn = new Button("Go Back ↩");
         backBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;");
         backBtn.setOnAction(e -> {
             if (onBack != null) onBack.run();

@@ -59,8 +59,16 @@ public abstract class Game implements IGame {
     @Override public int getAwaySubsLeft() { return awaySubsLeft; }
     @Override public void setAwaySubsLeft(int awaySubsLeft) { this.awaySubsLeft = awaySubsLeft; }
 
+    public GameRules getRules() {
+        return rules;
+    }
+
     public Interface.IManager getHomeManager() {
         return homeManager;
+    }
+
+    public Interface.IManager getAwayManager() {
+        return awayManager;
     }
 
     public void setHomeManager(Interface.IManager homeManager) {

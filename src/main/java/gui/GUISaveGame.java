@@ -141,10 +141,10 @@ public class GUISaveGame {
                 GUIMain.activeLeague, 
                 GUIMain.activeCalendar, 
                 GUIMain.playerTeam,
-                gui.GUITactic.getPitchPlayers(), 
-                gui.GUITactic.getPlayersOnPitchQueue(), 
-                gui.GUITactic.getReservePlayersQueue(),
-                gui.GUITactic.getCurrentTacticStyle());
+                gui.GUISquadManager.getPitchPlayers(), 
+                gui.GUISquadManager.getPlayersOnPitchQueue(), 
+                gui.GUISquadManager.getReservePlayersQueue(),
+                gui.GUISquadManager.getCurrentTacticStyle());
                 
             SaveManager.saveGame(saveData, fileName);
             

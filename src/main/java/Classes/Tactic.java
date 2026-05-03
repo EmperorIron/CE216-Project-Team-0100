@@ -16,7 +16,7 @@ public abstract class Tactic implements ITactic {
 
     private Formation formation;
 
-    private final Map<String, StyleEffect> styles;
+    private final Map<String, TacticStyle> styles;
 
     public Tactic(Formation formation) {
         this.formation = formation;
@@ -72,7 +72,7 @@ public abstract class Tactic implements ITactic {
     @Override
     public void addStyle(String styleName, float xGMultiplier, float xGAMultiplier) {
         if (styleName != null && !styleName.trim().isEmpty()) {
-            this.styles.put(styleName, new StyleEffect(xGMultiplier, xGAMultiplier));
+            this.styles.put(styleName, new TacticStyle(styleName, xGMultiplier, xGAMultiplier));
         }
     }
 
@@ -83,8 +83,8 @@ public abstract class Tactic implements ITactic {
     @Override
     public float getTotalXGMultiplier() {
         float totalMultiplier = formation.calculateFormationXgEffect(startingLineup);
-        for (StyleEffect effect : styles.values()) {
-            totalMultiplier *= effect.xGMultiplier;
+        for (TacticStyle effect : styles.values()) {
+            totalMultiplier *= effect.xgMult();
         }
         return totalMultiplier;
     }
@@ -92,19 +92,11 @@ public abstract class Tactic implements ITactic {
     @Override
     public float getTotalXGAMultiplier() {
         float totalMultiplier = formation.calculateFormationXgaEffect(startingLineup);
-        for (StyleEffect effect : styles.values()) {
-            totalMultiplier *= effect.xGAMultiplier;
+        for (TacticStyle effect : styles.values()) {
+            totalMultiplier *= effect.xgaMult();
         }
         return totalMultiplier;
     }
 
-
-    private static class StyleEffect {
-        float xGMultiplier;
-        float xGAMultiplier;
-        StyleEffect(float xGMultiplier, float xGAMultiplier) {
-            this.xGMultiplier = xGMultiplier;
-            this.xGAMultiplier = xGAMultiplier;
-        }
-    }
+    public record TacticStyle(String name, float xgMult, float xgaMult) { }
 }

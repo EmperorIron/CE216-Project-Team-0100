@@ -4,12 +4,16 @@ import Classes.Positions;
 import Classes.Trait;
 import Interface.IPlayer;
 import Interface.ITeam;
-import Sport.GameRulesFootball;
-import Sport.GameRulesVolleyball;
-import Sport.PositionsFootball;
-import Sport.PositionsVolleyball;
-import Sport.AIAdaptableEasyFootball;
-import Sport.AIAdaptableEasyVolleyball;
+import Sport.Football.GameRulesFootball;
+import Sport.Volleyball.GameRulesVolleyball;
+import Sport.Football.PositionsFootball;
+import Sport.Volleyball.PositionsVolleyball;
+import Sport.Football.AIAdaptableEasyFootball;
+import Sport.Volleyball.AIAdaptableEasyVolleyball;
+import Sport.Football.TacticFootball;
+import Sport.Volleyball.TacticVolleyball;
+import gui.GUISquadManager;
+import static gui.GUISquadManager.*;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.HPos;
@@ -40,19 +44,6 @@ public class GUITactic {
     private Stage primaryStage;
     private ITeam playerTeam;
 
-    // --- STATİK (KALICI) VERİLER ---
-    private static IPlayer[][] pitchPlayers = new IPlayer[Positions.GRID_WIDTH][Positions.GRID_HEIGHT];
-    private static LinkedList<IPlayer> playersOnPitchQueue = new LinkedList<>();
-    private static LinkedList<IPlayer> reservePlayersQueue = new LinkedList<>();
-    private static List<IPlayer> subbedOutPlayers = new ArrayList<>();
-    public static List<IPlayer> redCardedPlayers = new ArrayList<>();
-    public static List<IPlayer> yellowCardedPlayers = new ArrayList<>();
-    public static List<IPlayer> injuredInMatchPlayers = new ArrayList<>();
-    private static String currentTacticStyle = "Balanced (xG: 1.00, xGA: 1.00)";
-    private static ITeam currentTeam = null;
-    public static boolean isMidMatch = false;
-    public static Runnable onResumeMatch = null;
-
     // --- UI (GÖRSEL) BİLEŞENLER ---
     private StackPane[][] gridSlots = new StackPane[Positions.GRID_WIDTH][Positions.GRID_HEIGHT];
     private Region[][] highlightBoxes = new Region[Positions.GRID_WIDTH][Positions.GRID_HEIGHT];
@@ -76,35 +67,12 @@ public class GUITactic {
         this.primaryStage = primaryStage;
         this.playerTeam = playerTeam;
         
-        if (currentTeam != playerTeam) {
-            pitchPlayers = new IPlayer[Positions.GRID_WIDTH][Positions.GRID_HEIGHT];
-            playersOnPitchQueue.clear();
-            reservePlayersQueue.clear();
-            currentTeam = playerTeam;
-        }
+        GUISquadManager.initSquad(playerTeam);
 
-    if (!isMidMatch) {
-        subbedOutPlayers.clear();
-        redCardedPlayers.clear();
-        yellowCardedPlayers.clear();
-        injuredInMatchPlayers.clear();
-    } else {
-        // Sakat ve kırmızı kartlı oyunculara değişiklikle çıkarılmış oyuncu muamelesi yap
-        for (IPlayer p : playerTeam.getPlayers()) {
-            if (p.isInjured() || redCardedPlayers.contains(p)) {
-                if (!subbedOutPlayers.contains(p)) subbedOutPlayers.add(p);
-            }
-        }
-    }
+        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        int fieldPlayers = rules.getFieldPlayerCount();
+        int reservePlayers = rules.getReservePlayerCount();
 
-        GameRulesFootball footballRules = new GameRulesFootball();
-        GameRulesVolleyball volleyballRules = new GameRulesVolleyball();
-        int fieldPlayers = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? volleyballRules.getFieldPlayerCount()
-                : footballRules.getFieldPlayerCount();
-        int reservePlayers = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? volleyballRules.getReservePlayerCount()
-                : footballRules.getReservePlayerCount();
         this.maxFieldPlayers = fieldPlayers - redCardedPlayers.size();
         this.maxReservePlayers = reservePlayers;
         
@@ -114,153 +82,6 @@ public class GUITactic {
         show();
     }
 
-    public static IPlayer[][] getPitchPlayers() { return pitchPlayers; }
-    public static LinkedList<IPlayer> getPlayersOnPitchQueue() { return playersOnPitchQueue; }
-    public static LinkedList<IPlayer> getReservePlayersQueue() { return reservePlayersQueue; }
-    public static String getCurrentTacticStyle() { return currentTacticStyle; }
-
-    public static void applyRedCard(IPlayer player) {
-        if (!redCardedPlayers.contains(player)) {
-            redCardedPlayers.add(player);
-        }
-        if (!subbedOutPlayers.contains(player)) {
-            subbedOutPlayers.add(player); // Oyundan çıkarılmış muamelesi yap
-        }
-        playersOnPitchQueue.remove(player);
-        if (!reservePlayersQueue.contains(player)) {
-            reservePlayersQueue.add(player); // Maç kadrosundan (yedeklerden) silinmesini engelle
-        }
-        for (int i = 0; i < Positions.GRID_WIDTH; i++) {
-            for (int j = 0; j < Positions.GRID_HEIGHT; j++) {
-                if (pitchPlayers[i][j] != null && pitchPlayers[i][j].equals(player)) {
-                    pitchPlayers[i][j] = null;
-                }
-            }
-        }
-    }
-
-    public static void performAutomaticInjuryRemoval(IPlayer player) {
-        if (!injuredInMatchPlayers.contains(player)) {
-            injuredInMatchPlayers.add(player);
-        }
-        if (!subbedOutPlayers.contains(player)) {
-            subbedOutPlayers.add(player); // Oyundan çıkarılmış muamelesi yap
-        }
-        playersOnPitchQueue.remove(player);
-        if (!reservePlayersQueue.contains(player)) {
-            reservePlayersQueue.add(player); // Maç kadrosundan (yedeklerden) silinmesini engelle
-        }
-        for (int i = 0; i < Positions.GRID_WIDTH; i++) {
-            for (int j = 0; j < Positions.GRID_HEIGHT; j++) {
-                if (pitchPlayers[i][j] != null && pitchPlayers[i][j].equals(player)) {
-                    pitchPlayers[i][j] = null;
-                }
-            }
-        }
-    }
-
-    public static void performAutomaticSub(IPlayer pOut, IPlayer pIn) {
-        if (playersOnPitchQueue.contains(pOut) && reservePlayersQueue.contains(pIn)) {
-            // Çıkan ve Giren oyuncuların yerlerini değiştir
-            playersOnPitchQueue.remove(pOut);
-            reservePlayersQueue.remove(pIn);
-            
-            if (!subbedOutPlayers.contains(pOut)) {
-                subbedOutPlayers.add(pOut); // Çıkan yedek olarak işaretle ki bir daha giremesin
-            }
-            
-            playersOnPitchQueue.add(pIn);
-            reservePlayersQueue.add(pOut); // Çıkan oyuncuyu yedek listesine (kulübeye) geri koy
-            
-            // Matrix (Yeşil Saha) üzerinde yerlerini takas et
-            for (int i = 0; i < Positions.GRID_WIDTH; i++) {
-                for (int j = 0; j < Positions.GRID_HEIGHT; j++) {
-                    if (pitchPlayers[i][j] != null && pitchPlayers[i][j].equals(pOut)) {
-                        pitchPlayers[i][j] = pIn;
-                        if (pIn instanceof Classes.Player) {
-                            int posId = Classes.Positions.getPositionId(i, j);
-                            ((Classes.Player) pIn).setCurrentPositionId(posId);
-                            
-                            // Yeni oyuncu için xG ve xGA değerlerini hesapla
-                            Classes.Positions posFootball = "VOLLEYBALL".equals(GUIMain.activeSport) ? new PositionsVolleyball() : new PositionsFootball();
-                            float xgMult = posFootball.getXgMultipliers().getOrDefault(posId, 1.0f);
-                            float xgaMult = posFootball.getXgaMultipliers().getOrDefault(posId, 1.0f);
-                            double ovr = pIn.calculateOverallRating();
-                            pIn.setxG((float) ((ovr / 100.0) * xgMult * 2.0)); 
-                            pIn.setxGA((float) ((ovr / 100.0) * xgaMult * 2.0));
-                        }
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
-    public static void loadTacticData(IPlayer[][] loadedPitch, LinkedList<IPlayer> loadedOnPitch, LinkedList<IPlayer> loadedReserves, ITeam team, String tacticStyle) {
-        currentTeam = team;
-        if (team == null || team.getPlayers() == null) return;
-        
-        currentTacticStyle = (tacticStyle != null) ? tacticStyle : "Balanced (xG: 1.00, xGA: 1.00)";
-        
-        Map<String, IPlayer> playerMap = new HashMap<>();
-        for (IPlayer p : team.getPlayers()) {
-            playerMap.put(p.getFullName(), p);
-        }
-        
-        pitchPlayers = new IPlayer[Positions.GRID_WIDTH][Positions.GRID_HEIGHT];
-        if (loadedPitch != null) {
-            for (int i = 0; i < loadedPitch.length; i++) {
-                for (int j = 0; j < loadedPitch[i].length; j++) {
-                    if (loadedPitch[i][j] != null) {
-                        IPlayer realP = playerMap.get(loadedPitch[i][j].getFullName());
-                        pitchPlayers[i][j] = realP;
-                        if (realP instanceof Classes.Player) {
-                            int posId = Classes.Positions.getPositionId(i, j);
-                            ((Classes.Player) realP).setCurrentPositionId(posId);
-                            Classes.Positions posFootball = "VOLLEYBALL".equals(GUIMain.activeSport) ? new PositionsVolleyball() : new PositionsFootball();
-                            float xgMult = posFootball.getXgMultipliers().getOrDefault(posId, 1.0f);
-                            float xgaMult = posFootball.getXgaMultipliers().getOrDefault(posId, 1.0f);
-                            double ovr = realP.calculateOverallRating();
-                            realP.setxG((float) ((ovr / 100.0) * xgMult * 2.0)); 
-                            realP.setxGA((float) ((ovr / 100.0) * xgaMult * 2.0));
-                        }
-                    }
-                }
-            }
-        }
-        
-        playersOnPitchQueue = new LinkedList<>();
-        if (loadedOnPitch != null) {
-            for (IPlayer p : loadedOnPitch) {
-                IPlayer realP = playerMap.get(p.getFullName());
-                if (realP != null) playersOnPitchQueue.add(realP);
-            }
-        }
-        
-        reservePlayersQueue = new LinkedList<>();
-        if (loadedReserves != null) {
-            for (IPlayer p : loadedReserves) {
-                IPlayer realP = playerMap.get(p.getFullName());
-                if (realP != null) reservePlayersQueue.add(realP);
-            }
-        }
-    }
-
-    public static void postMatchCleanup() {
-        // Maç sonrası yedek listesinden sakat oyuncuları temizle
-        if (reservePlayersQueue != null) {
-            reservePlayersQueue.removeIf(IPlayer::isInjured);
-        }
-        
-        // Maç içi durum değişkenlerini sıfırla
-        isMidMatch = false;
-        subbedOutPlayers.clear();
-        redCardedPlayers.clear();
-        yellowCardedPlayers.clear();
-        injuredInMatchPlayers.clear();
-        onResumeMatch = null;
-    }
-
     public void show() {
         BorderPane mainLayout = new BorderPane();
         mainLayout.setStyle("-fx-background-color: #1b1b2f;");
@@ -268,8 +89,8 @@ public class GUITactic {
         Runnable tacticContinueAction = () -> {
             if (GUIMain.isMatchDay || isMidMatch) {
                 if (playersOnPitchQueue.size() != maxFieldPlayers) {
-                    String startingLabel = "VOLLEYBALL".equals(GUIMain.activeSport) ? "İlk 6" : "İlk 11";
-                    GUIPopup.showMessage(primaryStage, "Eksik Kadro", "Kadro Tamamlanmadı!", "İşleme devam edebilmek için " + startingLabel + "'in tam olması gerekmektedir!");
+                    String startingLabel = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Starting 6" : "Starting 11";
+                    GUIPopup.showMessage(primaryStage, "Incomplete Squad", "Squad Incomplete!", "To proceed, the " + startingLabel + " must be full!");
                     return;
                 }
                 
@@ -281,13 +102,19 @@ public class GUITactic {
                     }
                 }
                 if (hasInjuredStarter) {
-                    String startingLabel2 = "VOLLEYBALL".equals(GUIMain.activeSport) ? "İlk 6" : "İlk 11";
-                    GUIPopup.showMessage(primaryStage, "Sakat Oyuncu", startingLabel2 + "'de Sakat Oyuncu Var!", "İşleme devam edebilmek için sahada sakat oyuncu bulunmamalıdır. Lütfen sakat oyuncuyu yedeğe alın.");
+                    String startingLabel2 = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Starting 6" : "Starting 11";
+                    GUIPopup.showMessage(primaryStage, "Injured Player", "Injured Player in " + startingLabel2 + "!", "To proceed, there must be no injured players on the pitch. Please sub out the injured player.");
+                    return;
+                }
+                
+                String validationMsg = getFormationValidationMessage();
+                if (validationMsg != null) {
+                    GUIPopup.showMessage(primaryStage, "Invalid Formation", "Formation Rule Violated!", validationMsg);
                     return;
                 }
                 
                 if (reservePlayersQueue.size() != maxReservePlayers) {
-                    GUIPopup.showConfirmation(primaryStage, "Eksik Yedekler", "Yedek Kulübesi Tam Değil!", "Yedek kulübesinde " + maxReservePlayers + " oyuncu yok. Yine de devam etmek istiyor musunuz?", 
+                    GUIPopup.showConfirmation(primaryStage, "Incomplete Bench", "Bench is not full!", "There are not " + maxReservePlayers + " players on the bench. Do you still want to proceed?", 
                         () -> {
                             if (isMidMatch && onResumeMatch != null) onResumeMatch.run();
                             else { GUIMain.tacticConfirmedForMatch = true; GUIMain.handleContinueAction(primaryStage); }
@@ -304,21 +131,19 @@ public class GUITactic {
         };
 
         mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, tacticContinueAction));
-        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Taktikler"));
+        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Tactics"));
 
         HBox content = new HBox(40);
         content.setPadding(new Insets(30, 40, 30, 40));
         content.setAlignment(Pos.CENTER);
 
-        StackPane pitchContainer = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? createVolleyballCourtArea()
-                : createPitchArea();
+        StackPane pitchContainer = createPitchArea();
         VBox rightPanel = createRightPanel();
 
         content.getChildren().addAll(pitchContainer, rightPanel);
         mainLayout.setCenter(content);
 
-        primaryStage.setTitle("Spor Menajerlik - Taktikler");
+        primaryStage.setTitle("Sports Manager - Tactics");
         
         if (primaryStage.getScene() == null) {
             primaryStage.setScene(new Scene(mainLayout, 1280, 720));
@@ -335,121 +160,12 @@ public class GUITactic {
     private boolean isPositionValidForUI(int x, int y, IPlayer playerToPlace) {
         int posId = Classes.Positions.getPositionId(x, y);
         Classes.Positions posInfo = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? new PositionsVolleyball()
-                : new Sport.PositionsFootball();
+                ? new Sport.Volleyball.PositionsVolleyball()
+                : new Sport.Football.PositionsFootball();
         if (!posInfo.getValidPositions().contains(posId)) return false;
         return true;
     }
    
-    /**
-     * Voleybol kortu görünümü: 2 sıra (Ön/Arka) × 3 sütun (Sol/Orta/Sağ).
-     * Sadece geçerli voleybol pozisyonlarını gösterir.
-     * Yine gridSlots[x][y] kullanır; x ve y değerleri PositionsVolleyball ile uyumludur.
-     */
-    private StackPane createVolleyballCourtArea() {
-        StackPane container = new StackPane();
-        container.setPrefSize(540, 680);
-        container.setMaxSize(540, 680);
-        container.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
-
-        // Voleybol sahası 3 sütun, 2 sıra — ama gridSlots 10x10 olduğu için
-        // gerçek pozisyon ID'lerine göre hücreleri yerleştiriyoruz.
-        // PositionsVolleyball: ön sıra y:7-9, arka sıra y:1-3
-        // Görsel olarak: Ön sıra üstte, arka sıra altta gösterilecek
-        // x değerleri: Sol=1-3, Orta=4-6, Sağ=7-9
-
-        int[][] cells = {
-            {2,8}, {5,8}, {8,8},  // ön sıra: LF, MF, RF
-            {2,2}, {5,2}, {8,2}   // arka sıra: LB, MB, RB
-        };
-
-        VBox courtLayout = new VBox(30);
-        courtLayout.setAlignment(Pos.CENTER);
-        courtLayout.setPadding(new Insets(40));
-
-        GridPane courtGrid = new GridPane();
-        courtGrid.setHgap(30);
-        courtGrid.setVgap(30);
-        courtGrid.setAlignment(Pos.CENTER);
-
-        for (int i = 0; i < cells.length; i++) {
-            int cx = cells[i][0], cy = cells[i][1];
-            int col = i % 3, row = i / 3;
-            courtGrid.add(createVolleyballSlot(cx, cy, ""), col, row);
-        }
-
-        courtLayout.getChildren().add(courtGrid);
-        container.getChildren().add(courtLayout);
-
-        // Kalan gridSlots hücrelerini (kullanılmayan) boş bırak
-        for (int x = 0; x < Positions.GRID_WIDTH; x++) {
-            for (int y = 0; y < Positions.GRID_HEIGHT; y++) {
-                if (gridSlots[x][y] == null) {
-                    gridSlots[x][y] = new StackPane(); // boş placeholder
-                }
-            }
-        }
-
-        return container;
-    }
-
-    private VBox createVolleyballSlot(int x, int y, String positionLabel) {
-        VBox wrapper = new VBox(6);
-        wrapper.setAlignment(Pos.CENTER);
-        wrapper.setPrefWidth(140);
-
-        Label posLbl = new Label(positionLabel);
-        posLbl.setTextFill(Color.web("#a5a5b0"));
-        posLbl.setFont(Font.font("Segoe UI", 11));
-        posLbl.setAlignment(Pos.CENTER);
-        posLbl.setWrapText(true);
-        posLbl.setPrefWidth(130);
-
-        gridSlots[x][y] = new StackPane();
-        gridSlots[x][y].setPrefSize(80, 80);
-        gridSlots[x][y].setMaxSize(80, 80);
-
-        if (pitchPlayers[x][y] != null) {
-            fillSlotWithPlayerUI(gridSlots[x][y], pitchPlayers[x][y], x, y);
-        } else {
-            resetVolleyballSlot(x, y);
-        }
-
-        wrapper.getChildren().add(gridSlots[x][y]);
-        return wrapper;
-    }
-
-    private void resetVolleyballSlot(int x, int y) {
-        StackPane slot = gridSlots[x][y];
-        slot.getChildren().clear();
-        slot.setPrefSize(80, 80);
-        slot.setMaxSize(80, 80);
-        slot.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 40; -fx-border-color: #FFFFFF40; -fx-border-width: 2; -fx-border-radius: 40;");
-
-        Label plusLabel = new Label("+");
-        plusLabel.setTextFill(Color.web("#FFFFFF60"));
-        plusLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
-
-        slot.getChildren().add(plusLabel);
-
-        slot.setOnMouseEntered(e -> {
-            slot.setStyle("-fx-background-color: #2a5a9a; -fx-background-radius: 40; -fx-border-color: #FFFFFF; -fx-border-width: 2; -fx-border-radius: 40; -fx-cursor: hand;");
-            plusLabel.setTextFill(Color.WHITE);
-        });
-        slot.setOnMouseExited(e -> {
-            slot.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 40; -fx-border-color: #FFFFFF40; -fx-border-width: 2; -fx-border-radius: 40;");
-            plusLabel.setTextFill(Color.web("#FFFFFF60"));
-        });
-        slot.setOnMouseClicked(e -> {
-            if (selectedPlayerForPlacement != null) {
-                placePlayerOnPitch(selectedPlayerForPlacement, x, y);
-                clearSelection();
-            } else {
-                openPlayerSelectionDialog(x, y);
-            }
-        });
-    }
-
     private StackPane createPitchArea() {
         StackPane container = new StackPane();
         container.setPrefSize(540, 680);
@@ -504,10 +220,6 @@ public class GUITactic {
     }
 
     private void resetSlot(int x, int y) {
-        if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
-            resetVolleyballSlot(x, y);
-            return;
-        }
         StackPane slot = gridSlots[x][y];
         slot.getChildren().clear();
         slot.setPrefSize(54, 68); 
@@ -535,6 +247,7 @@ public class GUITactic {
         });
 
         slot.setOnMouseClicked(e -> {
+            e.consume();
             if (selectedPlayerForPlacement != null) {
                 placePlayerOnPitch(selectedPlayerForPlacement, x, y);
                 clearSelection(); 
@@ -546,9 +259,8 @@ public class GUITactic {
 
     private void openPlayerSelectionDialog(int x, int y) {
         int targetPosId = Positions.getPositionId(x, y);
-        boolean canReEnter = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? new GameRulesVolleyball().isCanReEnter()
-                : new GameRulesFootball().isCanReEnter();
+        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        boolean canReEnter = rules.isCanReEnter();
 
         List<IPlayer> availablePlayers = new ArrayList<>();
         for (IPlayer p : playerTeam.getPlayers()) {
@@ -566,15 +278,20 @@ public class GUITactic {
         Map<String, IPlayer> playerMap = new HashMap<>();
         List<String> playerOptions = new ArrayList<>();
 
+        final String emptyOption = "--- EMPTY POSITION ---";
+        if (pitchPlayers[x][y] != null) {
+            playerOptions.add(emptyOption);
+        }
+
         for (IPlayer p : availablePlayers) {
             int proficiency = p.getProficiencyAt(targetPosId);
-            String optionText = String.format("%s (Uyum: %d) - OVR: %.1f", 
+            String optionText = String.format("%s (Proficiency: %d) - OVR: %.1f", 
                                 p.getFullName(), proficiency, p.calculateOverallRating());
             
             if (playersOnPitchQueue.contains(p)) {
-                optionText += " [Zaten Sahada]";
+                optionText += " [Already on Pitch]";
             } else if (reservePlayersQueue.contains(p)) {
-                optionText += " [Yedekte]";
+                optionText += " [On Bench]";
             }
             playerOptions.add(optionText);
             playerMap.put(optionText, p);
@@ -582,9 +299,17 @@ public class GUITactic {
 
         if (playerOptions.isEmpty()) return;
 
-        GUIPopup.showChoiceDialog(primaryStage, "Oyuncu Seçimi", 
-            String.format("Pozisyon: (X:%d, Y:%d)\n(Sahada en fazla %d oyuncu olabilir)", x, y, maxFieldPlayers),
-            "Oyuncu Seçin:", playerOptions, selectedOption -> {
+        GUIPopup.showChoiceDialog(primaryStage, "Player Selection", 
+            String.format("Position: (X:%d, Y:%d)\n(Max %d players on pitch)", x, y, maxFieldPlayers),
+            "Select Player:", playerOptions, selectedOption -> {
+                if (selectedOption.equals(emptyOption)) {
+                    IPlayer existingPlayer = pitchPlayers[x][y];
+                    if (existingPlayer != null) {
+                        removePlayerFromSquad(existingPlayer);
+                    }
+                    drawHeatMap(null);
+                    return;
+                }
                 IPlayer selectedPlayer = playerMap.get(selectedOption);
                 placePlayerOnPitch(selectedPlayer, x, y);
                 drawHeatMap(null);
@@ -592,11 +317,11 @@ public class GUITactic {
     }
 
     private void placePlayerOnPitch(IPlayer player, int destX, int destY) {
-        boolean canReEnter = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? new GameRulesVolleyball().isCanReEnter()
-                : new GameRulesFootball().isCanReEnter();
+        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        boolean canReEnter = rules.isCanReEnter();
+
         if (player.isInjured() || (isMidMatch && redCardedPlayers.contains(player)) || (isMidMatch && !canReEnter && subbedOutPlayers.contains(player))) {
-            GUIPopup.showMessage(primaryStage, "Geçersiz Hamle", "Bu oyuncu sahaya sürülemez!", "Sakat, cezalı veya oyundan çıkmış oyuncular sadece yedek kulübesinde durabilir.");
+            GUIPopup.showMessage(primaryStage, "Invalid Move", "This player cannot be put on the pitch!", "Injured, suspended or subbed out players can only stay on the bench.");
             clearSelection();
             return;
         }
@@ -604,13 +329,47 @@ public class GUITactic {
         int targetPosId = Positions.getPositionId(destX, destY);
         
       
-        if (!("VOLLEYBALL".equals(GUIMain.activeSport)) && Sport.PositionsFootball.isGoalkeeperPosition(targetPosId)) {
+        if (!("VOLLEYBALL".equals(GUIMain.activeSport)) && PositionsFootball.isGoalkeeperPosition(targetPosId)) {
             for (int i = 0; i < Positions.GRID_WIDTH; i++) {
                 for (int j = 0; j < Positions.GRID_HEIGHT; j++) {
                     if (i == destX && j == destY) continue;
                     IPlayer existingGK = pitchPlayers[i][j];
-                    if (existingGK != null && Sport.PositionsFootball.isGoalkeeperPosition(Positions.getPositionId(i, j))) {
+                    if (existingGK != null && PositionsFootball.isGoalkeeperPosition(Positions.getPositionId(i, j))) {
                         removePlayerFromSquad(existingGK);
+                    }
+                }
+            }
+        }
+
+        if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
+            int zoneMinX = -1, zoneMaxX = -1, zoneMinY = -1, zoneMaxY = -1;
+            if (destX >= 1 && destX <= 3 && destY >= 7 && destY <= 9) { zoneMinX = 1; zoneMaxX = 3; zoneMinY = 7; zoneMaxY = 9; }
+            else if (destX >= 4 && destX <= 6 && destY >= 7 && destY <= 9) { zoneMinX = 4; zoneMaxX = 6; zoneMinY = 7; zoneMaxY = 9; }
+            else if (destX >= 7 && destX <= 9 && destY >= 7 && destY <= 9) { zoneMinX = 7; zoneMaxX = 9; zoneMinY = 7; zoneMaxY = 9; }
+            else if (destX >= 1 && destX <= 3 && destY >= 1 && destY <= 3) { zoneMinX = 1; zoneMaxX = 3; zoneMinY = 1; zoneMaxY = 3; }
+            else if (destX >= 4 && destX <= 6 && destY >= 1 && destY <= 3) { zoneMinX = 4; zoneMaxX = 6; zoneMinY = 1; zoneMaxY = 3; }
+            else if (destX >= 7 && destX <= 9 && destY >= 1 && destY <= 3) { zoneMinX = 7; zoneMaxX = 9; zoneMinY = 1; zoneMaxY = 3; }
+
+            if (zoneMinX != -1) {
+                for (int i = zoneMinX; i <= zoneMaxX; i++) {
+                    for (int j = zoneMinY; j <= zoneMaxY; j++) {
+                        if (i == destX && j == destY) continue;
+                        IPlayer existingInZone = pitchPlayers[i][j];
+                        if (existingInZone != null) {
+                            playersOnPitchQueue.remove(existingInZone);
+                            if (isMidMatch && !subbedOutPlayers.contains(existingInZone)) {
+                                subbedOutPlayers.add(existingInZone);
+                            }
+                            if (existingInZone instanceof Classes.Player) {
+                                ((Classes.Player) existingInZone).setCurrentPositionId(existingInZone.getPrimaryPositionId());
+                                existingInZone.setxG(0f);
+                                existingInZone.setxGA(0f);
+                            }
+                            if (!reservePlayersQueue.contains(existingInZone)) {
+                                reservePlayersQueue.add(existingInZone);
+                            }
+                            removePlayerFromMatrix(existingInZone);
+                        }
                     }
                 }
             }
@@ -644,7 +403,7 @@ public class GUITactic {
 
         playersOnPitchQueue.add(player);
 
-        if (playersOnPitchQueue.size() > maxFieldPlayers) {
+        if (!"VOLLEYBALL".equals(GUIMain.activeSport) && playersOnPitchQueue.size() > maxFieldPlayers) {
             IPlayer oldestPlayer = playersOnPitchQueue.removeFirst();
             removePlayerFromMatrix(oldestPlayer);
             if (oldestPlayer instanceof Classes.Player) {
@@ -693,7 +452,7 @@ public class GUITactic {
     private void placePlayerOnBench(IPlayer player) {
         // Sadece sahanın dışındaki bir sakat oyuncuyu yedeğe almaya çalışırsa engelle (Sahadakini çıkarabilmeli)
         if (player.isInjured() && !playersOnPitchQueue.contains(player)) {
-            GUIPopup.showMessage(primaryStage, "Geçersiz Hamle", "Sakat Oyuncu Yedeğe Alınamaz!", player.getFullName() + " sakatlığı nedeniyle yedek kulübesine alınamaz.");
+            GUIPopup.showMessage(primaryStage, "Invalid Move", "Injured Player Cannot be Subbed Out to Bench!", player.getFullName() + " cannot be placed on the bench due to injury.");
             clearSelection();
             return;
         }
@@ -782,12 +541,18 @@ public class GUITactic {
         if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
             AIAdaptableEasyVolleyball aiVb = new AIAdaptableEasyVolleyball(playerTeam);
             aiTactic = aiVb.generateStartingTactic();
+            int[] vbSpots = {82, 85, 88, 22, 25, 28}; // Centers of LF, MF, RF, LB, MB, RB
+            int idx = 0;
             for (IPlayer p : aiTactic.getStartingLineup()) {
                 if (p instanceof Classes.Player) {
-                    ((Classes.Player) p).setCurrentPositionId(p.getPrimaryPositionId());
+                    if (idx < 6) {
+                        ((Classes.Player) p).setCurrentPositionId(vbSpots[idx]);
+                        idx++;
+                    } else {
+                        ((Classes.Player) p).setCurrentPositionId(p.getPrimaryPositionId());
+                    }
                 }
             }
-            PositionsVolleyball.resolvePositionCollisions(aiTactic);
             posInfo = new PositionsVolleyball();
         } else {
             AIAdaptableEasyFootball ai = new AIAdaptableEasyFootball(playerTeam);
@@ -801,27 +566,6 @@ public class GUITactic {
             posInfo = new PositionsFootball();
         }
 
-        if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
-            // Sabit 6 voleybol koordinatı — görsel kortla eşleşmeli
-            int[][] vbCoords = {{2,8},{5,8},{8,8},{2,2},{5,2},{8,2}};
-            java.util.List<IPlayer> lineup = aiTactic.getStartingLineup();
-            for (int i = 0; i < Math.min(lineup.size(), vbCoords.length); i++) {
-                IPlayer p = lineup.get(i);
-                int tx = vbCoords[i][0], ty = vbCoords[i][1];
-                int posId = Classes.Positions.getPositionId(tx, ty);
-                if (p instanceof Classes.Player) ((Classes.Player) p).setCurrentPositionId(posId);
-                pitchPlayers[tx][ty] = p;
-                if (!playersOnPitchQueue.contains(p)) playersOnPitchQueue.add(p);
-                if (p instanceof Classes.Player) {
-                    float xgMult  = posInfo.getXgMultipliers().getOrDefault(posId, 1.0f);
-                    float xgaMult = posInfo.getXgaMultipliers().getOrDefault(posId, 1.0f);
-                    double ovr = p.calculateOverallRating();
-                    p.setxG((float)((ovr / 100.0) * xgMult * 2.0));
-                    p.setxGA((float)((ovr / 100.0) * xgaMult * 2.0));
-                }
-                fillSlotWithPlayerUI(gridSlots[tx][ty], p, tx, ty);
-            }
-        } else {
         for (IPlayer p : aiTactic.getStartingLineup()) {
             int posId = p.getPrimaryPositionId();
             if (p instanceof Classes.Player) {
@@ -851,7 +595,6 @@ public class GUITactic {
             }
             fillSlotWithPlayerUI(gridSlots[targetX][targetY], p, targetX, targetY);
         }
-        }
 
         for (IPlayer p : aiTactic.getSubstitutes()) {
             if (reservePlayersQueue.size() < maxReservePlayers && !reservePlayersQueue.contains(p)) {
@@ -874,8 +617,8 @@ public class GUITactic {
         slot.getChildren().clear();
         slot.setOnMouseEntered(null);
         slot.setOnMouseExited(null);
-        double slotSize = "VOLLEYBALL".equals(GUIMain.activeSport) ? 80 : 54;
-        double slotHeight = "VOLLEYBALL".equals(GUIMain.activeSport) ? 80 : 68;
+        double slotSize = 54;
+        double slotHeight = 68;
         slot.setPrefSize(slotSize, slotHeight);
         slot.setMaxSize(slotSize, slotHeight);
 
@@ -927,6 +670,7 @@ public class GUITactic {
         playerNode.getChildren().addAll(kitPane, nameLbl);
 
         playerNode.setOnMouseClicked(e -> {
+            e.consume();
             if (selectedPlayerForPlacement != null) {
                 placePlayerOnPitch(selectedPlayerForPlacement, x, y);
                 clearSelection();
@@ -1067,11 +811,15 @@ public class GUITactic {
         squadStatusLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
         
         tacticStyleComboBox = new ComboBox<>();
-        tacticStyleComboBox.getItems().addAll(
-            "Balanced (xG: 1.00, xGA: 1.00)",
-            "All Out Attack (xG: 1.25, xGA: 1.15)",
-            "Park the Bus (xG: 0.85, xGA: 0.75)"
-        );
+        if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
+            for (Classes.Tactic.TacticStyle style : TacticVolleyball.AVAILABLE_STYLES) {
+                tacticStyleComboBox.getItems().add(String.format("%s (xG: %.2f, xGA: %.2f)", style.name(), style.xgMult(), style.xgaMult()));
+            }
+        } else {
+            for (Classes.Tactic.TacticStyle style : TacticFootball.AVAILABLE_STYLES) {
+                tacticStyleComboBox.getItems().add(String.format("%s (xG: %.2f, xGA: %.2f)", style.name(), style.xgMult(), style.xgaMult()));
+            }
+        }
         tacticStyleComboBox.setValue(currentTacticStyle);
         tacticStyleComboBox.setStyle("-fx-background-color: #1f4068;");
 
@@ -1105,19 +853,19 @@ public class GUITactic {
         HBox squadHeader = new HBox(10);
         squadHeader.setAlignment(Pos.CENTER_LEFT);
         
-        teamStatsLabel = new Label("Takım xG: 0.00 | Takım xGA: 0.00");
+        teamStatsLabel = new Label("Team xG: 0.00 | Team xGA: 0.00");
         teamStatsLabel.setTextFill(Color.WHITE);
         teamStatsLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
 
         Region headerSpacer = new Region();
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
 
-        Button autoFillBtn = new Button("OTOMATİK KUR");
+        Button autoFillBtn = new Button("AUTO FILL");
         autoFillBtn.setDisable(isMidMatch);
         autoFillBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand;");
         autoFillBtn.setOnAction(e -> autoFillSquad());
 
-        Button benchBtn = new Button("YEDEĞE AL");
+        Button benchBtn = new Button("TO BENCH");
         benchBtn.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand;");
         benchBtn.setOnAction(e -> {
             if (selectedPlayerForPlacement != null) {
@@ -1125,7 +873,7 @@ public class GUITactic {
             }
         });
 
-        Button removeBtn = new Button("ÇIKAR");
+        Button removeBtn = new Button("REMOVE");
         removeBtn.setStyle("-fx-background-color: #4e4e6a; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand;");
         removeBtn.setOnAction(e -> {
             if (selectedPlayerForPlacement != null) {
@@ -1168,13 +916,23 @@ public class GUITactic {
     private float[] getStyleMultipliers() {
         float styleXgMult = 1.0f;
         float styleXgaMult = 1.0f;
-        if (currentTacticStyle != null) {
-            if (currentTacticStyle.startsWith("All Out Attack")) {
-                styleXgMult = 1.25f;
-                styleXgaMult = 1.15f;
-            } else if (currentTacticStyle.startsWith("Park the Bus")) {
-                styleXgMult = 0.85f;
-                styleXgaMult = 0.75f;
+        String cleanStyleName = getCurrentTacticStyle();
+        
+        if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
+            for (Classes.Tactic.TacticStyle style : TacticVolleyball.AVAILABLE_STYLES) {
+                if (style.name().equals(cleanStyleName)) {
+                    styleXgMult = style.xgMult();
+                    styleXgaMult = style.xgaMult();
+                    break;
+                }
+            }
+        } else {
+            for (Classes.Tactic.TacticStyle style : TacticFootball.AVAILABLE_STYLES) {
+                if (style.name().equals(cleanStyleName)) {
+                    styleXgMult = style.xgMult();
+                    styleXgaMult = style.xgaMult();
+                    break;
+                }
             }
         }
         return new float[]{styleXgMult, styleXgaMult};
@@ -1204,7 +962,7 @@ public class GUITactic {
             }
         }
 
-        squadStatusLabel.setText(String.format("SAHA: %d/%d | YEDEK: %d/%d", 
+        squadStatusLabel.setText(String.format("PITCH: %d/%d | BENCH: %d/%d", 
                 playersOnPitchQueue.size(), maxFieldPlayers, 
                 reservePlayersQueue.size(), maxReservePlayers));
 
@@ -1214,7 +972,7 @@ public class GUITactic {
         float styleXgaMult = mults[1];
 
         if (teamStatsLabel != null) {
-            teamStatsLabel.setText(String.format("Takım xG: %.2f  |  Takım xGA: %.2f", totalXG * styleXgMult, totalXGA * styleXgaMult));
+            teamStatsLabel.setText(String.format("Team xG: %.2f  |  Team xGA: %.2f", totalXG * styleXgMult, totalXGA * styleXgaMult));
         }
         
         if (playersOnPitchQueue.size() < maxFieldPlayers) {
@@ -1237,7 +995,7 @@ public class GUITactic {
                     
                     result = Integer.compare(no1, no2);
                     break;
-                case "OYUNCU ADI":
+                case "PLAYER NAME":
                     result = p1.getFullName().compareToIgnoreCase(p2.getFullName());
                     break;
                 case "OVR":
@@ -1303,7 +1061,7 @@ public class GUITactic {
         row.setAlignment(Pos.CENTER_LEFT);
 
         row.getChildren().add(createHeaderButton("No", "NO", 40));
-        row.getChildren().add(createHeaderButton("Oyuncu Adı", "OYUNCU ADI", 140));
+        row.getChildren().add(createHeaderButton("Player Name", "PLAYER NAME", 140));
         row.getChildren().add(createHeaderButton("OVR", "OVR", 50));
         
         row.getChildren().add(createHeaderButton("xG", "XG", 50));
@@ -1334,7 +1092,7 @@ public class GUITactic {
                 sortAscending = !sortAscending; 
             } else {
                 activeSortColumn = sortKey;
-                sortAscending = sortKey.equals("NO") || sortKey.equals("OYUNCU ADI"); 
+                sortAscending = sortKey.equals("NO") || sortKey.equals("PLAYER NAME"); 
             }
             refreshSquadList();
         });
@@ -1370,9 +1128,9 @@ public class GUITactic {
         nameLbl.setPrefWidth(140);
         nameLbl.setTooltip(new Tooltip(player.getFullName()));
 
-        boolean canReEnterSquad = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? new GameRulesVolleyball().isCanReEnter()
-                : new GameRulesFootball().isCanReEnter();
+        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        boolean canReEnterSquad = rules.isCanReEnter();
+
         if (player.isInjured()) {
             nameLbl.setText(formattedName + " 🚑");
             nameLbl.setTextFill(Color.web("#d82bbc"));
