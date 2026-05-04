@@ -28,7 +28,7 @@ public class GameRulesVolleyball extends GameRules {
             createVolleyballScoreProbabilities(),
             3,                                       // victoryPoints
             0,                                       // drawPoints    : no draws in volleyball
-            1,                                       // defeatPoints  : 1 point for winning ≥2 sets
+            0,                                       // defeatPoints  : 0 points for 3-0 or 3-1 loss
             0,                                       // yellowCardsForRed: not used
             false,                                   // canReplaceRedCardedPlayer
             0,                                       // teamYellowCardLimit

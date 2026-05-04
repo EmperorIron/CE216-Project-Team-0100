@@ -40,9 +40,6 @@ public class GameFootball extends Game {
 
         homeSubsLeft = rules.getSubstitutionCount();
         awaySubsLeft = rules.getSubstitutionCount();
-        
-        logFormationGrid(homeTeam, homeTactic, "Match Start");
-        logFormationGrid(awayTeam, awayTactic, "Match Start");
     }
 
     private void recalculateTeamStrengths() {
@@ -60,8 +57,6 @@ public class GameFootball extends Game {
         List<IPlayer> bench = tactic.getSubstitutes();
         
         if (onField.isEmpty() || bench.isEmpty()) return;
-
-        logFormationGrid(team, tactic, minute + "'. Before Sub");
 
         int outIndex = getRandom().nextInt(onField.size());
         int inIndex = getRandom().nextInt(bench.size());
@@ -89,7 +84,6 @@ public class GameFootball extends Game {
         addLogEntry(minute + "'. " + reason + " (" + team.getName() + ") -> Out: " + playerOut.getFullName() + " | In: " + playerIn.getFullName());
         
         PositionsFootball.resolvePositionCollisions(tactic);
-        logFormationGrid(team, tactic, minute + "'. After Sub");
     }
 
     @Override
@@ -161,7 +155,6 @@ public class GameFootball extends Game {
         addLogEntry(minute + "'. RED CARD! (" + team.getName() + ") -> Sent Off: " + redCarded.getFullName());
         PositionsFootball.resolvePositionCollisions(tactic);
         recalculateTeamStrengths();
-        logFormationGrid(team, tactic, minute + "'. After Red Card");
     }
 
     private void handleYellowCard(ITeam team, ITactic tactic, int minute) {
@@ -183,7 +176,6 @@ public class GameFootball extends Game {
          onField.remove(playerIndex);
          PositionsFootball.resolvePositionCollisions(tactic);
          recalculateTeamStrengths();
-         logFormationGrid(team, tactic, minute + "'. After Red Card");
      }
  }
 
@@ -206,7 +198,6 @@ public class GameFootball extends Game {
         addLogEntry(minute + "'. INJURY! (" + team.getName() + ") -> Injured: " + injured.getFullName() + ". Player taken off for treatment.");
         PositionsFootball.resolvePositionCollisions(tactic);
         recalculateTeamStrengths();
-        logFormationGrid(team, tactic, minute + "'. After Injury");
     }
 
     @Override
@@ -214,67 +205,18 @@ public class GameFootball extends Game {
         addLogEntry("--- REF BLOWS WHISTLE FOR END OF PERIOD " + periodNumber + ". SCORE: " + homeScore + " - " + awayScore + " ---");
 
         if (homeManager != null) {
-            logFormationGrid(homeTeam, homeTactic, "Before Half-Time Sub");
             if (homeTeam.isManagerAI()) addLogEntry("Home team (" + homeTeam.getName() + ") makes a half-time tactical change...");
             homeManager.handlePeriodBreak(this, homeTactic, periodNumber);
             PositionsFootball.resolvePositionCollisions(homeTactic);
-            logFormationGrid(homeTeam, homeTactic, "After Half-Time Sub");
         }
 
         if (awayManager != null) {
-            logFormationGrid(awayTeam, awayTactic, "Before Half-Time Sub");
             if (awayTeam.isManagerAI()) addLogEntry("Away team (" + awayTeam.getName() + ") makes a half-time tactical change...");
             awayManager.handlePeriodBreak(this, awayTactic, periodNumber);
             PositionsFootball.resolvePositionCollisions(awayTactic);
-            logFormationGrid(awayTeam, awayTactic, "After Half-Time Sub");
         }
 
         recalculateTeamStrengths();
-    }
-
-    private void logFormationGrid(ITeam team, ITactic tactic, String context) {
-        String[][] grid = new String[10][10];
-        for (int y = 0; y < 10; y++) {
-            for (int x = 0; x < 10; x++) {
-                grid[y][x] = "";
-            }
-        }
-
-        for (IPlayer p : tactic.getStartingLineup()) {
-            int posId = p.getPrimaryPositionId();
-            String label = "?";
-            if (p instanceof Classes.Player) {
-                posId = ((Classes.Player) p).getCurrentPositionId();
-                label = String.valueOf(((Classes.Player) p).getJerseyNumber());
-            }
-            int x = posId % 10;
-            int y = posId / 10;
-            if (x >= 0 && x < 10 && y >= 0 && y < 10) {
-                if (grid[y][x].isEmpty()) {
-                    grid[y][x] = label;
-                } else {
-                    grid[y][x] += "," + label;
-                }
-            }
-        }
-
-        addLogEntry("");
-        addLogEntry(context + " - " + team.getName() + " 10x10 Pitch Formation:");
-        addLogEntry("+----------------------------------------+");
-        for (int y = 9; y >= 0; y--) {
-            StringBuilder row = new StringBuilder("|");
-            for (int x = 0; x < 10; x++) {
-                if (!grid[y][x].isEmpty()) {
-                    row.append(String.format("%-4s", grid[y][x])); 
-                } else {
-                    row.append(".   "); 
-                }
-            }
-            row.append("|");
-            addLogEntry(row.toString());
-        }
-        addLogEntry("+----------------------------------------+");
-        addLogEntry("");
     }
 
     public double getHomeXG() {
@@ -320,9 +262,6 @@ public class GameFootball extends Game {
     @Override
     protected void postMatchCleanup() {
         addLogEntry("--- MATCH ENDED! SCORE: " + homeScore + " - " + awayScore + " ---");
-        
-        logFormationGrid(homeTeam, homeTactic, "Match End");
-        logFormationGrid(awayTeam, awayTactic, "Match End");
         
         homeTeam.setGoalsScored(homeTeam.getGoalsScored() + homeScore);
         homeTeam.setGoalsConceded(homeTeam.getGoalsConceded() + awayScore);

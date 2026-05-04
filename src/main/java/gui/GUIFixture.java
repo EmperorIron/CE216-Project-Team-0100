@@ -3,7 +3,7 @@ package gui;
 import Interface.IGame;
 import Interface.ITeam;
 import Classes.Game;
-import Sport.Football.CalendarFootball;
+import Classes.Calendar;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.Insets;
@@ -25,9 +25,9 @@ public class GUIFixture {
 
     private Stage primaryStage;
     private ITeam playerTeam;
-    private CalendarFootball calendar;
+    private Calendar calendar;
 
-    public GUIFixture(Stage primaryStage, ITeam playerTeam, CalendarFootball calendar) {
+    public GUIFixture(Stage primaryStage, ITeam playerTeam, Calendar calendar) {
         this.primaryStage = primaryStage;
         this.playerTeam = playerTeam;
         this.calendar = calendar;

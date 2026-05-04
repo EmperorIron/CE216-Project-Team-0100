@@ -32,7 +32,8 @@ public class GUILeftandTopBarHelper {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        String weekText = GUIMain.activeCalendar != null ? "Week " + (GUIMain.activeCalendar.getCurrentWeek() + 1) : "";
+        Classes.Calendar cal = "VOLLEYBALL".equals(GUIMain.activeSport) ? GUIMain.activeVolleyballCalendar : GUIMain.activeCalendar;
+        String weekText = cal != null ? "Week " + (cal.getCurrentWeek() + 1) : "";
         Label dateLabel = new Label(weekText + (GUIMain.isMatchDay ? " - Match Day" : " - Training Week"));
         dateLabel.setTextFill(Color.WHITE);
         dateLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
@@ -43,7 +44,19 @@ public class GUILeftandTopBarHelper {
         menuButton.setOnMouseExited(e -> menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
         menuButton.setOnAction(e -> GUIMenu.show(primaryStage));
 
-        String continueText = gui.GUISquadManager.isMidMatch ? "Back to Match ⚽" : (GUIMain.isMatchDay ? "Play Match ⚽" : "Continue ▶");
+        boolean seasonEnded = false;
+        if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
+            if (GUIMain.activeVolleyballCalendar != null && GUIMain.activeVolleyballCalendar.getSchedule() != null && GUIMain.activeVolleyballCalendar.getCurrentWeek() >= GUIMain.activeVolleyballCalendar.getSchedule().size()) {
+                seasonEnded = true;
+            }
+        } else {
+            if (GUIMain.activeCalendar != null && GUIMain.activeCalendar.getSchedule() != null && GUIMain.activeCalendar.getCurrentWeek() >= GUIMain.activeCalendar.getSchedule().size()) {
+                seasonEnded = true;
+            }
+        }
+        final boolean isSeasonEnded = seasonEnded;
+
+        String continueText = gui.GUISquadManager.isMidMatch ? "Back to Match ⚽" : (isSeasonEnded ? "End of Season 🏆" : (GUIMain.isMatchDay ? "Play Match ⚽" : "Continue ▶"));
         Button continueButton = new Button(continueText);
         continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
         continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
@@ -52,6 +65,8 @@ public class GUILeftandTopBarHelper {
         continueButton.setOnAction(e -> {
             if (onContinueOverride != null) {
                 onContinueOverride.run();
+            } else if (isSeasonEnded) {
+                new GUILeagueEnding(primaryStage);
             } else {
                 GUIMain.handleContinueAction(primaryStage);
             }
@@ -91,9 +106,17 @@ public class GUILeftandTopBarHelper {
                 } else if (item.equals("Tactics")) {
                     if (GUIMain.playerTeam != null) new GUITactic(primaryStage, GUIMain.playerTeam);
                 } else if (item.equals("Fixture")) {
-                    if (GUIMain.activeCalendar != null && GUIMain.playerTeam != null) new GUIFixture(primaryStage, GUIMain.playerTeam, GUIMain.activeCalendar);
+                    if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
+                        if (GUIMain.activeVolleyballCalendar != null && GUIMain.playerTeam != null) new GUIFixture(primaryStage, GUIMain.playerTeam, GUIMain.activeVolleyballCalendar);
+                    } else {
+                        if (GUIMain.activeCalendar != null && GUIMain.playerTeam != null) new GUIFixture(primaryStage, GUIMain.playerTeam, GUIMain.activeCalendar);
+                    }
                 } else if (item.equals("League Table")) {
+                if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
+                    if (GUIMain.activeVolleyballLeague != null && GUIMain.playerTeam != null) new GUILeagueRanking(primaryStage, GUIMain.playerTeam, GUIMain.activeVolleyballLeague);
+                } else {
                     if (GUIMain.activeLeague != null && GUIMain.playerTeam != null) new GUILeagueRanking(primaryStage, GUIMain.playerTeam, GUIMain.activeLeague);
+                }
                 } else if (item.equals("Training")) {
                     if (GUIMain.playerTeam != null) new GUITraining(primaryStage, GUIMain.playerTeam);
                 }

@@ -54,20 +54,12 @@ public class GUISportSelection {
         cardBox.setPadding(new Insets(50, 50, 50, 50));
 
         VBox footballCard = createSportCard("FOOTBALL", "images/football_player.png");
-        VBox headballCard = createSportCard("HEADBALL", "images/headball_char.png");
-        VBox basketballCard = createSportCard("BASKETBALL", "images/basketball_char.png");
         VBox volleyballCard = createSportCard("VOLLEYBALL", "images/volleyball_char.png");
-        VBox tennisCard = createSportCard("TENNIS", "images/tennis_char.png");
-        VBox rugbyCard = createSportCard("RUGBY", "images/rugby_char.png");
 
         footballCard.setOnMouseClicked(e -> onSportSelected.accept("FOOTBALL"));
-        headballCard.setOnMouseClicked(e -> onSportSelected.accept("HEADBALL"));
-        basketballCard.setOnMouseClicked(e -> onSportSelected.accept("BASKETBALL"));
         volleyballCard.setOnMouseClicked(e -> onSportSelected.accept("VOLLEYBALL"));
-        tennisCard.setOnMouseClicked(e -> onSportSelected.accept("TENNIS"));
-        rugbyCard.setOnMouseClicked(e -> onSportSelected.accept("RUGBY"));
 
-        cardBox.getChildren().addAll(footballCard, headballCard, basketballCard, volleyballCard, tennisCard, rugbyCard);
+        cardBox.getChildren().addAll(footballCard, volleyballCard);
 
         // ScrollPane Ayarları (Yatay kaydırma)
         ScrollPane scrollPane = new ScrollPane(cardBox);
