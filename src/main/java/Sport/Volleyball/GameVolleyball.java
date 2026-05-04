@@ -39,9 +39,6 @@ public class GameVolleyball extends Game {
 
         homeSubsLeft = rules.getSubstitutionCount();
         awaySubsLeft = rules.getSubstitutionCount();
-        
-        logFormationGrid(homeTeam, homeTactic, "Match Start");
-        logFormationGrid(awayTeam, awayTactic, "Match Start");
     }
 
     private void recalculateStrengths() {
@@ -77,8 +74,18 @@ public class GameVolleyball extends Game {
 
             if (getRandom().nextDouble() < homeWinRally) {
                 homeSetPoints++;
+                addLogEntry("GOAL! " + homeTeam.getName() + " wins the rally! Score: " + homeSetPoints + "-" + awaySetPoints);
+                if (getRandom().nextDouble() < 0.01) {
+                    handleInjury(homeTeam, homeTactic, periodNumber);
+                    recalculateStrengths();
+                }
             } else {
                 awaySetPoints++;
+                addLogEntry("GOAL! " + awayTeam.getName() + " wins the rally! Score: " + homeSetPoints + "-" + awaySetPoints);
+                if (getRandom().nextDouble() < 0.01) {
+                    handleInjury(awayTeam, awayTactic, periodNumber);
+                    recalculateStrengths();
+                }
             }
 
             if (homeSetPoints >= targetPoints && homeSetPoints - awaySetPoints >= GameRulesVolleyball.WIN_BY) {
@@ -93,19 +100,11 @@ public class GameVolleyball extends Game {
                           + homeSetPoints + "-" + awaySetPoints);
                 break;
             }
-
-            if (getRandom().nextDouble() < 0.002) {
-                if (getRandom().nextBoolean()) {
-                    handleInjury(homeTeam, homeTactic, periodNumber);
-                } else {
-                    handleInjury(awayTeam, awayTactic, periodNumber);
-                }
-                recalculateStrengths();
-            }
         }
 
         homeScore = homeSetsWon;
         awayScore = awaySetsWon;
+        addLogEntry("--- SET " + periodNumber + " ENDED ---");
     }
 
 
@@ -121,21 +120,48 @@ public class GameVolleyball extends Game {
         awaySubsLeft = rules.getSubstitutionCount();
 
         if (homeManager != null) {
-            logFormationGrid(homeTeam, homeTactic, "Before Set Break Sub");
-            if (homeTeam.isManagerAI()) addLogEntry("Home team (" + homeTeam.getName() + ") makes a set break tactical change...");
+            if (homeTeam.isManagerAI()) {
+                addLogEntry("Home team (" + homeTeam.getName() + ") makes a set break tactical change...");
+                fillMissingPlayers(homeTeam, homeTactic);
+            }
             homeManager.handlePeriodBreak(this, homeTactic, periodNumber);
             PositionsVolleyball.resolvePositionCollisions(homeTactic);
-            logFormationGrid(homeTeam, homeTactic, "After Set Break Sub");
         }
         if (awayManager != null) {
-            logFormationGrid(awayTeam, awayTactic, "Before Set Break Sub");
-            if (awayTeam.isManagerAI()) addLogEntry("Away team (" + awayTeam.getName() + ") makes a set break tactical change...");
+            if (awayTeam.isManagerAI()) {
+                addLogEntry("Away team (" + awayTeam.getName() + ") makes a set break tactical change...");
+                fillMissingPlayers(awayTeam, awayTactic);
+            }
             awayManager.handlePeriodBreak(this, awayTactic, periodNumber);
             PositionsVolleyball.resolvePositionCollisions(awayTactic);
-            logFormationGrid(awayTeam, awayTactic, "After Set Break Sub");
         }
 
         recalculateStrengths();
+    }
+
+    private void fillMissingPlayers(ITeam team, ITactic tactic) {
+        int required = rules.getFieldPlayerCount();
+        List<IPlayer> lineup = tactic.getStartingLineup();
+        List<IPlayer> bench = tactic.getSubstitutes();
+        
+        while (lineup.size() < required && !bench.isEmpty()) {
+            IPlayer bestSub = null;
+            double bestOvr = -1;
+            for (IPlayer p : bench) {
+                if (!p.isInjured() && p.calculateOverallRating() > bestOvr) {
+                    bestOvr = p.calculateOverallRating();
+                    bestSub = p;
+                }
+            }
+            if (bestSub != null) {
+                bench.remove(bestSub);
+                lineup.add(bestSub);
+                if (bestSub instanceof Classes.Player pSub) pSub.setCurrentPositionId(pSub.getPrimaryPositionId());
+                addLogEntry("AI Forced Sub (" + team.getName() + "): " + bestSub.getFullName() + " comes in to fill the empty position.");
+            } else {
+                break; // No healthy subs available
+            }
+        }
     }
 
 
@@ -145,9 +171,6 @@ public class GameVolleyball extends Game {
         addLogEntry("");
         addLogEntry("--- MATCH ENDED! SET SCORE: " + homeSetsWon + " - " + awaySetsWon + " ---");
 
-        logFormationGrid(homeTeam, homeTactic, "Match End");
-        logFormationGrid(awayTeam, awayTactic, "Match End");
-
         homeTeam.setGoalsScored(homeTeam.getGoalsScored()    + homeSetsWon);
         homeTeam.setGoalsConceded(homeTeam.getGoalsConceded()+ awaySetsWon);
         awayTeam.setGoalsScored(awayTeam.getGoalsScored()    + awaySetsWon);
@@ -155,70 +178,33 @@ public class GameVolleyball extends Game {
 
         if (homeSetsWon > awaySetsWon) {
             homeTeam.setWins(homeTeam.getWins() + 1);
-            homeTeam.setPoints(homeTeam.getPoints() + rules.getVictoryPoints());
             awayTeam.setLosses(awayTeam.getLosses() + 1);
             if (awaySetsWon >= 2) {
+                homeTeam.setPoints(homeTeam.getPoints() + 2);
                 awayTeam.setPoints(awayTeam.getPoints() + 1);
                 addLogEntry(awayTeam.getName() + " earned 1 point with a 3-2 loss.");
+                addLogEntry(homeTeam.getName() + " earned 2 points with a 3-2 win.");
             } else {
+                homeTeam.setPoints(homeTeam.getPoints() + rules.getVictoryPoints());
                 awayTeam.setPoints(awayTeam.getPoints() + rules.getDefeatPoints());
+                addLogEntry(awayTeam.getName() + " earned " + rules.getDefeatPoints() + " points with a " + homeSetsWon + "-" + awaySetsWon + " loss.");
+                addLogEntry(homeTeam.getName() + " earned " + rules.getVictoryPoints() + " points with a " + homeSetsWon + "-" + awaySetsWon + " win.");
             }
         } else {
             awayTeam.setWins(awayTeam.getWins() + 1);
-            awayTeam.setPoints(awayTeam.getPoints() + rules.getVictoryPoints());
             homeTeam.setLosses(homeTeam.getLosses() + 1);
             if (homeSetsWon >= 2) {
+                awayTeam.setPoints(awayTeam.getPoints() + 2);
                 homeTeam.setPoints(homeTeam.getPoints() + 1);
                 addLogEntry(homeTeam.getName() + " earned 1 point with a 3-2 loss.");
+                addLogEntry(awayTeam.getName() + " earned 2 points with a 3-2 win.");
             } else {
+                awayTeam.setPoints(awayTeam.getPoints() + rules.getVictoryPoints());
                 homeTeam.setPoints(homeTeam.getPoints() + rules.getDefeatPoints());
+                addLogEntry(homeTeam.getName() + " earned " + rules.getDefeatPoints() + " points with a " + homeSetsWon + "-" + awaySetsWon + " loss.");
+                addLogEntry(awayTeam.getName() + " earned " + rules.getVictoryPoints() + " points with a " + awaySetsWon + "-" + homeSetsWon + " win.");
             }
         }
-    }
-
-    private void logFormationGrid(ITeam team, ITactic tactic, String context) {
-        String[][] grid = new String[10][10];
-        for (int y = 0; y < 10; y++) {
-            for (int x = 0; x < 10; x++) {
-                grid[y][x] = "";
-            }
-        }
-
-        for (IPlayer p : tactic.getStartingLineup()) {
-            int posId = p.getPrimaryPositionId();
-            String label = "?";
-            if (p instanceof Classes.Player) {
-                posId = ((Classes.Player) p).getCurrentPositionId();
-                label = String.valueOf(((Classes.Player) p).getJerseyNumber());
-            }
-            int x = posId % 10;
-            int y = posId / 10;
-            if (x >= 0 && x < 10 && y >= 0 && y < 10) {
-                if (grid[y][x].isEmpty()) {
-                    grid[y][x] = label;
-                } else {
-                    grid[y][x] += "," + label;
-                }
-            }
-        }
-
-        addLogEntry("");
-        addLogEntry(context + " - " + team.getName() + " 10x10 Court Formation:");
-        addLogEntry("+----------------------------------------+");
-        for (int y = 9; y >= 0; y--) {
-            StringBuilder row = new StringBuilder("|");
-            for (int x = 0; x < 10; x++) {
-                if (!grid[y][x].isEmpty()) {
-                    row.append(String.format("%-4s", grid[y][x])); 
-                } else {
-                    row.append(".   "); 
-                }
-            }
-            row.append("|");
-            addLogEntry(row.toString());
-        }
-        addLogEntry("+----------------------------------------+");
-        addLogEntry("");
     }
 
     private void handleInjury(ITeam team, ITactic tactic, int setNumber) {
@@ -233,8 +219,8 @@ public class GameVolleyball extends Game {
             p.setInjuryDuration(duration);
         }
 
-        addLogEntry("SET " + setNumber + " - INJURY! (" + team.getName()
-                  + ") → " + injured.getFullName() + " subbed out.");
+        addLogEntry("SET " + setNumber + " - " + team.getName() + " takımında SAKATLIK! Sakatlanan: " + injured.getFullName() + ". Oyuncu tedavi için kenara alındı.");
+
         PositionsVolleyball.resolvePositionCollisions(tactic);
     }
 
@@ -244,9 +230,9 @@ public class GameVolleyball extends Game {
     public int getAwaySetsWon() { return awaySetsWon; }
 
     public String getEventType(String log) {
-        if (log.contains("SET") && log.contains("wins")) return "GOAL";   // set win = "goal" in GUI
-        if (log.contains("INJURY")) return "INJURY";
-        if (log.contains("Sub")) return "SUB";
+        if (log.startsWith("GOAL!")) return "GOAL";
+        if (log.contains("INJURY") || log.contains("SAKATLIK!")) return "INJURY";
+        if (log.contains("Sub") || log.contains("Oyuncu Değişikliği") || log.contains("Çıkan:")) return "SUB";
         return "INFO";
     }
 }

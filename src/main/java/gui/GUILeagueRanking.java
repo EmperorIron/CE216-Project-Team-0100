@@ -1,7 +1,7 @@
 package gui;
 
 import Interface.ITeam;
-import Sport.Football.LeagueFootball;
+import Classes.League;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.Insets;
@@ -24,13 +24,13 @@ public class GUILeagueRanking {
 
     private Stage primaryStage;
     private ITeam playerTeam;
-    private LeagueFootball activeLeague;
+    private League activeLeague;
 
     private VBox tableContainer;
     private String activeSortColumn = "P"; // Default Puan (Points)
     private boolean sortAscending = false;
 
-    public GUILeagueRanking(Stage primaryStage, ITeam playerTeam, LeagueFootball activeLeague) {
+    public GUILeagueRanking(Stage primaryStage, ITeam playerTeam, League activeLeague) {
         this.primaryStage = primaryStage;
         this.playerTeam = playerTeam;
         this.activeLeague = activeLeague;
@@ -95,12 +95,15 @@ public class GUILeagueRanking {
         if (activeLeague == null) return;
 
         List<ITeam> teams = new ArrayList<>(activeLeague.getTeamRanking());
+        boolean isVolleyball = "VOLLEYBALL".equals(GUIMain.activeSport);
 
         Comparator<ITeam> comparator = (t1, t2) -> {
             int result = 0;
             switch (activeSortColumn) {
                 case "TEAM": result = t1.getName().compareToIgnoreCase(t2.getName()); break;
-                case "P": result = Integer.compare(t1.getWins() + t1.getDraws() + t1.getLosses(), t2.getWins() + t2.getDraws() + t2.getLosses()); break;
+                case "P": result = Integer.compare(
+                        t1.getWins() + t1.getLosses() + (isVolleyball ? 0 : t1.getDraws()), 
+                        t2.getWins() + t2.getLosses() + (isVolleyball ? 0 : t2.getDraws())); break;
                 case "W": result = Integer.compare(t1.getWins(), t2.getWins()); break;
                 case "D": result = Integer.compare(t1.getDraws(), t2.getDraws()); break;
                 case "L": result = Integer.compare(t1.getLosses(), t2.getLosses()); break;
@@ -138,14 +141,16 @@ public class GUILeagueRanking {
         posLbl.setAlignment(Pos.CENTER);
         row.getChildren().add(posLbl);
 
+        boolean isVolleyball = "VOLLEYBALL".equals(GUIMain.activeSport);
+
         row.getChildren().add(createHeaderButton("TEAM", "TEAM", 250));
         row.getChildren().add(createHeaderButton("P", "P", 50));
         row.getChildren().add(createHeaderButton("W", "W", 50));
-        row.getChildren().add(createHeaderButton("D", "D", 50));
+        if (!isVolleyball) row.getChildren().add(createHeaderButton("D", "D", 50));
         row.getChildren().add(createHeaderButton("L", "L", 50));
-        row.getChildren().add(createHeaderButton("GF", "GF", 50));
-        row.getChildren().add(createHeaderButton("GA", "GA", 50));
-        row.getChildren().add(createHeaderButton("GD", "GD", 50));
+        row.getChildren().add(createHeaderButton(isVolleyball ? "SW" : "GF", "GF", 50));
+        row.getChildren().add(createHeaderButton(isVolleyball ? "SL" : "GA", "GA", 50));
+        row.getChildren().add(createHeaderButton(isVolleyball ? "SD" : "GD", "GD", 50));
         row.getChildren().add(createHeaderButton("PTS", "PTS", 50));
 
         return row;
@@ -201,10 +206,11 @@ public class GUILeagueRanking {
         Label nameLbl = createLabel(team.getName(), 200, true);
         nameBox.getChildren().addAll(emblem, nameLbl);
         
-        int played = team.getWins() + team.getDraws() + team.getLosses();
+        boolean isVolleyball = "VOLLEYBALL".equals(GUIMain.activeSport);
+        int played = team.getWins() + team.getLosses() + (isVolleyball ? 0 : team.getDraws());
         Label pLbl = createLabel(String.valueOf(played), 50, false);
         Label wLbl = createLabel(String.valueOf(team.getWins()), 50, false);
-        Label dLbl = createLabel(String.valueOf(team.getDraws()), 50, false);
+        Label dLbl = isVolleyball ? null : createLabel(String.valueOf(team.getDraws()), 50, false);
         Label lLbl = createLabel(String.valueOf(team.getLosses()), 50, false);
         Label gfLbl = createLabel(String.valueOf(team.getGoalsScored()), 50, false);
         Label gaLbl = createLabel(String.valueOf(team.getGoalsConceded()), 50, false);
@@ -213,7 +219,9 @@ public class GUILeagueRanking {
         Label ptsLbl = createLabel(String.valueOf(team.getPoints()), 50, true);
         ptsLbl.setTextFill(Color.web("#f0a500"));
 
-        row.getChildren().addAll(posLbl, nameBox, pLbl, wLbl, dLbl, lLbl, gfLbl, gaLbl, gdLbl, ptsLbl);
+        row.getChildren().addAll(posLbl, nameBox, pLbl, wLbl);
+        if (!isVolleyball) row.getChildren().add(dLbl);
+        row.getChildren().addAll(lLbl, gfLbl, gaLbl, gdLbl, ptsLbl);
 
         if (!team.equals(playerTeam)) {
             row.setOnMouseEntered(e -> row.setStyle("-fx-background-color: #213663; -fx-background-radius: 5;"));

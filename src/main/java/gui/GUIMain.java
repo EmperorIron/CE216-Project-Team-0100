@@ -148,6 +148,7 @@ public class GUIMain {
                             new GUIGame(primaryStage, (GameVolleyball) playerGame);
                         } else {
                             activeVolleyballCalendar.advanceToNextWeek();
+                            decrementAllInjuries();
                             isMatchDay = false;
                             tacticConfirmedForMatch = false;
                             new GUIMain(primaryStage);
@@ -215,6 +216,7 @@ public class GUIMain {
                         new GUIGame(primaryStage, (GameFootball) playerGame);
                     } else {
                         activeCalendar.advanceToNextWeek();
+                        decrementAllInjuries();
                         isMatchDay = false;
                         tacticConfirmedForMatch = false;
                         new GUIMain(primaryStage);
@@ -419,5 +421,21 @@ public class GUIMain {
         
         widget.getChildren().add(titleLabel);
         return widget;
+    }
+
+    public static void decrementAllInjuries() {
+        if ("VOLLEYBALL".equals(activeSport) && activeVolleyballLeague != null) {
+            for (ITeam team : activeVolleyballLeague.getTeamRanking()) {
+                for (Interface.IPlayer p : team.getPlayers()) {
+                    p.decrementInjury();
+                }
+            }
+        } else if (activeLeague != null) {
+            for (ITeam team : activeLeague.getTeamRanking()) {
+                for (Interface.IPlayer p : team.getPlayers()) {
+                    p.decrementInjury();
+                }
+            }
+        }
     }
 }

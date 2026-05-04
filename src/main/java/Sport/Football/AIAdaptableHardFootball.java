@@ -87,17 +87,13 @@ public class AIAdaptableHardFootball extends AIFootball {
 
         if (currentTactic instanceof TacticFootball tacticFootball) {
             if (myScore < oppScore) {
-                ITactic bestTactic = findBestTactic(Arrays.asList(getCoachPreferredFormation()), getAvailablePlayers(), "ATTACK");
-                tacticFootball.setStartingLineup(bestTactic.getStartingLineup());
                 String styleName = TacticFootball.AVAILABLE_STYLES.get(1).name();
                 tacticFootball.applyTacticStyle(styleName);
-                game.addLogEntry("AI Tactic (" + team.getName() + "): Switched to '" + styleName + "' tactic and " + bestTactic.getFormation() + " formation due to falling behind.");
+                game.addLogEntry("AI Tactic (" + team.getName() + "): Switched to '" + styleName + "' tactic due to falling behind.");
             } else if (myScore > oppScore) {
-                ITactic bestTactic = findBestTactic(Arrays.asList(getCoachPreferredFormation()), getAvailablePlayers(), "DEFEND");
-                tacticFootball.setStartingLineup(bestTactic.getStartingLineup());
                 String styleName = TacticFootball.AVAILABLE_STYLES.get(2).name();
                 tacticFootball.applyTacticStyle(styleName);
-                game.addLogEntry("AI Tactic (" + team.getName() + "): Switched to '" + styleName + "' defensive tactic and " + bestTactic.getFormation() + " formation to protect the lead.");
+                game.addLogEntry("AI Tactic (" + team.getName() + "): Switched to '" + styleName + "' defensive tactic to protect the lead.");
             } else {
                 tacticFootball.applyTacticStyle(TacticFootball.AVAILABLE_STYLES.get(0).name());
             }

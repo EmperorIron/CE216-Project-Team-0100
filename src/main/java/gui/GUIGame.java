@@ -40,6 +40,10 @@ public class GUIGame {
 
     private int homeScore = 0;
     private int awayScore = 0;
+    private int homeSetsWon = 0;
+    private int awaySetsWon = 0;
+    private int homeTotalRallies = 0;
+    private int awayTotalRallies = 0;
     private int minute = 0;
 
     private Label scoreLabel;
@@ -149,13 +153,13 @@ public class GUIGame {
         scoreboard.setStyle("-fx-background-color: #1f4068; -fx-padding: 20; -fx-background-radius: 10;");
 
         VBox homeBox = createTeamHeader(homeTeam, "#e43f5a");
-        scoreLabel = new Label("0 - 0");
+        scoreLabel = new Label(isVolleyball ? "0 - 0 (SETS)" : "0 - 0");
         scoreLabel.setTextFill(Color.WHITE);
         scoreLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
         VBox awayBox = createTeamHeader(awayTeam, "#4CAF50");
         scoreboard.getChildren().addAll(homeBox, scoreLabel, awayBox);
 
-        minuteLabel = new Label(isVolleyball ? "SET 0" : "00:00");
+        minuteLabel = new Label("00:00");
         minuteLabel.setTextFill(Color.web("#f0a500"));
         minuteLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
 
@@ -165,7 +169,8 @@ public class GUIGame {
 
         homePossession = new Label("50%"); awayPossession = new Label("50%");
         homeShots = new Label("0");       awayShots = new Label("0");
-        homeXG = new Label("0.00");       awayXG = new Label("0.00");
+        homeXG = new Label(isVolleyball ? "0" : "0.00");
+        awayXG = new Label(isVolleyball ? "0" : "0.00");
 
         VBox statsList = new VBox(15);
         if (isVolleyball) {
@@ -346,7 +351,7 @@ public class GUIGame {
             currentLogIndex++;
         }
 
-        minuteLabel.setText("SET 1 STARTING");
+        minuteLabel.setText("00:00");
 
         matchTimeline = new Timeline(new KeyFrame(Duration.seconds(0.3), e -> {
             if (isMatchEnded || isSetBreak) return;  // set arası veya maç bitti ise işleme
@@ -357,35 +362,50 @@ public class GUIGame {
                 String type = volleyballMatch.getEventType(log);
 
                 if (type.equals("GOAL")) {
-                    if (log.contains(homeTeam.getName())) homeScore++;
-                    else awayScore++;
-                    updateScore();
-                    homeShots.setText(String.valueOf(homeScore));
-                    awayShots.setText(String.valueOf(awayScore));
+                    if (log.contains(homeTeam.getName())) {
+                        homeScore++;
+                        homeTotalRallies++;
+                    } else {
+                        awayScore++;
+                        awayTotalRallies++;
+                    }
+                    homeXG.setText(String.valueOf(homeTotalRallies));
+                    awayXG.setText(String.valueOf(awayTotalRallies));
+                    minuteLabel.setText(String.format("%02d:%02d", homeScore, awayScore));
                 }
 
                 if (log.startsWith("=== SET")) {
                     try {
                         String setStr = log.replace("=", "").replace("SET", "").replace("STARTING", "").trim();
                         currentSetNumber = Integer.parseInt(setStr);
-                        minuteLabel.setText("SET " + currentSetNumber + " ⚡");
+                        minuteLabel.setText(String.format("%02d:%02d", homeScore, awayScore));
                     } catch (Exception ignored) {}
                 }
+
+                syncSubAndInjury(log);
 
                 addEvent(type, log);
                 currentLogIndex++;
                 processed++;
 
-                if (log.startsWith("--- SET ") && log.contains("ENDED")) {
+                if (log.startsWith("--- SET ") && log.contains(" ENDED ---")) {
+                    if (homeScore > awayScore) homeSetsWon++;
+                    else if (awayScore > homeScore) awaySetsWon++;
+                    
+                    homeShots.setText(String.valueOf(homeSetsWon));
+                    awayShots.setText(String.valueOf(awaySetsWon));
+                    updateScore();
+
                     try {
                         String numStr = log.substring(8, log.indexOf(" ENDED")).trim();
                         currentSetNumber = Integer.parseInt(numStr);
-                        minuteLabel.setText("SET " + currentSetNumber + " ENDED");
                     } catch (Exception ignored) {}
 
-                    if (homeScore < 3 && awayScore < 3) {
+                    if (homeSetsWon < 3 && awaySetsWon < 3) {
                         isSetBreak = true;  // flag — sonraki tick'leri engelle
                         showBreakButton("SET " + currentSetNumber + " ENDED  —  Set Break Tactics ⚙");
+                    } else {
+                        scoreLabel.setText(homeSetsWon + " - " + awaySetsWon + " (SETS)");
                     }
                     break;
                 }
@@ -416,6 +436,9 @@ public class GUIGame {
 
                 // Oyuncunun seçtiği kadroyu/taktiği maça yansıt
                 if (isVolleyball) {
+                    homeScore = 0;
+                    awayScore = 0;
+                    minuteLabel.setText("00:00");
                     Interface.ITactic playerTactic = homeTeam.equals(GUIMain.playerTeam)
                             ? volleyballMatch.getHomeTactic()
                             : volleyballMatch.getAwayTactic();
@@ -459,10 +482,14 @@ public class GUIGame {
         endBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
         endBtn.setOnAction(evt -> {
             if (!isVolleyball) GUISquadManager.postMatchCleanup();
-            if ("VOLLEYBALL".equals(GUIMain.activeSport) && GUIMain.activeVolleyballCalendar != null)
+            if ("VOLLEYBALL".equals(GUIMain.activeSport) && GUIMain.activeVolleyballCalendar != null) {
                 GUIMain.activeVolleyballCalendar.advanceToNextWeek();
-            else if (GUIMain.activeCalendar != null)
+                GUIMain.decrementAllInjuries();
+            }
+            else if (GUIMain.activeCalendar != null) {
                 GUIMain.activeCalendar.advanceToNextWeek();
+                GUIMain.decrementAllInjuries();
+            }
             GUIMain.isMatchDay = false;
             new GUIMain(primaryStage);
         });
@@ -494,7 +521,11 @@ public class GUIGame {
     }
 
     private void updateScore() {
-        scoreLabel.setText(homeScore + " - " + awayScore);
+        if (isVolleyball) {
+            scoreLabel.setText(homeSetsWon + " - " + awaySetsWon + " (SETS)");
+        } else {
+            scoreLabel.setText(homeScore + " - " + awayScore);
+        }
     }
 
     // ─── Görsel yardımcılar ───────────────────────────────────────────────────
