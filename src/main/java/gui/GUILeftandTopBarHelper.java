@@ -1,5 +1,6 @@
 package gui;
 
+import Classes.GameContext;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -15,16 +16,17 @@ public class GUILeftandTopBarHelper {
     // Performansı artırmak için logoları bellekte saklayan Cache (Önbellek)
     private static final java.util.Map<String, javafx.scene.image.Image> emblemCache = new java.util.HashMap<>();
 
-    public static HBox createTopBar(Stage primaryStage, Runnable onContinueOverride) {
+    public static HBox createTopBar(Runnable onContinueOverride) {
+        GameContext ctx = GameContext.getInstance();
         HBox topBar = new HBox(20);
         topBar.setPadding(new Insets(15, 20, 15, 20));
-        topBar.setStyle("-fx-background-color: #162447; -fx-border-color: #d82bbc; -fx-border-width: 0 0 2 0;");
+        topBar.getStyleClass().add("top-bar");
         topBar.setAlignment(Pos.CENTER_LEFT);
 
         HBox infoBox = new HBox(15);
         infoBox.setAlignment(Pos.CENTER_LEFT);
-        javafx.scene.Node emblem = createEmblem(GUIMain.playerTeam, 40);
-        Label teamLabel = new Label(GUIMain.playerTeam != null ? GUIMain.playerTeam.getName() : "No Team Selected");
+        javafx.scene.Node emblem = createEmblem(ctx.getPlayerTeam(), 40);
+        Label teamLabel = new Label(ctx.getPlayerTeam() != null ? ctx.getPlayerTeam().getName() : "No Team Selected");
         teamLabel.setTextFill(Color.WHITE);
         teamLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 20));
         infoBox.getChildren().addAll(emblem, teamLabel);
@@ -32,53 +34,45 @@ public class GUILeftandTopBarHelper {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Classes.Calendar cal = "VOLLEYBALL".equals(GUIMain.activeSport) ? GUIMain.activeVolleyballCalendar : GUIMain.activeCalendar;
+        Classes.Calendar cal = "VOLLEYBALL".equals(ctx.getActiveSport()) ? ctx.getActiveVolleyballCalendar() : ctx.getActiveCalendar();
         String weekText = cal != null ? "Week " + (cal.getCurrentWeek() + 1) : "";
-        Label dateLabel = new Label(weekText + (GUIMain.isMatchDay ? " - Match Day" : " - Training Week"));
+        Label dateLabel = new Label(weekText + (ctx.isMatchDay() ? " - Match Day" : " - Training Week"));
         dateLabel.setTextFill(Color.WHITE);
         dateLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
         
         int errorCount = Classes.ErrorHandler.getErrors().size();
         String errorText = "Error" + String.format("%04d", Math.min(errorCount, 9999));
         Button errorButton = new Button(errorText);
-        String errBaseColor = errorCount > 0 ? "#e43f5a" : "#4e4e6a";
-        String errHoverColor = errorCount > 0 ? "#ff5773" : "#6a6a8c";
-        errorButton.setStyle("-fx-background-color: " + errBaseColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        errorButton.setOnMouseEntered(e -> errorButton.setStyle("-fx-background-color: " + errHoverColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
-        errorButton.setOnMouseExited(e -> errorButton.setStyle("-fx-background-color: " + errBaseColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        errorButton.setOnAction(e -> GUIError.show(primaryStage));
+        errorButton.getStyleClass().addAll("btn", errorCount > 0 ? "btn-primary" : "btn-secondary");
+        errorButton.setOnAction(e -> GUIError.show());
 
         Button menuButton = new Button("Menu ⚙");
-        menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        menuButton.setOnMouseEntered(e -> menuButton.setStyle("-fx-background-color: #ffb732; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
-        menuButton.setOnMouseExited(e -> menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
-        menuButton.setOnAction(e -> GUIMenu.show(primaryStage));
+        menuButton.getStyleClass().addAll("btn", "btn-warning");
+        menuButton.setOnAction(e -> GUIMenu.show());
 
         boolean seasonEnded = false;
-        if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
-            if (GUIMain.activeVolleyballCalendar != null && GUIMain.activeVolleyballCalendar.getSchedule() != null && GUIMain.activeVolleyballCalendar.getCurrentWeek() >= GUIMain.activeVolleyballCalendar.getSchedule().size()) {
+        if ("VOLLEYBALL".equals(ctx.getActiveSport())) {
+            if (ctx.getActiveVolleyballCalendar() != null && ctx.getActiveVolleyballCalendar().getSchedule() != null && ctx.getActiveVolleyballCalendar().getCurrentWeek() >= ctx.getActiveVolleyballCalendar().getSchedule().size()) {
                 seasonEnded = true;
             }
         } else {
-            if (GUIMain.activeCalendar != null && GUIMain.activeCalendar.getSchedule() != null && GUIMain.activeCalendar.getCurrentWeek() >= GUIMain.activeCalendar.getSchedule().size()) {
+            if (ctx.getActiveCalendar() != null && ctx.getActiveCalendar().getSchedule() != null && ctx.getActiveCalendar().getCurrentWeek() >= ctx.getActiveCalendar().getSchedule().size()) {
                 seasonEnded = true;
             }
         }
         final boolean isSeasonEnded = seasonEnded;
 
-        String continueText = gui.GUISquadManager.isMidMatch ? "Back to Match ⚽" : (isSeasonEnded ? "End of Season 🏆" : (GUIMain.isMatchDay ? "Play Match ⚽" : "Continue ▶"));
+        String continueText = gui.GUISquadManager.getInstance().isMidMatch ? "Back to Match ⚽" : (isSeasonEnded ? "End of Season 🏆" : (ctx.isMatchDay() ? "Play Match ⚽" : "Continue ▶"));
         Button continueButton = new Button(continueText);
-        continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
-        continueButton.setOnMouseEntered(e -> continueButton.setStyle("-fx-background-color: #ff5773; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
-        continueButton.setOnMouseExited(e -> continueButton.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
+        continueButton.getStyleClass().addAll("btn", "btn-primary");
         
         continueButton.setOnAction(e -> {
             if (onContinueOverride != null) {
                 onContinueOverride.run();
             } else if (isSeasonEnded) {
-                new GUILeagueEnding(primaryStage);
+                new GUILeagueEnding();
             } else {
-                GUIMain.handleContinueAction(primaryStage);
+                GUIMain.handleContinueAction();
             }
         });
 
@@ -86,10 +80,11 @@ public class GUILeftandTopBarHelper {
         return topBar;
     }
 
-    public static VBox createSidebar(Stage primaryStage, String activeTab) {
+    public static VBox createSidebar(String activeTab) {
+        GameContext ctx = GameContext.getInstance();
         VBox sidebar = new VBox(10);
         sidebar.setPadding(new Insets(20, 10, 20, 10));
-        sidebar.setStyle("-fx-background-color: #1f4068;");
+        sidebar.getStyleClass().add("sidebar");
         sidebar.setPrefWidth(220);
 
         String[] menuItems = {"Home", "Tactics", "Training", "Fixture", "League Table"};
@@ -98,37 +93,35 @@ public class GUILeftandTopBarHelper {
             Button btn = new Button(item);
             btn.setMaxWidth(Double.MAX_VALUE);
             btn.setPrefHeight(40);
-            btn.setDisable(gui.GUISquadManager.isMidMatch); 
+            btn.setDisable(gui.GUISquadManager.getInstance().isMidMatch); 
             
             if (item.equals(activeTab)) {
-                btn.setStyle("-fx-background-color: #162447; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15; -fx-background-radius: 5;");
+                btn.getStyleClass().add("sidebar-btn-active");
             } else {
-                btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15;");
-                btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: #162447; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15; -fx-background-radius: 5; -fx-cursor: hand;"));
-                btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: BASELINE_LEFT; -fx-font-size: 15px; -fx-font-family: 'Segoe UI'; -fx-padding: 0 0 0 15;"));
+                btn.getStyleClass().add("sidebar-btn");
             }
             
             btn.setOnAction(e -> {
                 if (item.equals(activeTab)) return; 
 
                 if (item.equals("Home")) {
-                    new GUIMain(primaryStage); 
+                    new GUIMain(); 
                 } else if (item.equals("Tactics")) {
-                    if (GUIMain.playerTeam != null) new GUITactic(primaryStage, GUIMain.playerTeam);
+                    if (ctx.getPlayerTeam() != null) new GUITactic(ctx.getPlayerTeam());
                 } else if (item.equals("Fixture")) {
-                    if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
-                        if (GUIMain.activeVolleyballCalendar != null && GUIMain.playerTeam != null) new GUIFixture(primaryStage, GUIMain.playerTeam, GUIMain.activeVolleyballCalendar);
+                    if ("VOLLEYBALL".equals(ctx.getActiveSport())) {
+                        if (ctx.getActiveVolleyballCalendar() != null && ctx.getPlayerTeam() != null) new GUIFixture(ctx.getPlayerTeam(), ctx.getActiveVolleyballCalendar());
                     } else {
-                        if (GUIMain.activeCalendar != null && GUIMain.playerTeam != null) new GUIFixture(primaryStage, GUIMain.playerTeam, GUIMain.activeCalendar);
+                        if (ctx.getActiveCalendar() != null && ctx.getPlayerTeam() != null) new GUIFixture(ctx.getPlayerTeam(), ctx.getActiveCalendar());
                     }
                 } else if (item.equals("League Table")) {
-                if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
-                    if (GUIMain.activeVolleyballLeague != null && GUIMain.playerTeam != null) new GUILeagueRanking(primaryStage, GUIMain.playerTeam, GUIMain.activeVolleyballLeague);
+                if ("VOLLEYBALL".equals(ctx.getActiveSport())) {
+                    if (ctx.getActiveVolleyballLeague() != null && ctx.getPlayerTeam() != null) new GUILeagueRanking(ctx.getPlayerTeam(), ctx.getActiveVolleyballLeague());
                 } else {
-                    if (GUIMain.activeLeague != null && GUIMain.playerTeam != null) new GUILeagueRanking(primaryStage, GUIMain.playerTeam, GUIMain.activeLeague);
+                    if (ctx.getActiveLeague() != null && ctx.getPlayerTeam() != null) new GUILeagueRanking(ctx.getPlayerTeam(), ctx.getActiveLeague());
                 }
                 } else if (item.equals("Training")) {
-                    if (GUIMain.playerTeam != null) new GUITraining(primaryStage, GUIMain.playerTeam);
+                    if (ctx.getPlayerTeam() != null) new GUITraining(ctx.getPlayerTeam());
                 }
             });
 

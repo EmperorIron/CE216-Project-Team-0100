@@ -15,13 +15,13 @@ import java.util.List;
 
 public class GUIError  {
     
-    public static void show(Stage primaryStage) {
+    public static void show() {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #1b1b2f;");
 
         // --- Integration with standard Sidebar and TopBar ---
-        root.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
-        root.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Error Log"));
+        root.setTop(GUILeftandTopBarHelper.createTopBar(null));
+        root.setLeft(GUILeftandTopBarHelper.createSidebar("Error Log"));
 
         // Fetch errors and calculate the total count
         List<String> errors = ErrorHandler.getErrors();
@@ -98,19 +98,13 @@ public class GUIError  {
         btnClear.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
         btnClear.setOnMouseEntered(e -> btnClear.setStyle("-fx-background-color: derive(#e43f5a, 20%); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;"));
         btnClear.setOnMouseExited(e -> btnClear.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;"));
-        btnClear.setOnAction(e -> { ErrorHandler.clearErrors(); show(primaryStage); });
+        btnClear.setOnAction(e -> { ErrorHandler.clearErrors(); show(); });
 
         footer.getChildren().addAll(btnClear);
 
         content.getChildren().addAll(header, centerBox, footer);
         root.setCenter(content);
 
-        primaryStage.setTitle("Sports Manager - Error Log");
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
-        primaryStage.show();
+        SceneManager.changeScene(root, "Sports Manager - Error Log");
     }
 }

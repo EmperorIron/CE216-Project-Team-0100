@@ -1,16 +1,16 @@
 package io;
 
+import Classes.Calendar;
+import Classes.League;
 import Interface.IPlayer;
 import Interface.ITeam;
-import Sport.Football.CalendarFootball;
-import Sport.Football.LeagueFootball;
 
 import java.util.LinkedList;
 
 public class SaveGame {
     private String saveName;
-    private LeagueFootball currentLeague;
-    private CalendarFootball calendar;
+    private League currentLeague;
+    private Calendar calendar;
     private ITeam playerTeam;
 
     // --- Taktik ve Kadro Bilgileri ---
@@ -19,12 +19,12 @@ public class SaveGame {
     private LinkedList<IPlayer> reservePlayersQueue;
     private String tacticStyle;
 
-    public SaveGame(String saveName, LeagueFootball currentLeague, CalendarFootball calendar, ITeam playerTeam,
+    public SaveGame(String saveName, League currentLeague, Calendar calendar, ITeam playerTeam,
                     IPlayer[][] pitchPlayers, LinkedList<IPlayer> playersOnPitchQueue, LinkedList<IPlayer> reservePlayersQueue) {
         this(saveName, currentLeague, calendar, playerTeam, pitchPlayers, playersOnPitchQueue, reservePlayersQueue, null);
     }
 
-    public SaveGame(String saveName, LeagueFootball currentLeague, CalendarFootball calendar, ITeam playerTeam,
+    public SaveGame(String saveName, League currentLeague, Calendar calendar, ITeam playerTeam,
                     IPlayer[][] pitchPlayers, LinkedList<IPlayer> playersOnPitchQueue, LinkedList<IPlayer> reservePlayersQueue, String tacticStyle) {
         this.saveName = saveName;
         this.currentLeague = currentLeague;
@@ -37,13 +37,13 @@ public class SaveGame {
     }
 
     // Geriye dönük uyumluluk veya taktik belirlenmeden önceki kayıtlar için (eski save'ler için)
-    public SaveGame(String saveName, LeagueFootball currentLeague, CalendarFootball calendar, ITeam playerTeam) {
+    public SaveGame(String saveName, League currentLeague, Calendar calendar, ITeam playerTeam) {
         this(saveName, currentLeague, calendar, playerTeam, null, null, null, null);
     }
 
     public String getSaveName() { return saveName; }
-    public LeagueFootball getCurrentLeague() { return currentLeague; }
-    public CalendarFootball getCalendar() { return calendar; }
+    public League getCurrentLeague() { return currentLeague; }
+    public Calendar getCalendar() { return calendar; }
     public ITeam getPlayerTeam() { return playerTeam; }
     public IPlayer[][] getPitchPlayers() { return pitchPlayers; }
     public LinkedList<IPlayer> getPlayersOnPitchQueue() { return playersOnPitchQueue; }

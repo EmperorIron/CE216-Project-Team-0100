@@ -4,10 +4,15 @@ import Interface.IGame;
 import Interface.IManager;
 import Interface.ITactic;
 import Interface.ITeam;
+import Interface.IPlayer;
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class HumanManager implements IManager {
     protected final ITeam team;
+    protected List<IPlayer> pendingStarters = new ArrayList<>();
+    protected List<IPlayer> pendingSubstitutes = new ArrayList<>();
+    protected String pendingStyle = "";
 
     public HumanManager(ITeam team) {
         this.team = team;
@@ -23,11 +28,17 @@ public abstract class HumanManager implements IManager {
         // Asynchronous breaks are handled by the GUI Timeline events
     }
 
-    public void applyChangesFromGUI(ITactic currentTactic) {
-        currentTactic.setStartingLineup(new ArrayList<>(gui.GUISquadManager.getPlayersOnPitchQueue()));
-        currentTactic.setSubstitutes(new ArrayList<>(gui.GUISquadManager.getReservePlayersQueue()));
-        applyStyle(currentTactic);
+    public void setPreMatchTactic(List<IPlayer> starters, List<IPlayer> subs, String style) {
+        this.pendingStarters = new ArrayList<>(starters);
+        this.pendingSubstitutes = new ArrayList<>(subs);
+        this.pendingStyle = style;
     }
 
-    protected abstract void applyStyle(ITactic currentTactic);
+    public void applyTacticalChanges(ITactic currentTactic, List<IPlayer> starters, List<IPlayer> subs, String style) {
+        currentTactic.setStartingLineup(new ArrayList<>(starters));
+        currentTactic.setSubstitutes(new ArrayList<>(subs));
+        applyStyle(currentTactic, style);
+    }
+
+    protected abstract void applyStyle(ITactic currentTactic, String style);
 }

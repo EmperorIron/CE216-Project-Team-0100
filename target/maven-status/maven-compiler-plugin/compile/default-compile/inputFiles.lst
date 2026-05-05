@@ -5,6 +5,7 @@ C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Cl
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Classes\ErrorHandler.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Classes\Formation.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Classes\Game.java
+C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Classes\GameContext.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Classes\GameRules.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Classes\HumanManager.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Classes\League.java
@@ -40,11 +41,14 @@ C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\gu
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\gui\GUITeamSelection.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\gui\GUITitlescreen.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\gui\GUITraining.java
+C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\gui\MatchController.java
+C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\gui\SceneManager.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Interface\ICoach.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Interface\IGame.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Interface\ILeague.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Interface\IManager.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Interface\IPlayer.java
+C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Interface\ISportFactory.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Interface\ITactic.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Interface\ITeam.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\io\SaveData.java
@@ -60,6 +64,7 @@ C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sp
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Football\CalendarFootball.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Football\CoachFootball.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Football\CoachGeneratorFootball.java
+C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Football\FootballFactory.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Football\FormationFootball.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Football\GameFootball.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Football\GameRulesFootball.java
@@ -101,3 +106,4 @@ C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sp
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Volleyball\TrainingOffensiveVolleyball.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Volleyball\TrainingPhysicalVolleyball.java
 C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Volleyball\TrainingVolleyball.java
+C:\Users\bitze\OneDrive\Belgeler\GitHub\CE216-Project-Team-0100\src\main\java\Sport\Volleyball\VolleyballFactory.java

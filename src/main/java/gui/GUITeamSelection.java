@@ -1,5 +1,6 @@
 package gui;
 
+import Classes.GameContext;
 import Interface.ITeam;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,10 +18,7 @@ import java.util.List;
 
 public class GUITeamSelection {
 
-    private Stage primaryStage;
-
-    public GUITeamSelection(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+    public GUITeamSelection() {
         show();
     }
 
@@ -28,7 +26,7 @@ public class GUITeamSelection {
         VBox layout = new VBox(30);
         layout.setPadding(new Insets(40));
         layout.setAlignment(Pos.TOP_CENTER);
-        layout.setStyle("-fx-background-color: #1b1b2f;"); // Koyu tema
+        layout.getStyleClass().add("root-dark");
 
         // Başlık
         Label title = new Label("SELECT THE TEAM YOU WILL MANAGE");
@@ -36,9 +34,9 @@ public class GUITeamSelection {
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 32));
 
         // GUIMain'de oluşturulan aktif ligden takımları çekiyoruz
-        List<ITeam> teams = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? GUIMain.activeVolleyballLeague.getTeamRanking()
-                : GUIMain.activeLeague.getTeamRanking();
+        List<ITeam> teams = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport())
+                ? GameContext.getInstance().getActiveVolleyballLeague().getTeamRanking()
+                : GameContext.getInstance().getActiveLeague().getTeamRanking();
 
         // Takım Listesi (Kaydırılabilir alan)
         VBox teamList = new VBox(15);
@@ -50,24 +48,20 @@ public class GUITeamSelection {
 
         ScrollPane scrollPane = new ScrollPane(teamList);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scrollPane.getStyleClass().add("scroll-pane-transparent");
         scrollPane.setPrefHeight(500);
 
         // Geri Dön Butonu
         Button backBtn = new Button("Back to Main Menu");
-        backBtn.setStyle("-fx-background-color: #4e4e6a; -fx-text-fill: white; -fx-font-size: 14px;");
+        backBtn.getStyleClass().addAll("btn", "btn-secondary");
         backBtn.setOnAction(e -> {
             GUITitlescreen titleScreen = new GUITitlescreen();
-            titleScreen.show(primaryStage);
+            titleScreen.show();
         });
 
         layout.getChildren().addAll(title, scrollPane, backBtn);
 
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(layout, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(layout);
-        }
+        SceneManager.changeScene(layout, "Sports Manager - Select Team");
     }
 
     private HBox createTeamCard(ITeam team) {
@@ -75,7 +69,7 @@ public class GUITeamSelection {
         card.setPadding(new Insets(15, 30, 15, 30));
         card.setAlignment(Pos.CENTER_LEFT);
         card.setMaxWidth(800);
-        card.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
+        card.getStyleClass().add("card-box");
 
         // Takım İsmi ve Amblem
         HBox nameBox = new HBox(15);
@@ -100,18 +94,13 @@ public class GUITeamSelection {
 
         // Seç Butonu
         Button selectBtn = new Button("MANAGE TEAM");
-        selectBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;");
+        selectBtn.getStyleClass().addAll("btn", "btn-primary");
         
         selectBtn.setOnAction(e -> {
-            System.out.println(team.getName() + " selected. Game starting...");
             team.setManagerAI(false); 
-            GUIMain.playerTeam = team; 
-            new GUIMain(primaryStage); 
+            GameContext.getInstance().setPlayerTeam(team); 
+            new GUIMain(); 
         });
-
-       
-        card.setOnMouseEntered(e -> card.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 10; -fx-border-color: #e43f5a; -fx-border-width: 2;"));
-        card.setOnMouseExited(e -> card.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;"));
 
         card.getChildren().addAll(nameBox, stats, spacer, selectBtn);
         return card;

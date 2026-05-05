@@ -110,38 +110,10 @@ public class CalendarFootball extends Calendar {
 
     @Override
     public void displayWeeklyFixture() {
-        if (currentWeek < 1 || currentWeek > schedule.size()) {
-            System.out.println("No matches scheduled for week " + currentWeek + ".");
-            return;
-        }
-        System.out.println("--- Week " + currentWeek + " Fixture ---");
-        List<Game> games = schedule.get(currentWeek);
-        if (games == null || games.isEmpty()) {
-            System.out.println("No matches this week.");
-            return;
-        }
-        for (Game game : games) {
-            System.out.println(game.getHomeTeam().getName() + " vs " + game.getAwayTeam().getName());
-        }
-        System.out.println("--------------------");
     }
 
     @Override
     public void displayFixtureForWeek(int weekNumber) {
-        if (weekNumber < 1 || weekNumber > schedule.size()) {
-            System.out.println("No matches scheduled for week " + weekNumber + ".");
-            return;
-        }
-        System.out.println("--- Week " + weekNumber + " Fixture ---");
-        List<Game> games = schedule.get(weekNumber);
-        if (games == null || games.isEmpty()) {
-            System.out.println("No matches this week.");
-            return;
-        }
-        for (Game game : games) {
-            System.out.println(game.getHomeTeam().getName() + " vs " + game.getAwayTeam().getName());
-        }
-        System.out.println("--------------------");
     }
 
     @Override
@@ -150,55 +122,34 @@ public class CalendarFootball extends Calendar {
 
     @Override
     public void displayLeagueTable() {
-        if (this.teams == null || this.teams.isEmpty()) {
-            System.out.println("No teams in the league to display.");
-            return;
-        }
-
-        this.teams.sort(Comparator.comparingInt(ITeam::getPoints).reversed().thenComparingInt(ITeam::getGoalDifference).reversed().thenComparingInt(ITeam::getGoalsScored).reversed());
-
-        System.out.println("\n--- League Table ---");
-        System.out.printf("%-4s %-20s %-3s %-3s %-3s %-3s %-3s %-3s %-4s %-3s%n", "Pos", "Team", "P", "W", "D", "L", "GF", "GA", "GD", "Pts");
-        System.out.println("---------------------------------------------------------------------");
-
-        int pos = 1;
-        for (ITeam team : this.teams) {
-            System.out.printf("%-4d %-20s %-3d %-3d %-3d %-3d %-3d %-3d %-4d %-3d%n", pos++, team.getName(), team.getWins() + team.getDraws() + team.getLosses(), team.getWins(), team.getDraws(), team.getLosses(), team.getGoalsScored(), team.getGoalsConceded(), team.getGoalDifference(), team.getPoints());
-        }
-        System.out.println("---------------------------------------------------------------------");
     }
 
     @Override
     public void advanceToNextWeek() {
         if (currentWeek >= schedule.size()) {
-            System.out.println("Season has already ended.");
             return;
         }
 
         currentWeek++;
-        System.out.println("\n>>> Advancing to Week " + currentWeek + " <<<");
 
         String weeklySchedule = rules.getTrainingormatch();
-        Training genericTraining = new TrainingOffensiveFootball();
+        Training genericTraining = GameContext.getInstance().getSportFactory().createTraining(TrainingCategory.OFFENSIVE);
         boolean matchPlayedThisWeek = false;
 
         for (char dayActivity : weeklySchedule.toCharArray()) {
             if (dayActivity == '0') {
                 // It's a training day
-                System.out.println("Simulating a day of training...");
                 for (ITeam team : this.teams) {
                     if (!team.getName().equals("BYE") && team.isManagerAI()) {
                         genericTraining.apply(team);
                     }
                 }
             } else if (dayActivity == '1' && !matchPlayedThisWeek) {
-                System.out.println("Matchday Results:");
                 List<Game> gamesThisWeek = schedule.get(currentWeek);
                 if (gamesThisWeek != null && !gamesThisWeek.isEmpty()) {
                     for (Game game : gamesThisWeek) {
                         if (!game.isCompleted()) {
                             game.play();
-                            System.out.println(" - " + game.getHomeTeam().getName() + " " + game.getHomeScore() + " - " + game.getAwayScore() + " " + game.getAwayTeam().getName());
                         }
                     }
                 }

@@ -1,0 +1,186 @@
+/* Global Backgrounds */
+.root-darker { -fx-background-color: #050505; }
+.root-dark {
+    -fx-background-color: #1b1b2f;
+}
+
+/* ScrollPane */
+.scroll-pane-transparent {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+}
+.scroll-pane-transparent > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Base Buttons */
+.btn {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 8 20 8 20;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+.btn-primary { -fx-background-color: #e43f5a; }
+.btn-primary:hover { -fx-background-color: #ff5773; }
+.btn-warning { -fx-background-color: #f0a500; }
+.btn-warning:hover { -fx-background-color: #ffb732; }
+.btn-success { -fx-background-color: #4CAF50; }
+.btn-success:hover { -fx-background-color: #66BB6A; }
+.btn-secondary { -fx-background-color: #4e4e6a; }
+.btn-secondary:hover { -fx-background-color: #6a6a8c; }
+.btn-info { -fx-background-color: #1f4068; }
+.btn-info:hover { -fx-background-color: #2a5288; }
+.btn-purple { -fx-background-color: #d82bbc; }
+.btn-purple:hover { -fx-background-color: #f245d6; }
+
+/* Title/Menu Rounded Outline Buttons */
+.btn-outline {
+    -fx-background-color: transparent;
+    -fx-border-color: #ffffff;
+    -fx-border-radius: 30;
+    -fx-border-width: 2;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-font-family: 'Arial';
+    -fx-cursor: hand;
+}
+.btn-outline:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Sidebar and TopBar */
+.top-bar {
+    -fx-background-color: #162447;
+    -fx-border-color: #d82bbc;
+    -fx-border-width: 0 0 2 0;
+}
+.sidebar {
+    -fx-background-color: #1f4068;
+}
+.sidebar-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-alignment: BASELINE_LEFT;
+    -fx-font-size: 15px;
+    -fx-font-family: 'Segoe UI';
+    -fx-padding: 0 0 0 15;
+}
+.sidebar-btn:hover {
+    -fx-background-color: #162447;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+.sidebar-btn-active {
+    -fx-background-color: #162447;
+    -fx-text-fill: white;
+    -fx-alignment: BASELINE_LEFT;
+    -fx-font-size: 15px;
+    -fx-font-family: 'Segoe UI';
+    -fx-padding: 0 0 0 15;
+    -fx-background-radius: 5;
+}
+
+/* Widgets and Cards */
+.widget-box {
+    -fx-background-color: #162447;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 5);
+}
+.card-box {
+    -fx-background-color: #162447;
+    -fx-background-radius: 10;
+    -fx-border-color: #1f4068;
+    -fx-border-width: 2;
+}
+.card-box:hover {
+    -fx-background-color: #1f4068;
+    -fx-border-color: #e43f5a;
+}
+.save-card {
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-radius: 10;
+    -fx-border-width: 2;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+}
+.save-card:hover {
+    -fx-border-color: #ffffff;
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+}
+.sport-card {
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 25;
+    -fx-border-width: 2;
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-background-radius: 25;
+}
+.sport-card:hover {
+    -fx-border-color: #ffffff;
+    -fx-border-width: 3;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+.menu-box {
+    -fx-background-color: #162447;
+    -fx-background-radius: 15;
+    -fx-border-color: #e43f5a;
+    -fx-border-width: 2;
+    -fx-border-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 20, 0, 0, 0);
+}
+.text-area-dark {
+    -fx-control-inner-background: #162447;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-family: 'Segoe UI';
+}
+.list-row {
+    -fx-background-color: #1a294c;
+    -fx-border-color: #1f4068;
+    -fx-border-width: 0 0 1 0;
+}
+.list-row:hover {
+    -fx-background-color: #213663;
+}
+.list-row-active {
+    -fx-background-color: #213663;
+    -fx-border-color: #f0a500;
+    -fx-border-width: 2;
+    -fx-background-radius: 5;
+}
+
+/* Tactic Screen Specifics */
+.tactic-panel {
+    -fx-background-color: #162447;
+    -fx-background-radius: 10;
+    -fx-border-color: #1f4068;
+    -fx-border-width: 2;
+}
+.tactic-header-row {
+    -fx-background-color: #1f4068;
+    -fx-background-radius: 5;
+}
+.tactic-player-row {
+    -fx-background-color: #1a294c;
+    -fx-background-radius: 5;
+    -fx-border-color: #1f4068;
+    -fx-border-width: 0 0 1 0;
+}
+.tactic-player-row:hover {
+    -fx-background-color: #213663;
+}
+.tactic-sort-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e43f5a;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+.tactic-sort-btn:hover {
+    -fx-text-fill: white;
+}

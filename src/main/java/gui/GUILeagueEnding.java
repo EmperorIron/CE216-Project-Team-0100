@@ -1,6 +1,7 @@
 package gui;
 
 import Interface.ITeam;
+import Classes.GameContext;
 import Classes.League;
 import Classes.Calendar;
 import javafx.geometry.Insets;
@@ -18,14 +19,12 @@ import java.util.List;
 
 public class GUILeagueEnding {
         
-    private Stage primaryStage;
     private League activeLeague;
     private Calendar activeCalendar;
 
-    public GUILeagueEnding(Stage primaryStage) {
-        this.primaryStage = primaryStage;
-        this.activeLeague = "VOLLEYBALL".equals(GUIMain.activeSport) ? GUIMain.activeVolleyballLeague : GUIMain.activeLeague;
-        this.activeCalendar = "VOLLEYBALL".equals(GUIMain.activeSport) ? GUIMain.activeVolleyballCalendar : GUIMain.activeCalendar;
+    public GUILeagueEnding() {
+        this.activeLeague = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) ? GameContext.getInstance().getActiveVolleyballLeague() : GameContext.getInstance().getActiveLeague();
+        this.activeCalendar = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) ? GameContext.getInstance().getActiveVolleyballCalendar() : GameContext.getInstance().getActiveCalendar();
         show();
     }
 
@@ -59,7 +58,7 @@ public class GUILeagueEnding {
         champName.setFont(Font.font("Segoe UI", FontWeight.BOLD, 28));
 
         String stats = champion.getPoints() + " PTS | " + champion.getWins() + " W - ";
-        if (!"VOLLEYBALL".equals(GUIMain.activeSport)) {
+        if (!"VOLLEYBALL".equals(GameContext.getInstance().getActiveSport())) {
             stats += champion.getDraws() + " D - ";
         }
         stats += champion.getLosses() + " L";
@@ -73,9 +72,9 @@ public class GUILeagueEnding {
         HBox btnBox1 = new HBox(20);
         btnBox1.setAlignment(Pos.CENTER);
         Button btnTable = createStyledButton("Final League Table", "#4CAF50");
-        btnTable.setOnAction(e -> new GUILeagueRanking(primaryStage, GUIMain.playerTeam, activeLeague));
+        btnTable.setOnAction(e -> new GUILeagueRanking(GameContext.getInstance().getPlayerTeam(), activeLeague));
         Button btnFixture = createStyledButton("Season Fixtures", "#1f4068");
-        btnFixture.setOnAction(e -> new GUIFixture(primaryStage, GUIMain.playerTeam, activeCalendar));
+        btnFixture.setOnAction(e -> new GUIFixture(GameContext.getInstance().getPlayerTeam(), activeCalendar));
         btnBox1.getChildren().addAll(btnTable, btnFixture);
 
         HBox btnBox2 = new HBox(20);
@@ -83,21 +82,15 @@ public class GUILeagueEnding {
         Button btnNextSeason = createStyledButton("Start Next Season", "#e43f5a");
         btnNextSeason.setOnAction(e -> startNewSeason());
         Button btnSave = createStyledButton("Save Game", "#f0a500");
-        btnSave.setOnAction(e -> new GUISaveGame(() -> this.show()).show(primaryStage));
+        btnSave.setOnAction(e -> new GUISaveGame(() -> this.show()).show());
         btnBox2.getChildren().addAll(btnNextSeason, btnSave);
 
         Button btnTitle = createStyledButton("Exit to Main Menu", "#4e4e6a");
-        btnTitle.setOnAction(e -> new GUITitlescreen().show(primaryStage));
+        btnTitle.setOnAction(e -> new GUITitlescreen().show());
 
         root.getChildren().addAll(title, championBox, btnBox1, btnBox2, btnTitle);
 
-        primaryStage.setTitle("Sports Manager - Season Ended");
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
-        primaryStage.show();
+        SceneManager.changeScene(root, "Sports Manager - Season Ended");
     }
 
     private void startNewSeason() {
@@ -112,10 +105,10 @@ public class GUILeagueEnding {
         
         activeCalendar.generateFixtures(activeLeague.getTeamRanking());
         
-        GUIMain.isMatchDay = false;
-        GUIMain.tacticConfirmedForMatch = false;
+        GameContext.getInstance().setMatchDay(false);
+        GameContext.getInstance().setTacticConfirmedForMatch(false);
         
-        new GUIMain(primaryStage);
+        new GUIMain();
     }
 
     private Button createStyledButton(String text, String color) {

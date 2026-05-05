@@ -17,19 +17,6 @@ import java.util.function.Consumer;
 
 public class GUISportSelection {
 
-    private static final String STYLE_ROOT_BG = "-fx-background-color: #050505;";
-    private static final String STYLE_CARD_DEFAULT = 
-            "-fx-border-color: rgba(255, 255, 255, 0.2); " +
-            "-fx-border-radius: 25; " +
-            "-fx-border-width: 2; " +
-            "-fx-background-color: rgba(255, 255, 255, 0.03); " +
-            "-fx-background-radius: 25;";
-    private static final String STYLE_CARD_HOVER = 
-            "-fx-border-color: #ffffff; " +
-            "-fx-border-radius: 25; " +
-            "-fx-border-width: 3; " +
-            "-fx-background-color: rgba(255, 255, 255, 0.1); " +
-            "-fx-background-radius: 25;";
     private static final String STYLE_LABEL = 
             "-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white; -fx-font-family: 'Arial';";
 
@@ -42,10 +29,10 @@ public class GUISportSelection {
         this.onBackToMenu = onBackToMenu;
     }
 
-    public void show(Stage primaryStage) {
+    public void show() {
       
         BorderPane root = new BorderPane();
-        root.setStyle(STYLE_ROOT_BG);
+        root.getStyleClass().add("root-darker");
 
         // --- ORTA KISIM (KAYDIRILABİLİR KARTLAR) ---
         HBox cardBox = new HBox(50);
@@ -65,7 +52,7 @@ public class GUISportSelection {
         ScrollPane scrollPane = new ScrollPane(cardBox);
         scrollPane.setFitToHeight(true); 
         scrollPane.setFitToWidth(false);
-        scrollPane.setStyle("-fx-background: #050505; -fx-background-color: transparent; -fx-control-inner-background: #050505;");
+        scrollPane.getStyleClass().add("scroll-pane-transparent");
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); 
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED); 
 
@@ -73,7 +60,9 @@ public class GUISportSelection {
 
         // --- ALT KISIM (GERİ BUTONU) ---
         Button btnBack = new Button("BACK TO MAIN MENU");
-        styleButton(btnBack);
+        btnBack.setPrefWidth(300);
+        btnBack.setPrefHeight(50);
+        btnBack.getStyleClass().add("btn-outline");
         btnBack.setOnAction(e -> onBackToMenu.run());
 
         HBox footer = new HBox(btnBack);
@@ -81,22 +70,14 @@ public class GUISportSelection {
         footer.setPadding(new Insets(20, 0, 40, 0)); 
         root.setBottom(footer);
 
-        primaryStage.setTitle("Sports Manager - Select Sport");
-        
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
-        
-        primaryStage.show();
+        SceneManager.changeScene(root, "Sports Manager - Select Sport");
     }
 
     private VBox createSportCard(String sportName, String imagePath) {
         VBox card = new VBox(25);
         card.setAlignment(Pos.CENTER);
         card.setPrefSize(300, 450);
-        card.setStyle(STYLE_CARD_DEFAULT);
+        card.getStyleClass().add("sport-card");
 
         ImageView imageView = new ImageView();
         try {
@@ -108,7 +89,7 @@ public class GUISportSelection {
                 imageView.setPreserveRatio(true);
                 imageView.setOpacity(0.8);
             } else {
-                System.out.println("Uyarı: Görsel bulunamadı -> " + imagePath);
+                System.err.println("Uyarı: Görsel bulunamadı -> " + imagePath);
             }
         } catch (Exception e) {
             System.err.println("Görsel yüklenemedi: " + imagePath);
@@ -120,29 +101,15 @@ public class GUISportSelection {
         card.getChildren().addAll(imageView, lblName);
 
         card.setOnMouseEntered(e -> {
-            card.setStyle(STYLE_CARD_HOVER);
             imageView.setOpacity(1.0);
             card.setTranslateY(-10);
         });
 
         card.setOnMouseExited(e -> {
-            card.setStyle(STYLE_CARD_DEFAULT);
             imageView.setOpacity(0.8);
             card.setTranslateY(0);
         });
 
         return card;
-    }
-
-    // Geri butonu için stil metodu
-    private void styleButton(Button button) {
-        button.setPrefWidth(300);
-        button.setPrefHeight(50);
-        String defaultStyle = "-fx-background-color: transparent; -fx-border-color: #ffffff; -fx-border-radius: 30; -fx-border-width: 2; -fx-text-fill: #ffffff; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';";
-        String hoverStyle = "-fx-background-color: rgba(255, 255, 255, 0.1); -fx-background-radius: 30; -fx-border-color: #ffffff; -fx-border-radius: 30; -fx-border-width: 2; -fx-text-fill: #ffffff; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';";
-        
-        button.setStyle(defaultStyle);
-        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
-        button.setOnMouseExited(e -> button.setStyle(defaultStyle));
     }
 }

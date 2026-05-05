@@ -12,12 +12,12 @@ import io.SaveGame;
 
 public class GUITitlescreen {
 
-    public void show(Stage primaryStage) {
+    public void show() {
         // Main layout container (Vertical Box)
        
         VBox root = new VBox(20); 
         root.setAlignment(Pos.CENTER);
-        root.setStyle("-fx-background-color: #050505;"); // Very dark background matching the design
+        root.getStyleClass().add("root-darker");
 
         // Create the buttons
         Button btnNewGame = createStyledButton("NEW GAME");
@@ -28,41 +28,33 @@ public class GUITitlescreen {
         
         btnNewGame.setOnAction(e -> {
             GUISportSelection sportSelection = new GUISportSelection(
-                selectedSport -> GUIMain.startNewGame(selectedSport, primaryStage),
-                () -> this.show(primaryStage) // On Back Button
+                selectedSport -> GUIMain.startNewGame(selectedSport),
+                () -> this.show() // On Back Button
             );
-            sportSelection.show(primaryStage);
+            sportSelection.show();
         });
 
         btnLoadGame.setOnAction(e -> {
             GUILoadGame loadGameMenu = new GUILoadGame(
-                () -> this.show(primaryStage), // On Back Button
-                (SaveGame loadedGame) -> GUIMain.loadSavedGame(loadedGame, primaryStage) // On Game Loaded successfully
+                () -> this.show(), // On Back Button
+                (SaveGame loadedGame) -> GUIMain.loadSavedGame(loadedGame) // On Game Loaded successfully
             );
-            loadGameMenu.show(primaryStage);
+            loadGameMenu.show();
         });
 
         btnGuide.setOnAction(e -> {
-            new GUIGuide(primaryStage, null, () -> this.show(primaryStage));
+            new GUIGuide(null, () -> this.show());
         });
 
         btnImportTeams.setOnAction(e -> {
-            new GUITeamNameImport(primaryStage, () -> this.show(primaryStage)).show();
+            new GUITeamNameImport(() -> this.show()).show();
         });
        
 
         // Add all buttons to the layout
         root.getChildren().addAll(btnNewGame, btnLoadGame, btnImportTeams, btnGuide);
 
-        primaryStage.setTitle("Sports Manager - Main Menu");
-        
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720, Color.BLACK));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
-        
-        primaryStage.show();
+        SceneManager.changeScene(root, "Sports Manager - Main Menu");
     }
 
    
@@ -73,32 +65,7 @@ public class GUITitlescreen {
         button.setPrefWidth(350);
         button.setPrefHeight(60);
         
-      
-        String defaultStyle = "-fx-background-color: transparent; " +
-                              "-fx-border-color: #ffffff; " +
-                              "-fx-border-radius: 30; " + // Creates the pill shape
-                              "-fx-border-width: 2; " +
-                              "-fx-text-fill: #ffffff; " +
-                              "-fx-font-size: 16px; " +
-                              "-fx-font-weight: bold; " +
-                              "-fx-font-family: 'Arial';";
-                              
-        // Hover CSS style: Adds a slight dark grey background when hovered
-        String hoverStyle = "-fx-background-color: rgba(255, 255, 255, 0.1); " +
-                            "-fx-background-radius: 30; " +
-                            "-fx-border-color: #ffffff; " +
-                            "-fx-border-radius: 30; " +
-                            "-fx-border-width: 2; " +
-                            "-fx-text-fill: #ffffff; " +
-                            "-fx-font-size: 16px; " +
-                            "-fx-font-weight: bold; " +
-                            "-fx-font-family: 'Arial';";
-
-        button.setStyle(defaultStyle);
-
-        // Add hover effect listeners
-        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
-        button.setOnMouseExited(e -> button.setStyle(defaultStyle));
+        button.getStyleClass().add("btn-outline");
 
         return button;
     }

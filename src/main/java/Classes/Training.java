@@ -129,4 +129,8 @@ public abstract class Training {
 
 
     protected abstract String getCoachTraitName();
+
+    public String getCoachTraitForTraining() {
+        return getCoachTraitName();
+    }
 }

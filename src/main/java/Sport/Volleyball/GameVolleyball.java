@@ -12,6 +12,8 @@ import java.util.List;
 
 public class GameVolleyball extends Game {
 
+    private static final double INJURY_CHANCE = 0.01;
+
     private float homeAttack, homeDefense, awayAttack, awayDefense;
 
     private int homeSetsWon = 0;
@@ -25,20 +27,10 @@ public class GameVolleyball extends Game {
 
     @Override
     protected void preMatchSetup() {
-        if (homeManager != null) this.homeTactic = homeManager.generateStartingTactic();
-        if (awayManager != null) this.awayTactic = awayManager.generateStartingTactic();
-
-        addLogEntry("--- MATCH STARTED: " + homeTeam.getName() + " vs " + awayTeam.getName() + " ---");
-        addLogEntry("Home System: " + homeTactic.getFormation()
-                  + " | Away System: " + awayTactic.getFormation());
-
         PositionsVolleyball.resolvePositionCollisions(homeTactic);
         PositionsVolleyball.resolvePositionCollisions(awayTactic);
 
         recalculateStrengths();
-
-        homeSubsLeft = rules.getSubstitutionCount();
-        awaySubsLeft = rules.getSubstitutionCount();
     }
 
     private void recalculateStrengths() {
@@ -75,14 +67,14 @@ public class GameVolleyball extends Game {
             if (getRandom().nextDouble() < homeWinRally) {
                 homeSetPoints++;
                 addLogEntry("GOAL! " + homeTeam.getName() + " wins the rally! Score: " + homeSetPoints + "-" + awaySetPoints);
-                if (getRandom().nextDouble() < 0.01) {
+                if (getRandom().nextDouble() < INJURY_CHANCE) {
                     handleInjury(homeTeam, homeTactic, periodNumber);
                     recalculateStrengths();
                 }
             } else {
                 awaySetPoints++;
                 addLogEntry("GOAL! " + awayTeam.getName() + " wins the rally! Score: " + homeSetPoints + "-" + awaySetPoints);
-                if (getRandom().nextDouble() < 0.01) {
+                if (getRandom().nextDouble() < INJURY_CHANCE) {
                     handleInjury(awayTeam, awayTactic, periodNumber);
                     recalculateStrengths();
                 }
@@ -229,6 +221,7 @@ public class GameVolleyball extends Game {
     public int getHomeSetsWon() { return homeSetsWon; }
     public int getAwaySetsWon() { return awaySetsWon; }
 
+    @Override
     public String getEventType(String log) {
         if (log.startsWith("GOAL!")) return "GOAL";
         if (log.contains("INJURY") || log.contains("SAKATLIK!")) return "INJURY";

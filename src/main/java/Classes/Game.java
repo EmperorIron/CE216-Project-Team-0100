@@ -109,10 +109,12 @@ public abstract class Game implements IGame {
             return;
         }
 
-        // 1. match setup
+        // 1. base match setup
+        basePreMatchSetup();
+        // 2. sport-specific match setup
         preMatchSetup();
 
-        // 2. ciccular period simulation
+        // 3. circular period simulation
         int periodCount = rules.getPeriodCount();
         for (int currentPeriod = 1; currentPeriod <= periodCount; currentPeriod++) {
             
@@ -129,6 +131,19 @@ public abstract class Game implements IGame {
         postMatchCleanup();
         this.isCompleted = true;
     }
+
+    protected void basePreMatchSetup() {
+        if (homeManager != null) this.homeTactic = homeManager.generateStartingTactic();
+        if (awayManager != null) this.awayTactic = awayManager.generateStartingTactic();
+
+        addLogEntry("--- MATCH STARTED: " + homeTeam.getName() + " vs " + awayTeam.getName() + " ---");
+        addLogEntry("Home Tactic: " + homeTactic.getFormation() + " | Away Tactic: " + awayTactic.getFormation());
+
+        homeSubsLeft = rules.getSubstitutionCount();
+        awaySubsLeft = rules.getSubstitutionCount();
+    }
+
+    public abstract String getEventType(String log);
 
     // Abstract methods to be implemented by specific game types (e.g., FootballGame, BasketballGame)
     protected abstract void preMatchSetup();

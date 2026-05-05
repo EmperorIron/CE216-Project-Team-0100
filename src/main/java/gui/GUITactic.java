@@ -1,19 +1,11 @@
 package gui;
 
+import Classes.GameContext;
 import Classes.Positions;
 import Classes.Trait;
 import Interface.IPlayer;
 import Interface.ITeam;
-import Sport.Football.GameRulesFootball;
-import Sport.Volleyball.GameRulesVolleyball;
-import Sport.Football.PositionsFootball;
-import Sport.Volleyball.PositionsVolleyball;
-import Sport.Football.AIAdaptableEasyFootball;
-import Sport.Volleyball.AIAdaptableEasyVolleyball;
-import Sport.Football.TacticFootball;
-import Sport.Volleyball.TacticVolleyball;
 import gui.GUISquadManager;
-import static gui.GUISquadManager.*;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.HPos;
@@ -41,7 +33,6 @@ import java.util.Optional;
 
 public class GUITactic {
 
-    private Stage primaryStage;
     private ITeam playerTeam;
 
     // --- UI (GÖRSEL) BİLEŞENLER ---
@@ -63,17 +54,16 @@ public class GUITactic {
     private int maxFieldPlayers;
     private int maxReservePlayers;
 
-    public GUITactic(Stage primaryStage, ITeam playerTeam) {
-        this.primaryStage = primaryStage;
+    public GUITactic(ITeam playerTeam) {
         this.playerTeam = playerTeam;
         
-        GUISquadManager.initSquad(playerTeam);
+        GUISquadManager.getInstance().initSquad(playerTeam);
 
-        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
         int fieldPlayers = rules.getFieldPlayerCount();
         int reservePlayers = rules.getReservePlayerCount();
 
-        this.maxFieldPlayers = fieldPlayers - redCardedPlayers.size();
+        this.maxFieldPlayers = fieldPlayers - GUISquadManager.getInstance().redCardedPlayers.size();
         this.maxReservePlayers = reservePlayers;
         
         if (!playerTeam.getPlayers().isEmpty()) {
@@ -84,54 +74,54 @@ public class GUITactic {
 
     public void show() {
         BorderPane mainLayout = new BorderPane();
-        mainLayout.setStyle("-fx-background-color: #1b1b2f;");
+        mainLayout.getStyleClass().add("root-dark");
 
         Runnable tacticContinueAction = () -> {
-            if (GUIMain.isMatchDay || isMidMatch) {
-                if (playersOnPitchQueue.size() != maxFieldPlayers) {
-                    String startingLabel = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Starting 6" : "Starting 11";
-                    GUIPopup.showMessage(primaryStage, "Incomplete Squad", "Squad Incomplete!", "To proceed, the " + startingLabel + " must be full!");
+            if (GameContext.getInstance().isMatchDay() || GUISquadManager.getInstance().isMidMatch) {
+                if (GUISquadManager.getInstance().playersOnPitchQueue.size() != maxFieldPlayers) {
+                    String startingLabel = "VOLLEYBALL".equals(GameContext.getInstance().getSportFactory().getSportName()) ? "Starting 6" : "Starting 11";
+                    GUIPopup.showMessage("Incomplete Squad", "Squad Incomplete!", "To proceed, the " + startingLabel + " must be full!");
                     return;
                 }
                 
                 boolean hasInjuredStarter = false;
-                for (IPlayer p : playersOnPitchQueue) {
+                for (IPlayer p : GUISquadManager.getInstance().playersOnPitchQueue) {
                     if (p.isInjured()) {
                         hasInjuredStarter = true;
                         break;
                     }
                 }
                 if (hasInjuredStarter) {
-                    String startingLabel2 = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Starting 6" : "Starting 11";
-                    GUIPopup.showMessage(primaryStage, "Injured Player", "Injured Player in " + startingLabel2 + "!", "To proceed, there must be no injured players on the pitch. Please sub out the injured player.");
+                    String startingLabel2 = "VOLLEYBALL".equals(GameContext.getInstance().getSportFactory().getSportName()) ? "Starting 6" : "Starting 11";
+                    GUIPopup.showMessage("Injured Player", "Injured Player in " + startingLabel2 + "!", "To proceed, there must be no injured players on the pitch. Please sub out the injured player.");
                     return;
                 }
                 
-                String validationMsg = getFormationValidationMessage();
+                String validationMsg = GUISquadManager.getInstance().getFormationValidationMessage();
                 if (validationMsg != null) {
-                    GUIPopup.showMessage(primaryStage, "Invalid Formation", "Formation Rule Violated!", validationMsg);
+                    GUIPopup.showMessage("Invalid Formation", "Formation Rule Violated!", validationMsg);
                     return;
                 }
                 
-                if (reservePlayersQueue.size() != maxReservePlayers) {
-                    GUIPopup.showConfirmation(primaryStage, "Incomplete Bench", "Bench is not full!", "There are not " + maxReservePlayers + " players on the bench. Do you still want to proceed?", 
+                if (GUISquadManager.getInstance().reservePlayersQueue.size() != maxReservePlayers) {
+                    GUIPopup.showConfirmation("Incomplete Bench", "Bench is not full!", "There are not " + maxReservePlayers + " players on the bench. Do you still want to proceed?", 
                         () -> {
-                            if (isMidMatch && onResumeMatch != null) onResumeMatch.run();
-                            else { GUIMain.tacticConfirmedForMatch = true; GUIMain.handleContinueAction(primaryStage); }
+                            if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().onResumeMatch != null) GUISquadManager.getInstance().onResumeMatch.run();
+                            else { GameContext.getInstance().setTacticConfirmedForMatch(true); GUIMain.handleContinueAction(); }
                         }, null);
                     return;
                 }
             }
-            if (isMidMatch && onResumeMatch != null) {
-                onResumeMatch.run();
+            if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().onResumeMatch != null) {
+                GUISquadManager.getInstance().onResumeMatch.run();
             } else {
-                GUIMain.tacticConfirmedForMatch = true;
-                GUIMain.handleContinueAction(primaryStage);
+                GameContext.getInstance().setTacticConfirmedForMatch(true);
+                GUIMain.handleContinueAction();
             }
         };
 
-        mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, tacticContinueAction));
-        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Tactics"));
+        mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(tacticContinueAction));
+        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar("Tactics"));
 
         HBox content = new HBox(40);
         content.setPadding(new Insets(30, 40, 30, 40));
@@ -143,13 +133,7 @@ public class GUITactic {
         content.getChildren().addAll(pitchContainer, rightPanel);
         mainLayout.setCenter(content);
 
-        primaryStage.setTitle("Sports Manager - Tactics");
-        
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(mainLayout, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(mainLayout);
-        }
+        SceneManager.changeScene(mainLayout, "Sports Manager - Tactics");
     }
 
 
@@ -159,9 +143,7 @@ public class GUITactic {
 
     private boolean isPositionValidForUI(int x, int y, IPlayer playerToPlace) {
         int posId = Classes.Positions.getPositionId(x, y);
-        Classes.Positions posInfo = "VOLLEYBALL".equals(GUIMain.activeSport)
-                ? new Sport.Volleyball.PositionsVolleyball()
-                : new Sport.Football.PositionsFootball();
+        Classes.Positions posInfo = GameContext.getInstance().getSportFactory().createPositions();
         if (!posInfo.getValidPositions().contains(posId)) return false;
         return true;
     }
@@ -170,7 +152,7 @@ public class GUITactic {
         StackPane container = new StackPane();
         container.setPrefSize(540, 680);
         container.setMaxSize(540, 680);
-        container.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
+        container.getStyleClass().add("tactic-panel");
 
         GridPane grid10x10 = new GridPane();
         grid10x10.setPrefSize(540, 680);
@@ -203,8 +185,8 @@ public class GUITactic {
 
                 gridSlots[x][logicalY] = new StackPane();
                 
-                if (pitchPlayers[x][logicalY] != null) {
-                    fillSlotWithPlayerUI(gridSlots[x][logicalY], pitchPlayers[x][logicalY], x, logicalY);
+                if (GUISquadManager.getInstance().pitchPlayers[x][logicalY] != null) {
+                    fillSlotWithPlayerUI(gridSlots[x][logicalY], GUISquadManager.getInstance().pitchPlayers[x][logicalY], x, logicalY);
                 } else if (isValid) {
                     resetSlot(x, logicalY);
                 }
@@ -259,14 +241,14 @@ public class GUITactic {
 
     private void openPlayerSelectionDialog(int x, int y) {
         int targetPosId = Positions.getPositionId(x, y);
-        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
         boolean canReEnter = rules.isCanReEnter();
 
         List<IPlayer> availablePlayers = new ArrayList<>();
         for (IPlayer p : playerTeam.getPlayers()) {
             if (p.isInjured()) continue;
-            if (isMidMatch && redCardedPlayers.contains(p)) continue;
-            if (isMidMatch && !canReEnter && subbedOutPlayers.contains(p)) continue;
+            if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().redCardedPlayers.contains(p)) continue;
+            if (GUISquadManager.getInstance().isMidMatch && !canReEnter && GUISquadManager.getInstance().subbedOutPlayers.contains(p)) continue;
             availablePlayers.add(p);
         }
 
@@ -279,7 +261,7 @@ public class GUITactic {
         List<String> playerOptions = new ArrayList<>();
 
         final String emptyOption = "--- EMPTY POSITION ---";
-        if (pitchPlayers[x][y] != null) {
+        if (GUISquadManager.getInstance().pitchPlayers[x][y] != null) {
             playerOptions.add(emptyOption);
         }
 
@@ -288,9 +270,9 @@ public class GUITactic {
             String optionText = String.format("%s (Proficiency: %d) - OVR: %.1f", 
                                 p.getFullName(), proficiency, p.calculateOverallRating());
             
-            if (playersOnPitchQueue.contains(p)) {
+            if (GUISquadManager.getInstance().playersOnPitchQueue.contains(p)) {
                 optionText += " [Already on Pitch]";
-            } else if (reservePlayersQueue.contains(p)) {
+            } else if (GUISquadManager.getInstance().reservePlayersQueue.contains(p)) {
                 optionText += " [On Bench]";
             }
             playerOptions.add(optionText);
@@ -299,11 +281,11 @@ public class GUITactic {
 
         if (playerOptions.isEmpty()) return;
 
-        GUIPopup.showChoiceDialog(primaryStage, "Player Selection", 
+        GUIPopup.showChoiceDialog("Player Selection", 
             String.format("Position: (X:%d, Y:%d)\n(Max %d players on pitch)", x, y, maxFieldPlayers),
             "Select Player:", playerOptions, selectedOption -> {
                 if (selectedOption.equals(emptyOption)) {
-                    IPlayer existingPlayer = pitchPlayers[x][y];
+                    IPlayer existingPlayer = GUISquadManager.getInstance().pitchPlayers[x][y];
                     if (existingPlayer != null) {
                         removePlayerFromSquad(existingPlayer);
                     }
@@ -317,17 +299,17 @@ public class GUITactic {
     }
 
     private void placePlayerOnPitch(IPlayer player, int destX, int destY) {
-        String errorMsg = GUISquadManager.placePlayerOnPitch(player, destX, destY, maxFieldPlayers, maxReservePlayers);
+        String errorMsg = GUISquadManager.getInstance().placePlayerOnPitch(player, destX, destY, maxFieldPlayers, maxReservePlayers);
         
         if (errorMsg != null) {
-            GUIPopup.showMessage(primaryStage, "Invalid Move", "This player cannot be put on the pitch!", errorMsg);
+            GUIPopup.showMessage("Invalid Move", "This player cannot be put on the pitch!", errorMsg);
             clearSelection();
             return;
         }
 
         for (int x = 0; x < Positions.GRID_WIDTH; x++) {
             for (int y = 0; y < Positions.GRID_HEIGHT; y++) {
-                IPlayer p = pitchPlayers[x][y];
+                IPlayer p = GUISquadManager.getInstance().pitchPlayers[x][y];
                 if (p != null) {
                     fillSlotWithPlayerUI(gridSlots[x][y], p, x, y);
                 } else if (isPositionValidForUI(x, y, null)) {
@@ -344,17 +326,17 @@ public class GUITactic {
     }
 
     private void placePlayerOnBench(IPlayer player) {
-        String errorMsg = GUISquadManager.placePlayerOnBench(player, maxReservePlayers);
+        String errorMsg = GUISquadManager.getInstance().placePlayerOnBench(player, maxReservePlayers);
         
         if (errorMsg != null) {
-            GUIPopup.showMessage(primaryStage, "Invalid Move", "Injured Player Cannot be Subbed Out to Bench!", errorMsg);
+            GUIPopup.showMessage("Invalid Move", "Injured Player Cannot be Subbed Out to Bench!", errorMsg);
             clearSelection();
             return;
         }
 
         for (int x = 0; x < Positions.GRID_WIDTH; x++) {
             for (int y = 0; y < Positions.GRID_HEIGHT; y++) {
-                IPlayer p = pitchPlayers[x][y];
+                IPlayer p = GUISquadManager.getInstance().pitchPlayers[x][y];
                 if (p != null) {
                     fillSlotWithPlayerUI(gridSlots[x][y], p, x, y);
                 } else if (isPositionValidForUI(x, y, null)) {
@@ -371,11 +353,11 @@ public class GUITactic {
     }
 
     private void removePlayerFromSquad(IPlayer player) {
-        GUISquadManager.removePlayerFromSquad(player);
+        GUISquadManager.getInstance().removePlayerFromSquad(player);
         
         for (int x = 0; x < Positions.GRID_WIDTH; x++) {
             for (int y = 0; y < Positions.GRID_HEIGHT; y++) {
-                IPlayer p = pitchPlayers[x][y];
+                IPlayer p = GUISquadManager.getInstance().pitchPlayers[x][y];
                 if (p != null) {
                     fillSlotWithPlayerUI(gridSlots[x][y], p, x, y);
                 } else if (isPositionValidForUI(x, y, null)) {
@@ -393,7 +375,7 @@ public class GUITactic {
 
     private void autoFillSquad() {
         // 1. Ask Squad Manager to do the heavy lifting of state and logic updates
-        GUISquadManager.autoFillSquad(playerTeam, maxReservePlayers);
+        GUISquadManager.getInstance().autoFillSquad(playerTeam, maxReservePlayers);
         
         // 2. Clear current UI interaction state
         clearSelection();
@@ -401,7 +383,7 @@ public class GUITactic {
         // 3. Re-render the grid based strictly on the newly updated matrix
         for (int x = 0; x < Positions.GRID_WIDTH; x++) {
             for (int y = 0; y < Positions.GRID_HEIGHT; y++) {
-                IPlayer p = pitchPlayers[x][y];
+                IPlayer p = GUISquadManager.getInstance().pitchPlayers[x][y];
                 if (p != null) {
                     fillSlotWithPlayerUI(gridSlots[x][y], p, x, y);
                 } else if (isPositionValidForUI(x, y, null)) {
@@ -450,10 +432,10 @@ public class GUITactic {
         if (player.isInjured()) {
             shortName += " 🚑";
             bgColor = "rgba(216,43,188,0.8)";
-        } else if (isMidMatch && redCardedPlayers.contains(player)) {
+        } else if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().redCardedPlayers.contains(player)) {
             shortName += " 🟥";
             bgColor = "rgba(228,63,90,0.8)";
-        } else if (isMidMatch && yellowCardedPlayers.contains(player)) {
+        } else if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().yellowCardedPlayers.contains(player)) {
             shortName += " 🟨";
             bgColor = "rgba(240,165,0,0.8)";
         }
@@ -507,7 +489,7 @@ public class GUITactic {
 
     private void clearSelection() {
         if (selectedPlayerRow != null) {
-            selectedPlayerRow.setStyle("-fx-background-color: #1a294c; -fx-background-radius: 5; -fx-border-color: #1f4068; -fx-border-width: 0 0 1 0;");
+            selectedPlayerRow.setStyle(""); // CSS will take over base styling
         }
         selectedPlayerForPlacement = null;
         selectedPlayerRow = null;
@@ -520,13 +502,13 @@ public class GUITactic {
                 for (int logicalY = 0; logicalY < Positions.GRID_HEIGHT; logicalY++) {
                     if (!isPositionValidForUI(x, logicalY, null)) {
                         highlightBoxes[x][logicalY].setStyle("-fx-background-color: #000000; -fx-opacity: 0.6; -fx-background-radius: 5;");
-                        if (pitchPlayers[x][logicalY] == null) {
+                        if (GUISquadManager.getInstance().pitchPlayers[x][logicalY] == null) {
                             gridSlots[x][logicalY].getChildren().clear();
                             gridSlots[x][logicalY].setOnMouseClicked(null);
                         }
                     } else {
                         highlightBoxes[x][logicalY].setStyle("-fx-background-color: transparent; -fx-background-radius: 5;");
-                        if (pitchPlayers[x][logicalY] == null && gridSlots[x][logicalY].getChildren().isEmpty()) {
+                        if (GUISquadManager.getInstance().pitchPlayers[x][logicalY] == null && gridSlots[x][logicalY].getChildren().isEmpty()) {
                             resetSlot(x, logicalY);
                         }
                     }
@@ -559,7 +541,7 @@ public class GUITactic {
                 int posId = Positions.getPositionId(x, logicalY);
                 int prof = player.getProficiencyAt(posId);
                 if (prof == max1) {
-                    boolean isAvailable = (pitchPlayers[x][logicalY] == null || pitchPlayers[x][logicalY] == player);
+                    boolean isAvailable = (GUISquadManager.getInstance().pitchPlayers[x][logicalY] == null || GUISquadManager.getInstance().pitchPlayers[x][logicalY] == player);
                     if (isAvailable) {
                         allMax1Full = false;
                         break;
@@ -584,7 +566,7 @@ public class GUITactic {
                 else if (prof >= 60) bgColor = "rgba(240, 165, 0, 0.4)"; 
                 else bgColor = "rgba(228, 63, 90, 0.4)"; 
 
-                boolean isAvailable = (pitchPlayers[x][logicalY] == null || pitchPlayers[x][logicalY] == player);
+                boolean isAvailable = (GUISquadManager.getInstance().pitchPlayers[x][logicalY] == null || GUISquadManager.getInstance().pitchPlayers[x][logicalY] == player);
 
                 if (isAvailable) {
                     if (prof == max1) {
@@ -606,7 +588,7 @@ public class GUITactic {
         VBox panel = new VBox(15);
         panel.setPrefWidth(650);
         panel.setPadding(new Insets(20));
-        panel.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
+        panel.getStyleClass().add("tactic-panel");
 
         HBox topControls = new HBox(20);
         topControls.setAlignment(Pos.CENTER_LEFT);
@@ -615,17 +597,10 @@ public class GUITactic {
         squadStatusLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
         
         tacticStyleComboBox = new ComboBox<>();
-        if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
-            for (Classes.Tactic.TacticStyle style : TacticVolleyball.AVAILABLE_STYLES) {
-                tacticStyleComboBox.getItems().add(String.format("%s (xG: %.2f, xGA: %.2f)", style.name(), style.xgMult(), style.xgaMult()));
-            }
-        } else {
-            for (Classes.Tactic.TacticStyle style : TacticFootball.AVAILABLE_STYLES) {
-                tacticStyleComboBox.getItems().add(String.format("%s (xG: %.2f, xGA: %.2f)", style.name(), style.xgMult(), style.xgaMult()));
-            }
+        for (Classes.Tactic.TacticStyle style : GameContext.getInstance().getSportFactory().getAvailableTacticStyles()) {
+            tacticStyleComboBox.getItems().add(String.format("%s (xG: %.2f, xGA: %.2f)", style.name(), style.xgMult(), style.xgaMult()));
         }
-        tacticStyleComboBox.setValue(currentTacticStyle);
-        tacticStyleComboBox.setStyle("-fx-background-color: #1f4068;");
+        tacticStyleComboBox.setValue(GUISquadManager.getInstance().currentTacticStyle);
 
         javafx.util.Callback<ListView<String>, ListCell<String>> cellFactory = lv -> new ListCell<String>() {
             @Override
@@ -633,11 +608,9 @@ public class GUITactic {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
-                    setStyle("-fx-background-color: #1f4068;");
                 } else {
                     setText(item);
                     setTextFill(Color.WHITE);
-                    setStyle("-fx-background-color: #1f4068; -fx-font-family: 'Segoe UI'; -fx-font-weight: bold;");
                 }
             }
         };
@@ -645,7 +618,7 @@ public class GUITactic {
         tacticStyleComboBox.setButtonCell(cellFactory.call(null));
         
         tacticStyleComboBox.setOnAction(e -> {
-            currentTacticStyle = tacticStyleComboBox.getValue();
+            GUISquadManager.getInstance().currentTacticStyle = tacticStyleComboBox.getValue();
             refreshSquadList();
         });
         
@@ -665,12 +638,12 @@ public class GUITactic {
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
 
         Button autoFillBtn = new Button("AUTO FILL");
-        autoFillBtn.setDisable(isMidMatch);
-        autoFillBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand;");
+        autoFillBtn.setDisable(GUISquadManager.getInstance().isMidMatch);
+        autoFillBtn.getStyleClass().addAll("btn", "btn-success");
         autoFillBtn.setOnAction(e -> autoFillSquad());
 
         Button benchBtn = new Button("TO BENCH");
-        benchBtn.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand;");
+        benchBtn.getStyleClass().addAll("btn", "btn-warning");
         benchBtn.setOnAction(e -> {
             if (selectedPlayerForPlacement != null) {
                 placePlayerOnBench(selectedPlayerForPlacement);
@@ -678,7 +651,7 @@ public class GUITactic {
         });
 
         Button removeBtn = new Button("REMOVE");
-        removeBtn.setStyle("-fx-background-color: #4e4e6a; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 10; -fx-cursor: hand;");
+        removeBtn.getStyleClass().addAll("btn", "btn-secondary");
         removeBtn.setOnAction(e -> {
             if (selectedPlayerForPlacement != null) {
                 removePlayerFromSquad(selectedPlayerForPlacement);
@@ -696,7 +669,7 @@ public class GUITactic {
         scrollPane.setPrefHeight(480);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setStyle("-fx-background: #162447; -fx-background-color: transparent;");
+        scrollPane.getStyleClass().add("scroll-pane-transparent");
 
         panel.getChildren().addAll(topControls, squadHeader, scrollPane);
         return panel;
@@ -714,7 +687,7 @@ public class GUITactic {
         float totalXGA = 0f;
 
         for (IPlayer p : allPlayers) {
-            String kit = GUISquadManager.getPlayerKitNumber(p);
+            String kit = GUISquadManager.getInstance().getPlayerKitNumber(p);
             if (kit.startsWith("Y")) {
                 reservePlayersList.add(p);
             } else if (!kit.equals("-")) {
@@ -727,11 +700,11 @@ public class GUITactic {
         }
 
         squadStatusLabel.setText(String.format("PITCH: %d/%d | BENCH: %d/%d", 
-                playersOnPitchQueue.size(), maxFieldPlayers, 
-                reservePlayersQueue.size(), maxReservePlayers));
+                GUISquadManager.getInstance().playersOnPitchQueue.size(), maxFieldPlayers, 
+                GUISquadManager.getInstance().reservePlayersQueue.size(), maxReservePlayers));
 
      
-        float[] mults = GUISquadManager.getStyleMultipliers();
+        float[] mults = GUISquadManager.getInstance().getStyleMultipliers();
         float styleXgMult = mults[0];
         float styleXgaMult = mults[1];
 
@@ -739,7 +712,7 @@ public class GUITactic {
             teamStatsLabel.setText(String.format("Team xG: %.2f  |  Team xGA: %.2f", totalXG * styleXgMult, totalXGA * styleXgaMult));
         }
         
-        if (playersOnPitchQueue.size() < maxFieldPlayers) {
+        if (GUISquadManager.getInstance().playersOnPitchQueue.size() < maxFieldPlayers) {
             squadStatusLabel.setTextFill(Color.web("#e43f5a")); 
         } else {
             squadStatusLabel.setTextFill(Color.web("#4CAF50")); 
@@ -751,8 +724,8 @@ public class GUITactic {
             int result = 0;
             switch (activeSortColumn) {
                 case "NO":
-                    String kit1 = GUISquadManager.getPlayerKitNumber(p1);
-                    String kit2 = GUISquadManager.getPlayerKitNumber(p2);
+                    String kit1 = GUISquadManager.getInstance().getPlayerKitNumber(p1);
+                    String kit2 = GUISquadManager.getInstance().getPlayerKitNumber(p2);
                     
                     int no1 = kit1.equals("-") ? 9999 : (kit1.startsWith("Y") ? 1000 + Integer.parseInt(kit1.substring(1)) : Integer.parseInt(kit1));
                     int no2 = kit2.equals("-") ? 9999 : (kit2.startsWith("Y") ? 1000 + Integer.parseInt(kit2.substring(1)) : Integer.parseInt(kit2));
@@ -788,17 +761,17 @@ public class GUITactic {
 
         for (IPlayer p : onPitchPlayers) {
           
-            HBox row = createPlayerRow(p, GUISquadManager.getPlayerKitNumber(p), styleXgMult, styleXgaMult);
+            HBox row = createPlayerRow(p, GUISquadManager.getInstance().getPlayerKitNumber(p), styleXgMult, styleXgaMult);
             if (p == selectedPlayerForPlacement) {
-                row.setStyle("-fx-background-color: #213663; -fx-background-radius: 5; -fx-border-color: #f0a500; -fx-border-width: 2;");
+                row.setStyle("-fx-border-color: #f0a500; -fx-border-width: 2;");
                 selectedPlayerRow = row;
             }
             squadListContainer.getChildren().add(row);
         }
         for (IPlayer p : reservePlayersList) {
-            HBox row = createPlayerRow(p, GUISquadManager.getPlayerKitNumber(p), 1.0f, 1.0f); // Yedeklere çarpan etki etmez 
+            HBox row = createPlayerRow(p, GUISquadManager.getInstance().getPlayerKitNumber(p), 1.0f, 1.0f); // Yedeklere çarpan etki etmez 
             if (p == selectedPlayerForPlacement) {
-                row.setStyle("-fx-background-color: #213663; -fx-background-radius: 5; -fx-border-color: #f0a500; -fx-border-width: 2;");
+                row.setStyle("-fx-border-color: #f0a500; -fx-border-width: 2;");
                 selectedPlayerRow = row;
             }
             squadListContainer.getChildren().add(row);
@@ -806,11 +779,11 @@ public class GUITactic {
         for (IPlayer p : unselectedPlayers) {
             HBox row = createPlayerRow(p, "-", 1.0f, 1.0f);
             if (p == selectedPlayerForPlacement) {
-                row.setStyle("-fx-background-color: #213663; -fx-background-radius: 5; -fx-border-color: #f0a500; -fx-border-width: 2;");
+                row.setStyle("-fx-border-color: #f0a500; -fx-border-width: 2;");
                 selectedPlayerRow = row;
             }
             // Sadece maç içindeyken (devre arası/sakatlık) kadro dışı oyuncuları karart ve tıklamayı engelle
-            if (isMidMatch) {
+            if (GUISquadManager.getInstance().isMidMatch) {
                 row.setOpacity(0.3);
                 row.setDisable(true);
             }
@@ -821,7 +794,7 @@ public class GUITactic {
     private HBox createHeaderRow() {
         HBox row = new HBox(8);
         row.setPadding(new Insets(10));
-        row.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 5;");
+        row.getStyleClass().add("tactic-header-row");
         row.setAlignment(Pos.CENTER_LEFT);
 
         row.getChildren().add(createHeaderButton("No", "NO", 40));
@@ -847,7 +820,7 @@ public class GUITactic {
         }
 
         Button btn = new Button(finalTxt);
-        btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #e43f5a; -fx-font-weight: bold; -fx-font-size: 11px; -fx-cursor: hand; -fx-padding: 0;");
+        btn.getStyleClass().add("tactic-sort-btn");
         btn.setPrefWidth(width);
         btn.setAlignment(Pos.CENTER_LEFT);
 
@@ -861,9 +834,6 @@ public class GUITactic {
             refreshSquadList();
         });
 
-        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px; -fx-cursor: hand; -fx-padding: 0;"));
-        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: transparent; -fx-text-fill: #e43f5a; -fx-font-weight: bold; -fx-font-size: 11px; -fx-cursor: hand; -fx-padding: 0;"));
-
         return btn;
     }
 
@@ -871,7 +841,7 @@ public class GUITactic {
     private HBox createPlayerRow(IPlayer player, String kitNumber, float xgMult, float xgaMult) {
         HBox row = new HBox(8);
         row.setPadding(new Insets(8, 10, 8, 10));
-        row.setStyle("-fx-background-color: #1a294c; -fx-background-radius: 5; -fx-border-color: #1f4068; -fx-border-width: 0 0 1 0;");
+        row.getStyleClass().add("tactic-player-row");
         row.setAlignment(Pos.CENTER_LEFT);
 
         row.setOnMouseClicked(e -> handlePlayerRowClick(player, row));
@@ -892,21 +862,21 @@ public class GUITactic {
         nameLbl.setPrefWidth(140);
         nameLbl.setTooltip(new Tooltip(player.getFullName()));
 
-        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
         boolean canReEnterSquad = rules.isCanReEnter();
 
         if (player.isInjured()) {
             nameLbl.setText(formattedName + " 🚑");
             nameLbl.setTextFill(Color.web("#d82bbc"));
             row.setOpacity(0.6);
-        } else if (isMidMatch && redCardedPlayers.contains(player)) {
+        } else if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().redCardedPlayers.contains(player)) {
             nameLbl.setText(formattedName + " 🟥");
             nameLbl.setTextFill(Color.RED);
             row.setOpacity(0.6);
-        } else if (isMidMatch && yellowCardedPlayers.contains(player)) {
+        } else if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().yellowCardedPlayers.contains(player)) {
             nameLbl.setText(formattedName + " 🟨");
             nameLbl.setTextFill(Color.YELLOW);
-        } else if (isMidMatch && !canReEnterSquad && subbedOutPlayers.contains(player)) {
+        } else if (GUISquadManager.getInstance().isMidMatch && !canReEnterSquad && GUISquadManager.getInstance().subbedOutPlayers.contains(player)) {
             nameLbl.setText(formattedName + " 🚫");
             nameLbl.setTextFill(Color.GRAY);
             row.setOpacity(0.6);
@@ -949,17 +919,6 @@ public class GUITactic {
             
             row.getChildren().add(traitBox);
         }
-
-        row.setOnMouseEntered(e -> {
-            if (selectedPlayerRow != row) {
-                row.setStyle("-fx-background-color: #213663; -fx-background-radius: 5;");
-            }
-        });
-        row.setOnMouseExited(e -> {
-            if (selectedPlayerRow != row) {
-                row.setStyle("-fx-background-color: #1a294c; -fx-background-radius: 5; -fx-border-color: #1f4068; -fx-border-width: 0 0 1 0;");
-            }
-        });
 
         return row;
     }
