@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TeamNameImport {
-    public static List<String> customTeamNames = new ArrayList<>();
+    private static List<String> customTeamNames = new ArrayList<>();
     private static List<String> availableNames = new ArrayList<>();
-    public static boolean useCustomNames = false;
+    private static boolean useCustomNames = false;
+
+    public static boolean isUseCustomNames() { return useCustomNames; }
+    public static void setUseCustomNames(boolean use) { useCustomNames = use; }
+    public static List<String> getCustomTeamNames() { return new ArrayList<>(customTeamNames); }
 
     public static void setCustomNames(List<String> names) {
         customTeamNames.clear();

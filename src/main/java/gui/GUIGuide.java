@@ -20,14 +20,12 @@ import java.util.Map;
 
 public class GUIGuide {
 
-    private Stage primaryStage;
     private ITeam playerTeam;
     private TextArea guideContentArea;
     private Map<String, String> guideTexts = new HashMap<>();
     private Runnable onBack;
 
-    public GUIGuide(Stage primaryStage, ITeam playerTeam, Runnable onBack) {
-        this.primaryStage = primaryStage;
+    public GUIGuide(ITeam playerTeam, Runnable onBack) {
         this.playerTeam = playerTeam;
         this.onBack = onBack;
         
@@ -88,12 +86,7 @@ public class GUIGuide {
         contentBox.getChildren().addAll(scrollPane, guideContentArea);
         mainLayout.setCenter(contentBox);
 
-        primaryStage.setTitle("Sports Manager - Guide");
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(mainLayout, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(mainLayout);
-        }
+        SceneManager.changeScene(mainLayout, "Sports Manager - Guide");
     }
 
     // --- GUIMAIN İLE BİREBİR AYNI METODLAR ---

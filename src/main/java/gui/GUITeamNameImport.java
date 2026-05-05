@@ -21,17 +21,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class GUITeamNameImport {
-    private Stage primaryStage;
     private Runnable onBack;
 
-    public GUITeamNameImport(Stage primaryStage, Runnable onBack) {
-        this.primaryStage = primaryStage;
+    public GUITeamNameImport(Runnable onBack) {
         this.onBack = onBack;
     }
 
     public void show() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #050505;");
+        root.getStyleClass().add("root-darker");
 
         Label lblTitle = new Label("IMPORT CUSTOM TEAM NAMES");
         lblTitle.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white; -fx-letter-spacing: 2px;");
@@ -49,16 +47,16 @@ public class GUITeamNameImport {
 
         CheckBox chkUseCustomNames = new CheckBox("Use Custom Team Names");
         chkUseCustomNames.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-        chkUseCustomNames.setSelected(TeamNameImport.useCustomNames);
-        chkUseCustomNames.setOnAction(e -> TeamNameImport.useCustomNames = chkUseCustomNames.isSelected());
+        chkUseCustomNames.setSelected(TeamNameImport.isUseCustomNames());
+        chkUseCustomNames.setOnAction(e -> TeamNameImport.setUseCustomNames(chkUseCustomNames.isSelected()));
 
         TextArea textArea = new TextArea();
         textArea.setPromptText("Team A\nTeam B\nTeam C...");
-        if (!TeamNameImport.customTeamNames.isEmpty()) {
-            textArea.setText(String.join("\n", TeamNameImport.customTeamNames));
+        if (!TeamNameImport.getCustomTeamNames().isEmpty()) {
+            textArea.setText(String.join("\n", TeamNameImport.getCustomTeamNames()));
         }
         textArea.setPrefHeight(400);
-        textArea.setStyle("-fx-control-inner-background: #162447; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-family: 'Segoe UI';");
+        textArea.getStyleClass().add("text-area-dark");
 
         centerBox.getChildren().addAll(lblInstructions, chkUseCustomNames, textArea);
         root.setCenter(centerBox);
@@ -73,17 +71,17 @@ public class GUITeamNameImport {
                         .filter(s -> !s.isEmpty())
                         .collect(Collectors.toList());
                 TeamNameImport.setCustomNames(names);
-                TeamNameImport.useCustomNames = chkUseCustomNames.isSelected();
-                if (TeamNameImport.useCustomNames) {
-                    GUIPopup.showMessage(primaryStage, "Success", null, "Successfully imported " + names.size() + " team names! Custom names are enabled.");
+                TeamNameImport.setUseCustomNames(chkUseCustomNames.isSelected());
+                if (TeamNameImport.isUseCustomNames()) {
+                    GUIPopup.showMessage("Success", null, "Successfully imported " + names.size() + " team names! Custom names are enabled.");
                 } else {
-                    GUIPopup.showMessage(primaryStage, "Success", null, "Successfully imported " + names.size() + " team names! However, custom names are disabled.");
+                    GUIPopup.showMessage("Success", null, "Successfully imported " + names.size() + " team names! However, custom names are disabled.");
                 }
             } else {
                 TeamNameImport.setCustomNames(null);
                 chkUseCustomNames.setSelected(false);
-                TeamNameImport.useCustomNames = false;
-                GUIPopup.showMessage(primaryStage, "Cleared", null, "Custom team names cleared. The game will generate random names.");
+                TeamNameImport.setUseCustomNames(false);
+                GUIPopup.showMessage("Cleared", null, "Custom team names cleared. The game will generate random names.");
             }
         });
 
@@ -92,13 +90,13 @@ public class GUITeamNameImport {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Team Names TXT File");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
-            File file = fileChooser.showOpenDialog(primaryStage);
+            File file = fileChooser.showOpenDialog(SceneManager.getPrimaryStage());
             if (file != null) {
                 try {
                     List<String> lines = Files.readAllLines(file.toPath());
                     textArea.setText(String.join("\n", lines));
                 } catch (Exception ex) {
-                    GUIPopup.showMessage(primaryStage, "Error", null, "Failed to read file: " + ex.getMessage());
+                    GUIPopup.showMessage("Error", null, "Failed to read file: " + ex.getMessage());
                 }
             }
         });
@@ -108,23 +106,15 @@ public class GUITeamNameImport {
             if (onBack != null) onBack.run();
         });
 
-        // Add basic generic styling inline just for this menu
-        String btnStyle = "-fx-background-color: transparent; -fx-border-color: #ffffff; -fx-border-radius: 30; -fx-border-width: 2; -fx-text-fill: #ffffff; -fx-font-size: 16px; -fx-font-weight: bold; -fx-cursor: hand; -fx-min-width: 200px; -fx-min-height: 50px;";
-        btnSave.setStyle(btnStyle);
-        btnLoadFile.setStyle(btnStyle);
-        btnBack.setStyle(btnStyle);
+        btnSave.getStyleClass().add("btn-outline");
+        btnLoadFile.getStyleClass().add("btn-outline");
+        btnBack.getStyleClass().add("btn-outline");
 
         HBox footer = new HBox(20, btnLoadFile, btnSave, btnBack);
         footer.setAlignment(Pos.CENTER);
         footer.setPadding(new Insets(20, 0, 30, 0));
         root.setBottom(footer);
 
-        primaryStage.setTitle("Sports Manager - Import Team Names");
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
-        primaryStage.show();
+        SceneManager.changeScene(root, "Sports Manager - Import Team Names");
     }
 }

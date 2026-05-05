@@ -9,9 +9,10 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         // Uygulamanın penceresini ekranı kaplayacak şekilde (maximized) ayarlar
         primaryStage.setMaximized(true);
+        gui.SceneManager.setPrimaryStage(primaryStage);
         
         GUITitlescreen titleScreen = new GUITitlescreen();
-        titleScreen.show(primaryStage);
+        titleScreen.show();
     }
 
     public static void main(String[] args) {

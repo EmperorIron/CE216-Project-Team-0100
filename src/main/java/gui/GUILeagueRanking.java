@@ -1,5 +1,6 @@
 package gui;
 
+import Classes.GameContext;
 import Interface.ITeam;
 import Classes.League;
 import io.SaveGame;
@@ -22,7 +23,6 @@ import java.util.List;
 
 public class GUILeagueRanking {
 
-    private Stage primaryStage;
     private ITeam playerTeam;
     private League activeLeague;
 
@@ -30,8 +30,7 @@ public class GUILeagueRanking {
     private String activeSortColumn = "P"; // Default Puan (Points)
     private boolean sortAscending = false;
 
-    public GUILeagueRanking(Stage primaryStage, ITeam playerTeam, League activeLeague) {
-        this.primaryStage = primaryStage;
+    public GUILeagueRanking(ITeam playerTeam, League activeLeague) {
         this.playerTeam = playerTeam;
         this.activeLeague = activeLeague;
         show();
@@ -41,8 +40,8 @@ public class GUILeagueRanking {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #1b1b2f;");
 
-        root.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
-        root.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "League Table"));
+        root.setTop(GUILeftandTopBarHelper.createTopBar(null));
+        root.setLeft(GUILeftandTopBarHelper.createSidebar("League Table"));
 
         VBox content = new VBox(20);
         content.setPadding(new Insets(25, 40, 20, 40));
@@ -79,13 +78,7 @@ public class GUILeagueRanking {
         content.getChildren().addAll(header, tableLayout);
         root.setCenter(content);
 
-        primaryStage.setTitle("Sports Manager - League Table - " + playerTeam.getName());
-        
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
+        SceneManager.changeScene(root, "Sports Manager - League Table - " + playerTeam.getName());
     }
 
     private void refreshTable() {
@@ -95,7 +88,7 @@ public class GUILeagueRanking {
         if (activeLeague == null) return;
 
         List<ITeam> teams = new ArrayList<>(activeLeague.getTeamRanking());
-        boolean isVolleyball = "VOLLEYBALL".equals(GUIMain.activeSport);
+        boolean isVolleyball = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport());
 
         Comparator<ITeam> comparator = (t1, t2) -> {
             int result = 0;
@@ -141,7 +134,7 @@ public class GUILeagueRanking {
         posLbl.setAlignment(Pos.CENTER);
         row.getChildren().add(posLbl);
 
-        boolean isVolleyball = "VOLLEYBALL".equals(GUIMain.activeSport);
+        boolean isVolleyball = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport());
 
         row.getChildren().add(createHeaderButton("TEAM", "TEAM", 250));
         row.getChildren().add(createHeaderButton("P", "P", 50));
@@ -206,7 +199,7 @@ public class GUILeagueRanking {
         Label nameLbl = createLabel(team.getName(), 200, true);
         nameBox.getChildren().addAll(emblem, nameLbl);
         
-        boolean isVolleyball = "VOLLEYBALL".equals(GUIMain.activeSport);
+        boolean isVolleyball = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport());
         int played = team.getWins() + team.getLosses() + (isVolleyball ? 0 : team.getDraws());
         Label pLbl = createLabel(String.valueOf(played), 50, false);
         Label wLbl = createLabel(String.valueOf(team.getWins()), 50, false);

@@ -32,10 +32,10 @@ public class GUILoadGame {
         this.onGameLoaded = onGameLoaded;
     }
 
-    public void show(Stage primaryStage) {
+    public void show() {
         // Ana düzen olarak BorderPane kullanıyoruz (Üst başlık, Orta liste, Alt buton)
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #050505;");
+        root.getStyleClass().add("root-darker");
 
         // --- ÜST KISIM (BAŞLIK) ---
         Label lblTitle = new Label("LOAD SAVED GAME");
@@ -120,7 +120,7 @@ public class GUILoadGame {
         // ScrollPane (Sınırsız Kaydırma Bileşeni)
         ScrollPane scrollPane = new ScrollPane(saveList);
         scrollPane.setFitToWidth(true); // Kartların genişliği ekrana otursun
-        scrollPane.setStyle("-fx-background: #050505; -fx-background-color: transparent; -fx-control-inner-background: #050505;");
+        scrollPane.getStyleClass().add("scroll-pane-transparent");
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED); // Sadece gerekirse dikey scroll çıkar
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Yatay scroll'u tamamen kapat
 
@@ -128,7 +128,9 @@ public class GUILoadGame {
 
         // --- ALT KISIM (GERİ BUTONU) ---
         Button btnBack = new Button("BACK TO MAIN MENU");
-        styleButton(btnBack);
+        btnBack.setPrefWidth(300);
+        btnBack.setPrefHeight(50);
+        btnBack.getStyleClass().add("btn-outline");
         btnBack.setOnAction(e -> onBackToMenu.run()); // Ana menüye dön
         
         HBox footer = new HBox(btnBack);
@@ -136,15 +138,7 @@ public class GUILoadGame {
         footer.setPadding(new Insets(20, 0, 30, 0));
         root.setBottom(footer);
 
-        primaryStage.setTitle("Sports Manager - Load Game");
-        
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
-        
-        primaryStage.show();
+        SceneManager.changeScene(root, "Sports Manager - Load Game");
     }
 
     /**
@@ -156,10 +150,7 @@ public class GUILoadGame {
         card.setPrefHeight(80);
         card.setMaxWidth(600); // Kartların çok fazla uzamasını engelle
         
-        String defaultStyle = "-fx-border-color: rgba(255, 255, 255, 0.3); -fx-border-radius: 10; -fx-border-width: 2; -fx-background-color: rgba(255, 255, 255, 0.05); -fx-background-radius: 10;";
-        String hoverStyle = "-fx-border-color: #ffffff; -fx-border-radius: 10; -fx-border-width: 2; -fx-background-color: rgba(255, 255, 255, 0.15); -fx-background-radius: 10;";
-        
-        card.setStyle(defaultStyle);
+        card.getStyleClass().add("save-card");
 
         Label lblTitle = new Label(title);
         lblTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
@@ -173,36 +164,24 @@ public class GUILoadGame {
 
         card.getChildren().addAll(lblTitle, lblDetails);
 
-        // Hover animasyonları ve tıklama
-        card.setOnMouseEntered(e -> card.setStyle(hoverStyle));
-        card.setOnMouseExited(e -> card.setStyle(defaultStyle));
-        
         card.setOnMouseClicked(e -> {
-            System.out.println("Yükleniyor: " + filePath);
+            card.setDisable(true); // Disable card so user doesn't double-click
             
-            SaveGame loadedGame = SaveManager.loadGame(filePath);
-            
-            if (loadedGame != null) {
-                System.out.println("Kaldığın lig: " + loadedGame.getCurrentLeague().getName());
-                if (onGameLoaded != null) {
-                    onGameLoaded.accept(loadedGame);
-                }
-            }
+            Thread loadThread = new Thread(() -> {
+                SaveGame loadedGame = SaveManager.loadGame(filePath);
+                javafx.application.Platform.runLater(() -> {
+                    if (loadedGame != null) {
+                        if (onGameLoaded != null) {
+                            onGameLoaded.accept(loadedGame);
+                        }
+                    } else {
+                        card.setDisable(false); // Re-enable if load failed
+                    }
+                });
+            });
+            loadThread.setDaemon(true);
+            loadThread.start();
         });
         return card;
-    }
-
-    /**
-     * Ana menüdeki buton stilini buraya da uyguluyoruz.
-     */
-    private void styleButton(Button button) {
-        button.setPrefWidth(300);
-        button.setPrefHeight(50);
-        String defaultStyle = "-fx-background-color: transparent; -fx-border-color: #ffffff; -fx-border-radius: 30; -fx-border-width: 2; -fx-text-fill: #ffffff; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';";
-        String hoverStyle = "-fx-background-color: rgba(255, 255, 255, 0.1); -fx-background-radius: 30; -fx-border-color: #ffffff; -fx-border-radius: 30; -fx-border-width: 2; -fx-text-fill: #ffffff; -fx-font-size: 16px; -fx-font-weight: bold; -fx-font-family: 'Arial';";
-        
-        button.setStyle(defaultStyle);
-        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
-        button.setOnMouseExited(e -> button.setStyle(defaultStyle));
     }
 }

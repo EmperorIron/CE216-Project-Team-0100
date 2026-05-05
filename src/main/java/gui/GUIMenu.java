@@ -1,5 +1,6 @@
 package gui;
 
+import Classes.GameContext;
 import io.SaveGame;
 import io.SaveManager;
 
@@ -19,7 +20,8 @@ import javafx.stage.StageStyle;
 public class GUIMenu {
 
     // Menüyü çağırmak için bu metodu kullanacaksın: GUIPauseMenu.show(primaryStage);
-    public static void show(Stage ownerStage) {
+    public static void show() {
+        Stage ownerStage = SceneManager.getPrimaryStage();
         Stage popupStage = new Stage();
         popupStage.initOwner(ownerStage);
         
@@ -34,7 +36,7 @@ public class GUIMenu {
         menuBox.setPadding(new Insets(40, 60, 40, 60));
         menuBox.setAlignment(Pos.CENTER);
         menuBox.setMaxWidth(350);
-        menuBox.setStyle("-fx-background-color: #162447; -fx-background-radius: 15; -fx-border-color: #e43f5a; -fx-border-width: 2; -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 20, 0, 0, 0);");
+        menuBox.getStyleClass().add("menu-box");
 
         Label title = new Label("GAME MENU");
         title.setTextFill(Color.WHITE);
@@ -42,14 +44,14 @@ public class GUIMenu {
         VBox.setMargin(title, new Insets(0, 0, 20, 0));
 
         // Butonları oluştur (Tasarım temasına uygun renklerle)
-        Button btnSave = createMenuButton("Save Game", "#4CAF50");
-        Button btnQuickSave = createMenuButton("Quick Save", "#66BB6A");
-        Button btnLoad = createMenuButton("Load Game", "#f0a500");
-        Button btnQuickLoad = createMenuButton("Quick Load", "#FFCA28");
-        Button btnGuide = createMenuButton("Guide", "#4e4e6a");
-        Button btnMainMenu = createMenuButton("Back to Main Menu", "#e43f5a");
-        Button btnExit = createMenuButton("Exit to Desktop", "#d82bbc");
-        Button btnClose = createMenuButton("Back to Game", "#1f4068");
+        Button btnSave = createMenuButton("Save Game", "btn-success");
+        Button btnQuickSave = createMenuButton("Quick Save", "btn-success");
+        Button btnLoad = createMenuButton("Load Game", "btn-warning");
+        Button btnQuickLoad = createMenuButton("Quick Load", "btn-warning");
+        Button btnGuide = createMenuButton("Guide", "btn-secondary");
+        Button btnMainMenu = createMenuButton("Back to Main Menu", "btn-primary");
+        Button btnExit = createMenuButton("Exit to Desktop", "btn-purple");
+        Button btnClose = createMenuButton("Back to Game", "btn-info");
 
         // --- BUTON İŞLEVLERİ ---
         btnClose.setOnAction(e -> popupStage.close());
@@ -59,25 +61,24 @@ public class GUIMenu {
         btnMainMenu.setOnAction(e -> {
             popupStage.close();
             GUITitlescreen titleScreen = new GUITitlescreen();
-            titleScreen.show(ownerStage);
+            titleScreen.show();
         });
         
         btnGuide.setOnAction(e -> {
             popupStage.close();
             javafx.scene.Parent currentRoot = ownerStage.getScene().getRoot();
             String currentTitle = ownerStage.getTitle();
-            new GUIGuide(ownerStage, GUIMain.playerTeam, () -> {
+            new GUIGuide(GameContext.getInstance().getPlayerTeam(), () -> {
                 ownerStage.getScene().setRoot(currentRoot);
                 ownerStage.setTitle(currentTitle);
             });
         });
 
         btnQuickSave.setOnAction(e -> {
-            SaveGame saveData = new SaveGame("autosave", GUIMain.activeLeague, GUIMain.activeCalendar, GUIMain.playerTeam,
-                    gui.GUISquadManager.getPitchPlayers(), gui.GUISquadManager.getPlayersOnPitchQueue(), gui.GUISquadManager.getReservePlayersQueue(),
-                    gui.GUISquadManager.getCurrentTacticStyle());
+            SaveGame saveData = new SaveGame("autosave", GameContext.getInstance().getActiveLeague(), GameContext.getInstance().getActiveCalendar(), GameContext.getInstance().getPlayerTeam(),
+                    gui.GUISquadManager.getInstance().getPitchPlayers(), gui.GUISquadManager.getInstance().getPlayersOnPitchQueue(), gui.GUISquadManager.getInstance().getReservePlayersQueue(),
+                    gui.GUISquadManager.getInstance().getCurrentTacticStyle());
             SaveManager.saveGame(saveData, "autosave");
-            System.out.println("Game quick saved: autosave.json");
             // İsteğe bağlı: Ekranda küçük bir onay mesajı gösterilebilir.
         });
 
@@ -87,10 +88,10 @@ public class GUIMenu {
                 SaveGame loadedGame = SaveManager.loadGame("saves/autosave.json");
                 if (loadedGame != null) {
                     popupStage.close();
-                    GUIMain.loadSavedGame(loadedGame, ownerStage);
+                    GUIMain.loadSavedGame(loadedGame);
                 }
             } else {
-                GUIPopup.showMessage(ownerStage, "Warning", "Quick Save Not Found", "No quick save (autosave) has been created yet.");
+                GUIPopup.showMessage("Warning", "Quick Save Not Found", "No quick save (autosave) has been created yet.");
             }
         });
 
@@ -103,9 +104,9 @@ public class GUIMenu {
                     ownerStage.getScene().setRoot(currentRoot);
                     ownerStage.setTitle(currentTitle);
                 },
-                (SaveGame loadedGame) -> GUIMain.loadSavedGame(loadedGame, ownerStage)
+                (SaveGame loadedGame) -> GUIMain.loadSavedGame(loadedGame)
             );
-            loadGameMenu.show(ownerStage);
+            loadGameMenu.show();
         });
 
         btnSave.setOnAction(e -> {
@@ -115,7 +116,7 @@ public class GUIMenu {
             new GUISaveGame(() -> {
                 ownerStage.getScene().setRoot(currentRoot);
                 ownerStage.setTitle(currentTitle);
-            }).show(ownerStage);
+            }).show();
         });
 
         // Butonları kutuya ekle
@@ -130,6 +131,11 @@ public class GUIMenu {
         root.setPadding(new Insets(50));
 
         Scene scene = new Scene(root);
+        try {
+            scene.getStylesheets().add(SceneManager.class.getResource("/styles.css").toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Warning: styles.css not found in resources folder.");
+        }
         scene.setFill(Color.TRANSPARENT); // JavaFX penceresinin arka planını şeffaf yapar
         popupStage.setScene(scene);
 
@@ -144,18 +150,11 @@ public class GUIMenu {
     }
 
     // Özel tasarımlı buton üretici
-    private static Button createMenuButton(String text, String baseColor) {
+    private static Button createMenuButton(String text, String cssClass) {
         Button btn = new Button(text);
         btn.setMaxWidth(Double.MAX_VALUE);
         btn.setPrefHeight(45);
-        btn.setStyle("-fx-background-color: " + baseColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-background-radius: 5;");
-        
-        btn.setOnMouseEntered(e -> {
-            btn.setStyle("-fx-background-color: derive(" + baseColor + ", 30%); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-background-radius: 5; -fx-cursor: hand;");
-        });
-        btn.setOnMouseExited(e -> {
-            btn.setStyle("-fx-background-color: " + baseColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px; -fx-background-radius: 5;");
-        });
+        btn.getStyleClass().addAll("btn", cssClass);
         
         return btn;
     }

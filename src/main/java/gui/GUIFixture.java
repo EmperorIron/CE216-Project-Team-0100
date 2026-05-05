@@ -23,12 +23,10 @@ import java.util.Map;
 
 public class GUIFixture {
 
-    private Stage primaryStage;
     private ITeam playerTeam;
     private Calendar calendar;
 
-    public GUIFixture(Stage primaryStage, ITeam playerTeam, Calendar calendar) {
-        this.primaryStage = primaryStage;
+    public GUIFixture(ITeam playerTeam, Calendar calendar) {
         this.playerTeam = playerTeam;
         this.calendar = calendar;
         show();
@@ -39,8 +37,8 @@ public class GUIFixture {
         root.setStyle("-fx-background-color: #1b1b2f;");
 
         // Üst ve Sol Menüleri Ekle
-        root.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
-        root.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Fixture"));
+        root.setTop(GUILeftandTopBarHelper.createTopBar(null));
+        root.setLeft(GUILeftandTopBarHelper.createSidebar("Fixture"));
 
         // İçerik Alanı
         VBox content = new VBox(20);
@@ -103,13 +101,7 @@ public class GUIFixture {
         content.getChildren().addAll(header, scrollPane);
         root.setCenter(content);
 
-        primaryStage.setTitle("Fixture - " + playerTeam.getName());
-        
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
+        SceneManager.changeScene(root, "Fixture - " + playerTeam.getName());
     }
 
     private void populateWeekSelector(HBox weekSelectorBox, int actualCurrentWeek, int selectedWeek, Map<Integer, List<Game>> schedule, VBox fixtureList) {

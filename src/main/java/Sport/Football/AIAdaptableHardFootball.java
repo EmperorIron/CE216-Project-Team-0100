@@ -18,7 +18,7 @@ public class AIAdaptableHardFootball extends AIFootball {
     public ITactic generateStartingTactic() {
         List<String> candidateFormations = Arrays.asList(getCoachPreferredFormation());
 
-        return findBestTactic(candidateFormations, getAvailablePlayers(), "BALANCED");
+        return findBestTactic(candidateFormations, getAvailablePlayers());
     }
 
     @Override
@@ -100,94 +100,8 @@ public class AIAdaptableHardFootball extends AIFootball {
         }
     }
 
-    private ITactic findBestTactic(List<String> formations, List<IPlayer> players, String mode) {
-        ITactic bestTactic = null;
-        double bestScore = Double.NEGATIVE_INFINITY;
-
-        for (String formationStr : new HashSet<>(formations)) { // Use HashSet to avoid duplicates
-            ITactic candidateTactic = new TacticFootball(formationStr);
-            List<IPlayer> lineup = selectBestLineupForFormation(formationStr, players);
-            if (lineup.size() < 11) continue;
-
-            candidateTactic.setStartingLineup(lineup);
-            float xg = candidateTactic.getTotalXGMultiplier();
-            float xga = candidateTactic.getTotalXGAMultiplier();
-            
-            double score = switch (mode) {
-                case "ATTACK" -> xg;
-                case "DEFEND" -> -xga;
-                default -> xg - xga;
-            };
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestTactic = candidateTactic;
-            }
-        }
-
-        if (bestTactic == null) { // Fallback
-            bestTactic = new TacticFootball("1-4-4-2");
-            players.sort(Comparator.comparingDouble(IPlayer::calculateOverallRating).reversed());
-            bestTactic.setStartingLineup(new ArrayList<>(players.subList(0, 11)));
-        }
-        
-        List<IPlayer> starters = bestTactic.getStartingLineup();
-        List<IPlayer> subs = new ArrayList<>(players);
-        subs.removeAll(starters);
-        bestTactic.setSubstitutes(subs);
-        return bestTactic;
-    }
-
-    private List<IPlayer> selectBestLineupForFormation(String formationStr, List<IPlayer> availablePlayers) {
-        Map<String, Integer> required = parseFormationCounts(formationStr);
-        List<IPlayer> lineup = new ArrayList<>();
-        List<IPlayer> pool = new ArrayList<>(availablePlayers);
-        pool.sort(Comparator.comparingDouble(IPlayer::calculateOverallRating).reversed());
-
-        for (Map.Entry<String, Integer> entry : required.entrySet()) {
-            String role = entry.getKey();
-            int count = entry.getValue();
-            List<IPlayer> picked = pool.stream().filter(p -> getRole(p).equals(role)).limit(count).collect(Collectors.toList());
-            lineup.addAll(picked);
-            pool.removeAll(picked);
-        }
-        return lineup;
-    }
-
-    private String getRole(IPlayer player) {
-        int posId = player.getPrimaryPositionId();
-        if (PositionsFootball.isGoalkeeperPosition(posId)) return "GOALKEEPER";
-        if (PositionsFootball.isDefenderPosition(posId)) return "DEFENDER";
-        if (PositionsFootball.isForwardPosition(posId)) return "FORWARD";
-        return "MIDFIELDER";
-    }
-
-    private Map<String, Integer> parseFormationCounts(String formationStr) {
-        Map<String, Integer> counts = new HashMap<>();
-        String[] parts = formationStr.split("-");
-        
-        int offset = 0;
-        if (parts.length > 0 && parts[0].equals("1")) {
-            counts.put("GOALKEEPER", 1);
-            offset = 1;
-        } else {
-            counts.put("GOALKEEPER", 1);
-        }
-        
-        int remainingLines = parts.length - offset;
-        if (remainingLines == 3) {
-            counts.put("DEFENDER", Integer.parseInt(parts[offset]));
-            counts.put("MIDFIELDER", Integer.parseInt(parts[offset + 1]));
-            counts.put("FORWARD", Integer.parseInt(parts[offset + 2]));
-        } else if (remainingLines == 4) {
-            counts.put("DEFENDER", Integer.parseInt(parts[offset]));
-            counts.put("MIDFIELDER", Integer.parseInt(parts[offset + 1]) + Integer.parseInt(parts[offset + 2]));
-            counts.put("FORWARD", Integer.parseInt(parts[offset + 3]));
-        } else if (remainingLines == 2) {
-            counts.put("DEFENDER", Integer.parseInt(parts[offset]));
-            counts.put("MIDFIELDER", Integer.parseInt(parts[offset + 1]));
-            counts.put("FORWARD", 1);
-        }
-        return counts;
+    @Override
+    protected double evaluateTactic(ITactic candidateTactic) {
+        return candidateTactic.getTotalXGMultiplier() - candidateTactic.getTotalXGAMultiplier(); // Balanced difference
     }
 }

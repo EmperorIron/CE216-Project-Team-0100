@@ -1,17 +1,8 @@
 package gui;
 
+import Classes.GameContext;
 import Classes.TrainingCategory;
 import Interface.ITeam;
-import Sport.Football.TrainingDefensiveFootball;
-import Sport.Football.TrainingOffensiveFootball;
-import Sport.Football.TrainingPhysicalFootball;
-import Sport.Football.TrainingMentalFootball;
-import Sport.Volleyball.TrainingDefensiveVolleyball;
-import Sport.Volleyball.TrainingOffensiveVolleyball;
-import Sport.Volleyball.TrainingPhysicalVolleyball;
-import Sport.Volleyball.TrainingMentalVolleyball;
-import Sport.Football.GameRulesFootball;
-import Sport.Volleyball.GameRulesVolleyball;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.Insets;
@@ -35,7 +26,6 @@ import Classes.Trait;
 
 public class GUITraining {
 
-    private Stage primaryStage;
     private ITeam playerTeam;
     
     public static Map<String, TrainingCategory> weeklySchedule = new HashMap<>();
@@ -52,8 +42,9 @@ public class GUITraining {
     public static int xpOffensive = 0, xpDefensive = 0, xpPhysical = 0, xpMental = 0;
     public static String lastTrainedCategory = "-";
 
-    static {
-        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+    public static void initWeeklySchedule() {
+        if (!weeklySchedule.isEmpty() || GameContext.getInstance().getSportFactory() == null) return;
+        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
         String scheduleStr = rules.getTrainingormatch();
         String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
         
@@ -65,28 +56,21 @@ public class GUITraining {
         }
     }
 
-    public GUITraining(Stage primaryStage, ITeam playerTeam) {
-        this.primaryStage = primaryStage;
+    public GUITraining(ITeam playerTeam) {
         this.playerTeam = playerTeam;
         
+        initWeeklySchedule();
+
         if (playerTeam != null && playerTeam.getCoaches() != null && !playerTeam.getCoaches().isEmpty()) {
             coachTraitNames.addAll(playerTeam.getCoaches().get(0).getTraits().keySet());
         } else {
-            if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
-                coachTraitNames.addAll(java.util.Arrays.asList("Serve Coaching", "Attack Coaching", "Defense Coaching", "Player Management", "Motivation"));
-            } else {
-                coachTraitNames.addAll(java.util.Arrays.asList("Offensive Coaching", "Defensive Coaching", "Player Management", "Motivation", "Youth Development"));
-            }
+            coachTraitNames.addAll(GameContext.getInstance().getSportFactory().getDefaultCoachTraitNames());
         }
 
         if (playerTeam != null && playerTeam.getPlayers() != null && !playerTeam.getPlayers().isEmpty()) {
             playerTraitNames.addAll(playerTeam.getPlayers().get(0).getTraits().keySet());
         } else {
-            if ("VOLLEYBALL".equals(GUIMain.activeSport)) {
-                playerTraitNames.addAll(java.util.Arrays.asList("Serving", "Spiking", "Setting", "Blocking", "Digging", "Speed", "Physical", "Mental"));
-            } else {
-                playerTraitNames.addAll(java.util.Arrays.asList("Defense", "Passing", "Shooting", "Speed", "Physical", "Mental", "Goalkeeping"));
-            }
+            playerTraitNames.addAll(GameContext.getInstance().getSportFactory().getDefaultPlayerTraitNames());
         }
 
         show();
@@ -96,8 +80,8 @@ public class GUITraining {
         BorderPane mainLayout = new BorderPane();
         mainLayout.setStyle("-fx-background-color: #1b1b2f;");
 
-        mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(primaryStage, null));
-        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar(primaryStage, "Training"));
+        mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(null));
+        mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar("Training"));
 
         HBox content = new HBox(15);
         content.setPadding(new Insets(20));
@@ -126,13 +110,7 @@ public class GUITraining {
         content.getChildren().addAll(leftPanel, middlePanel, rightPanel);
         mainLayout.setCenter(content);
 
-        primaryStage.setTitle("Sports Manager - Training");
-        
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(mainLayout, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(mainLayout);
-        }
+        SceneManager.changeScene(mainLayout, "Sports Manager - Training");
     }
 
     private VBox createScheduleContainer() {
@@ -141,7 +119,7 @@ public class GUITraining {
         container.setMaxWidth(300);
 
         String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
         String scheduleStr = rules.getTrainingormatch();
 
         for (int i = 0; i < days.length; i++) {
@@ -531,8 +509,6 @@ public class GUITraining {
     public static void applyWeeklyTrainingStatically(ITeam team) {
         if (team == null) return;
 
-        System.out.println("--- WEEKLY TRAINING STARTED ---");
-
         oldOvrMap.clear();
         oldTraitLevelMap.clear();
         for (IPlayer p : team.getPlayers()) {
@@ -546,7 +522,8 @@ public class GUITraining {
             oldTraitLevelMap.put(p, tMap);
         }
 
-        Classes.GameRules rules = "VOLLEYBALL".equals(GUIMain.activeSport) ? new GameRulesVolleyball() : new GameRulesFootball();
+        initWeeklySchedule();
+        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
         String scheduleStr = rules.getTrainingormatch();
         String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
@@ -562,38 +539,21 @@ public class GUITraining {
                 if (category == null) continue;
                 
                 try {
+                    Classes.Training training = GameContext.getInstance().getSportFactory().createTraining(category);
+                    training.apply(team);
+                    int xp = getExpectedXPStatically(team, training.getCoachTraitForTraining());
+                    
                     switch (category) {
-                        case OFFENSIVE:
-                            if ("VOLLEYBALL".equals(GUIMain.activeSport)) new TrainingOffensiveVolleyball().apply(team);
-                            else new TrainingOffensiveFootball().apply(team);
-                            String offTrait = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Attack Coaching" : "Offensive Coaching";
-                            xpOffensive += getExpectedXPStatically(team, offTrait);
-                            break;
-                        case DEFENSIVE:
-                            if ("VOLLEYBALL".equals(GUIMain.activeSport)) new TrainingDefensiveVolleyball().apply(team);
-                            else new TrainingDefensiveFootball().apply(team);
-                            String defTrait = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Defense Coaching" : "Defensive Coaching";
-                            xpDefensive += getExpectedXPStatically(team, defTrait);
-                            break;
-                        case PHYSICAL:
-                            if ("VOLLEYBALL".equals(GUIMain.activeSport)) new TrainingPhysicalVolleyball().apply(team);
-                            else new TrainingPhysicalFootball().apply(team);
-                            String phyTrait = "VOLLEYBALL".equals(GUIMain.activeSport) ? "Motivation" : "Motivation";
-                            xpPhysical += getExpectedXPStatically(team, phyTrait);
-                            break;
-                        case MENTAL:
-                            if ("VOLLEYBALL".equals(GUIMain.activeSport)) new TrainingMentalVolleyball().apply(team);
-                            else new TrainingMentalFootball().apply(team);
-                            xpMental += getExpectedXPStatically(team, "Player Management");
-                            break;
+                        case OFFENSIVE: xpOffensive += xp; break;
+                        case DEFENSIVE: xpDefensive += xp; break;
+                        case PHYSICAL: xpPhysical += xp; break;
+                        case MENTAL: xpMental += xp; break;
                     }
                 } catch (Exception ex) {
-                    System.out.println("ERROR: " + ex.getMessage());
+                    System.err.println("ERROR: " + ex.getMessage());
                 }
             }
         }
-
-        System.out.println("--- TRAINING WEEK ENDED. PLAYER DEVELOPMENTS SAVED. ---");
 
         StringBuilder cats = new StringBuilder();
         if (xpOffensive > 0) cats.append("OFF ");

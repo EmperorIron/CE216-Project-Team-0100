@@ -81,7 +81,6 @@ public class SaveManager {
         // Dosyaya JSON olarak yaz
         try (FileWriter writer = new FileWriter(SAVE_DIR + fileName + ".json")) {
             gson.toJson(data, writer);
-            System.out.println("Oyun başarıyla kaydedildi: " + fileName);
             return true;
         } catch (IOException e) {
             System.err.println("Kaydetme hatası: " + e.getMessage());
@@ -94,7 +93,6 @@ public class SaveManager {
         try (FileReader reader = new FileReader(filePath)) {
             // JSON dosyasını oku ve SaveGame objesine çevir
             SaveGame loadedData = gson.fromJson(reader, SaveGame.class);
-            System.out.println("Oyun başarıyla yüklendi: " + loadedData.getSaveName());
             return loadedData;
         } catch (Exception e) {
             System.err.println("Yükleme hatası, dosya bozuk olabilir: " + e.getMessage());

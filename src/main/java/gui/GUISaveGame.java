@@ -1,5 +1,6 @@
 package gui;
 
+import Classes.GameContext;
 import io.SaveGame;
 import io.SaveManager;
 import javafx.geometry.Insets;
@@ -21,14 +22,12 @@ import java.util.Date;
 public class GUISaveGame {
 
     private final Runnable onBack;
-    private Stage primaryStage;
 
     public GUISaveGame(Runnable onBack) {
         this.onBack = onBack;
     }
 
-    public void show(Stage primaryStage) {
-        this.primaryStage = primaryStage;
+    public void show() {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #050505;");
 
@@ -94,15 +93,7 @@ public class GUISaveGame {
         footer.setPadding(new Insets(20, 0, 30, 0));
         root.setBottom(footer);
 
-        primaryStage.setTitle("Sports Manager - Save Game");
-        
-        if (primaryStage.getScene() == null) {
-            primaryStage.setScene(new Scene(root, 1280, 720));
-        } else {
-            primaryStage.getScene().setRoot(root);
-        }
-        
-        primaryStage.show();
+        SceneManager.changeScene(root, "Sports Manager - Save Game");
     }
 
     private VBox createSaveCard(String title, String date, String clubName, String gameTime, String fileName) {
@@ -137,21 +128,27 @@ public class GUISaveGame {
         card.setOnMouseExited(e -> card.setStyle(defaultStyle));
         
         card.setOnMouseClicked(e -> {
+            card.setDisable(true); // Disable to prevent double-saving
+            
             SaveGame saveData = new SaveGame(title, 
-                GUIMain.activeLeague, 
-                GUIMain.activeCalendar, 
-                GUIMain.playerTeam,
-                gui.GUISquadManager.getPitchPlayers(), 
-                gui.GUISquadManager.getPlayersOnPitchQueue(), 
-                gui.GUISquadManager.getReservePlayersQueue(),
-                gui.GUISquadManager.getCurrentTacticStyle());
+                GameContext.getInstance().getActiveLeague(), 
+                GameContext.getInstance().getActiveCalendar(), 
+                GameContext.getInstance().getPlayerTeam(),
+                gui.GUISquadManager.getInstance().getPitchPlayers(), 
+                gui.GUISquadManager.getInstance().getPlayersOnPitchQueue(), 
+                gui.GUISquadManager.getInstance().getReservePlayersQueue(),
+                gui.GUISquadManager.getInstance().getCurrentTacticStyle());
                 
-            SaveManager.saveGame(saveData, fileName);
-            
-            GUIPopup.showMessage(primaryStage, "Save Successful", null, "Game successfully saved to " + title + ".");
-            
-            // Refresh UI to update timestamps
-            show(primaryStage);
+            Thread saveThread = new Thread(() -> {
+                SaveManager.saveGame(saveData, fileName);
+                
+                javafx.application.Platform.runLater(() -> {
+                    GUIPopup.showMessage("Save Successful", null, "Game successfully saved to " + title + ".");
+                    show(); // Refresh UI
+                });
+            });
+            saveThread.setDaemon(true);
+            saveThread.start();
         });
         return card;
     }

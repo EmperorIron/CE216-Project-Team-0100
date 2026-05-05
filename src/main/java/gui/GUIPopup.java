@@ -19,7 +19,8 @@ import java.util.function.Consumer;
 
 public class GUIPopup {
 
-    public static void showMessage(Stage ownerStage, String titleText, String headerText, String contentText) {
+    public static void showMessage(String titleText, String headerText, String contentText) {
+        Stage ownerStage = SceneManager.getPrimaryStage();
         Stage popupStage = createBaseStage(ownerStage);
         VBox menuBox = createBaseMenuBox();
 
@@ -41,7 +42,7 @@ public class GUIPopup {
         content.setWrapText(true);
         content.setAlignment(Pos.CENTER);
 
-        Button btnClose = createMenuButton("OK", "#4CAF50");
+        Button btnClose = createMenuButton("OK", "btn-success");
         btnClose.setOnAction(e -> popupStage.close());
 
         menuBox.getChildren().addAll(title, header, content, new Region(), btnClose);
@@ -50,7 +51,8 @@ public class GUIPopup {
         finalizeAndShow(popupStage, ownerStage, menuBox);
     }
 
-    public static void showConfirmation(Stage ownerStage, String titleText, String headerText, String contentText, Runnable onConfirm, Runnable onCancel) {
+    public static void showConfirmation(String titleText, String headerText, String contentText, Runnable onConfirm, Runnable onCancel) {
+        Stage ownerStage = SceneManager.getPrimaryStage();
         Stage popupStage = createBaseStage(ownerStage);
         VBox menuBox = createBaseMenuBox();
 
@@ -72,8 +74,8 @@ public class GUIPopup {
         content.setWrapText(true);
         content.setAlignment(Pos.CENTER);
 
-        Button btnYes = createMenuButton("Yes", "#4CAF50");
-        Button btnNo = createMenuButton("No", "#e43f5a");
+        Button btnYes = createMenuButton("Yes", "btn-success");
+        Button btnNo = createMenuButton("No", "btn-primary");
 
         btnYes.setOnAction(e -> { popupStage.close(); if (onConfirm != null) onConfirm.run(); });
         btnNo.setOnAction(e -> { popupStage.close(); if (onCancel != null) onCancel.run(); });
@@ -87,7 +89,8 @@ public class GUIPopup {
         finalizeAndShow(popupStage, ownerStage, menuBox);
     }
 
-    public static void showChoiceDialog(Stage ownerStage, String titleText, String headerText, String contentText, List<String> choices, Consumer<String> onSelect) {
+    public static void showChoiceDialog(String titleText, String headerText, String contentText, List<String> choices, Consumer<String> onSelect) {
+        Stage ownerStage = SceneManager.getPrimaryStage();
         Stage popupStage = createBaseStage(ownerStage);
         VBox menuBox = createBaseMenuBox();
         menuBox.setMaxWidth(675);
@@ -107,7 +110,7 @@ public class GUIPopup {
         VBox choicesBox = new VBox(10);
         choicesBox.setAlignment(Pos.CENTER);
         for (String choice : choices) {
-            Button btnChoice = createMenuButton(choice, "#1f4068");
+            Button btnChoice = createMenuButton(choice, "btn-info");
             btnChoice.setOnAction(e -> { popupStage.close(); if (onSelect != null) onSelect.accept(choice); });
             choicesBox.getChildren().add(btnChoice);
         }
@@ -115,11 +118,11 @@ public class GUIPopup {
         ScrollPane scrollPane = new ScrollPane(choicesBox);
         scrollPane.setFitToWidth(false);
         scrollPane.setPrefHeight(450);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-control-inner-background: transparent;");
+        scrollPane.getStyleClass().add("scroll-pane-transparent");
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        Button btnCancel = createMenuButton("Cancel", "#e43f5a");
+        Button btnCancel = createMenuButton("Cancel", "btn-primary");
         btnCancel.setOnAction(e -> popupStage.close());
 
         menuBox.getChildren().addAll(title, header, scrollPane, new Region(), btnCancel);
@@ -141,7 +144,7 @@ public class GUIPopup {
         menuBox.setPadding(new Insets(40, 60, 40, 60));
         menuBox.setAlignment(Pos.CENTER);
         menuBox.setMaxWidth(350);
-        menuBox.setStyle("-fx-background-color: #162447; -fx-background-radius: 15; -fx-border-color: #e43f5a; -fx-border-width: 2; -fx-border-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 20, 0, 0, 0);");
+        menuBox.getStyleClass().add("menu-box");
         return menuBox;
     }
 
@@ -151,6 +154,11 @@ public class GUIPopup {
         root.setPadding(new Insets(50));
 
         Scene scene = new Scene(root);
+        try {
+            scene.getStylesheets().add(SceneManager.class.getResource("/styles.css").toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Warning: styles.css not found in resources folder.");
+        }
         scene.setFill(Color.TRANSPARENT);
         popupStage.setScene(scene);
 
@@ -164,14 +172,11 @@ public class GUIPopup {
         popupStage.showAndWait();
     }
 
-    private static Button createMenuButton(String text, String baseColor) {
+    private static Button createMenuButton(String text, String cssClass) {
         Button btn = new Button(text);
         btn.setMaxWidth(Double.MAX_VALUE);
         btn.setPrefHeight(45);
-        btn.setStyle("-fx-background-color: " + baseColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;");
-        
-        btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: derive(" + baseColor + ", 30%); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5; -fx-cursor: hand;"));
-        btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: " + baseColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 5;"));
+        btn.getStyleClass().addAll("btn", cssClass);
         
         return btn;
     }
