@@ -15,7 +15,6 @@ Sport\Volleyball\TacticVolleyball.class
 Classes\Game.class
 Interface\IGame.class
 Sport\Volleyball\CoachVolleyball.class
-gui\GUI.class
 Sport\Football\HumanManagerFootball.class
 gui\GUIMain.class
 Sport\Football\GameRulesFootball.class
@@ -47,6 +46,7 @@ gui\GUITeamSelection.class
 Sport\Football\PlayerGeneratorFootball.class
 Sport\Volleyball\HumanManagerVolleyball.class
 gui\GUIGame.class
+gui\GUIError.class
 Sport\Volleyball\GameRulesVolleyball.class
 gui\GUITraining$2.class
 Sport\Volleyball\PlayerVolleyball.class
@@ -69,6 +69,7 @@ Classes\TrainingCategory.class
 gui\GUILeagueRanking.class
 Interface\ITactic.class
 Classes\CoachGenerator.class
+Classes\ErrorHandler.class
 gui\GUISquadManager.class
 Classes\Training.class
 gui\GUITraining.class

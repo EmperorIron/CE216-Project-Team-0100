@@ -38,6 +38,16 @@ public class GUILeftandTopBarHelper {
         dateLabel.setTextFill(Color.WHITE);
         dateLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
         
+        int errorCount = Classes.ErrorHandler.getErrors().size();
+        String errorText = "Error" + String.format("%04d", Math.min(errorCount, 9999));
+        Button errorButton = new Button(errorText);
+        String errBaseColor = errorCount > 0 ? "#e43f5a" : "#4e4e6a";
+        String errHoverColor = errorCount > 0 ? "#ff5773" : "#6a6a8c";
+        errorButton.setStyle("-fx-background-color: " + errBaseColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
+        errorButton.setOnMouseEntered(e -> errorButton.setStyle("-fx-background-color: " + errHoverColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
+        errorButton.setOnMouseExited(e -> errorButton.setStyle("-fx-background-color: " + errBaseColor + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;"));
+        errorButton.setOnAction(e -> GUIError.show(primaryStage));
+
         Button menuButton = new Button("Menu ⚙");
         menuButton.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5;");
         menuButton.setOnMouseEntered(e -> menuButton.setStyle("-fx-background-color: #ffb732; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 8 20 8 20; -fx-background-radius: 5; -fx-cursor: hand;"));
@@ -72,7 +82,7 @@ public class GUILeftandTopBarHelper {
             }
         });
 
-        topBar.getChildren().addAll(infoBox, spacer, dateLabel, menuButton, continueButton);
+        topBar.getChildren().addAll(infoBox, spacer, dateLabel, errorButton, menuButton, continueButton);
         return topBar;
     }
 
