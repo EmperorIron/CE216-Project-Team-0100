@@ -23,6 +23,7 @@ public class GUITitlescreen {
         Button btnNewGame = createStyledButton("NEW GAME");
         Button btnLoadGame = createStyledButton("LOAD GAME");
         Button btnGuide = createStyledButton("GUIDE");
+        Button btnImportTeams = createStyledButton("IMPORT TEAM NAMES");
         
         
         btnNewGame.setOnAction(e -> {
@@ -44,10 +45,14 @@ public class GUITitlescreen {
         btnGuide.setOnAction(e -> {
             new GUIGuide(primaryStage, null, () -> this.show(primaryStage));
         });
+
+        btnImportTeams.setOnAction(e -> {
+            new GUITeamNameImport(primaryStage, () -> this.show(primaryStage)).show();
+        });
        
 
         // Add all buttons to the layout
-        root.getChildren().addAll(btnNewGame, btnLoadGame, btnGuide);
+        root.getChildren().addAll(btnNewGame, btnLoadGame, btnImportTeams, btnGuide);
 
         primaryStage.setTitle("Sports Manager - Main Menu");
         

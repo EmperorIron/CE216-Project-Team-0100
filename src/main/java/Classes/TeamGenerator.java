@@ -13,10 +13,17 @@ public abstract class TeamGenerator {
 
 
     protected static String[] generateTeamIdentity() {
+        String teamName;
+        String customName = TeamNameImport.getNextCustomName();
         String city = faker.address().city();
-        String suffix = SUFFIXES[rand.nextInt(SUFFIXES.length)];
-        
-        String teamName = city + " " + suffix;
+
+        if (customName != null) {
+            teamName = customName;
+        } else {
+            String suffix = SUFFIXES[rand.nextInt(SUFFIXES.length)];
+            teamName = city + " " + suffix;
+        }
+
         String country = faker.address().country();
         
         char firstLetter = teamName.toUpperCase().charAt(0);
