@@ -25,17 +25,19 @@ public class GUIPopup {
 
         Label title = new Label(titleText);
         title.setTextFill(Color.web("#e43f5a"));
-        title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
+        title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+        title.setWrapText(true);
+        title.setAlignment(Pos.CENTER);
 
         Label header = new Label(headerText != null ? headerText : "");
         header.setTextFill(Color.WHITE);
-        header.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+        header.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
         header.setWrapText(true);
         header.setAlignment(Pos.CENTER);
 
         Label content = new Label(contentText);
         content.setTextFill(Color.web("#a5a5b0"));
-        content.setFont(Font.font("Segoe UI", 14));
+        content.setFont(Font.font("Segoe UI", 12));
         content.setWrapText(true);
         content.setAlignment(Pos.CENTER);
 
@@ -54,17 +56,19 @@ public class GUIPopup {
 
         Label title = new Label(titleText);
         title.setTextFill(Color.web("#f0a500"));
-        title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
+        title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+        title.setWrapText(true);
+        title.setAlignment(Pos.CENTER);
 
         Label header = new Label(headerText != null ? headerText : "");
         header.setTextFill(Color.WHITE);
-        header.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
+        header.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
         header.setWrapText(true);
         header.setAlignment(Pos.CENTER);
 
         Label content = new Label(contentText);
         content.setTextFill(Color.web("#a5a5b0"));
-        content.setFont(Font.font("Segoe UI", 14));
+        content.setFont(Font.font("Segoe UI", 12));
         content.setWrapText(true);
         content.setAlignment(Pos.CENTER);
 
@@ -86,15 +90,17 @@ public class GUIPopup {
     public static void showChoiceDialog(Stage ownerStage, String titleText, String headerText, String contentText, List<String> choices, Consumer<String> onSelect) {
         Stage popupStage = createBaseStage(ownerStage);
         VBox menuBox = createBaseMenuBox();
-        menuBox.setMaxWidth(450);
+        menuBox.setMaxWidth(675);
 
         Label title = new Label(titleText);
         title.setTextFill(Color.WHITE);
-        title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
+        title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
+        title.setWrapText(true);
+        title.setAlignment(Pos.CENTER);
 
         Label header = new Label(headerText != null ? headerText : "");
         header.setTextFill(Color.web("#a5a5b0"));
-        header.setFont(Font.font("Segoe UI", 14));
+        header.setFont(Font.font("Segoe UI", 12));
         header.setWrapText(true);
         header.setAlignment(Pos.CENTER);
 
@@ -107,10 +113,10 @@ public class GUIPopup {
         }
 
         ScrollPane scrollPane = new ScrollPane(choicesBox);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(300);
+        scrollPane.setFitToWidth(false);
+        scrollPane.setPrefHeight(450);
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-control-inner-background: transparent;");
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
         Button btnCancel = createMenuButton("Cancel", "#e43f5a");
