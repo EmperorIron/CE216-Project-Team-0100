@@ -292,7 +292,7 @@ public class MatchController {
     private void syncSubAndInjury(String log) {
         ITeam playerTeam = GameContext.getInstance().getPlayerTeam();
         if (playerTeam == null) return;
-        if (log.contains("Out: ") && log.contains(" | In: ") && log.contains(playerTeam.getName())) {
+        if (log.contains("Out: ") && log.contains(" | In: ") && log.contains("(" + playerTeam.getName() + ")")) {
             String outName = log.substring(log.indexOf("Out: ") + 5, log.indexOf(" | In: ")).trim();
             String inName  = log.substring(log.indexOf(" | In: ") + 7).trim();
             IPlayer pOut = null, pIn = null;
@@ -301,11 +301,6 @@ public class MatchController {
                 if (p.getFullName().equals(inName))  pIn  = p;
             }
             if (pOut != null && pIn != null) GUISquadManager.getInstance().performAutomaticSub(pOut, pIn);
-        } else if (log.contains("INJURY!") && log.contains("Injured: ") && log.contains(playerTeam.getName())) {
-            String injName = log.substring(log.indexOf("Injured: ") + 9, log.indexOf(". Player taken off")).trim();
-            for (IPlayer p : playerTeam.getPlayers()) {
-                if (p.getFullName().equals(injName)) { GUISquadManager.getInstance().performAutomaticInjuryRemoval(p); break; }
-            }
         }
     }
 

@@ -117,42 +117,7 @@ public class GUIMain {
                     }
 
                     if (playerGame != null && !playerGame.isCompleted()) {
-                        Classes.GameRules rules = ctx.getSportFactory().createGameRules();
-                        if (gui.GUISquadManager.getInstance().getPlayersOnPitchQueue().size() != (rules.getFieldPlayerCount() - gui.GUISquadManager.getInstance().redCardedPlayers.size())) {
-                            ctx.setTacticConfirmedForMatch(false);
-                            gui.GUIPopup.showMessage("Incomplete Squad", "Squad Incomplete!", "Starting " + rules.getFieldPlayerCount() + " must be full to play the match! Please set your squad.");
-                            new gui.GUITactic(ctx.getPlayerTeam());
-                            return;
-                        }
-                            
-                        boolean hasInjuredStarter = false;
-                        for (Interface.IPlayer p : gui.GUISquadManager.getInstance().getPlayersOnPitchQueue()) {
-                            if (p.isInjured()) { hasInjuredStarter = true; break; }
-                        }
-                        if (hasInjuredStarter) {
-                            ctx.setTacticConfirmedForMatch(false);
-                            gui.GUIPopup.showMessage("Injured Player", "Injured Player in Starting " + rules.getFieldPlayerCount() + "!", "There must be no injured players on the pitch to play the match. Please substitute the injured player.");
-                            new gui.GUITactic(ctx.getPlayerTeam());
-                            return;
-                        }
-                            
-                        String validationMsg = ctx.getSportFactory().validateFormation(new java.util.ArrayList<>(gui.GUISquadManager.getInstance().getPlayersOnPitchQueue()));
-                        if (validationMsg != null) {
-                            ctx.setTacticConfirmedForMatch(false);
-                            gui.GUIPopup.showMessage("Invalid Formation", "Formation Rule Violated!", validationMsg);
-                            new gui.GUITactic(ctx.getPlayerTeam());
-                            return;
-                        }
-                            
                         final Classes.Game finalPlayerGame = playerGame;
-                        if (gui.GUISquadManager.getInstance().getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
-                            gui.GUIPopup.showConfirmation("Incomplete Bench", "Bench is not full!", 
-                                "There are not " + rules.getReservePlayerCount() + " players on the bench. Do you still want to play the match?", 
-                                () -> ctx.getSportFactory().launchGame(finalPlayerGame),
-                                () -> { ctx.setTacticConfirmedForMatch(false); new gui.GUITactic(ctx.getPlayerTeam()); }
-                            );
-                            return;
-                        }
                         
                         // Inject the GUI choices into the domain manager BEFORE the game starts
                         if (finalPlayerGame.getHomeManager() instanceof Classes.HumanManager hm) {

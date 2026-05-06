@@ -99,6 +99,29 @@ public class GUITeamSelection {
         selectBtn.setOnAction(e -> {
             team.setManagerAI(false); 
             GameContext.getInstance().setPlayerTeam(team); 
+            
+            // Ensure all scheduled games for this team have a HumanManager instead of the default AI manager
+            Classes.Calendar cal = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                    ? GameContext.getInstance().getActiveVolleyballCalendar() 
+                    : GameContext.getInstance().getActiveCalendar();
+            
+            if (cal != null && cal.getSchedule() != null) {
+                for (java.util.List<Classes.Game> games : cal.getSchedule().values()) {
+                    for (Classes.Game game : games) {
+                        if (game.getHomeTeam().equals(team)) {
+                            game.setHomeManager("VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                                    ? new Sport.Volleyball.HumanManagerVolleyball(team) 
+                                    : new Sport.Football.HumanManagerFootball(team));
+                        }
+                        if (game.getAwayTeam().equals(team)) {
+                            game.setAwayManager("VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                                    ? new Sport.Volleyball.HumanManagerVolleyball(team) 
+                                    : new Sport.Football.HumanManagerFootball(team));
+                        }
+                    }
+                }
+            }
+
             new GUIMain(); 
         });
 

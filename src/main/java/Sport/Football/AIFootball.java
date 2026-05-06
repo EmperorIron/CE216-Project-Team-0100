@@ -56,7 +56,7 @@ public abstract class AIFootball extends AI {
         if (bestTactic == null) { 
             bestTactic = new TacticFootball("1-4-3-3");
             players.sort(Comparator.comparingDouble(IPlayer::calculateOverallRating).reversed());
-            bestTactic.setStartingLineup(new ArrayList<>(players.subList(0, 11)));
+            bestTactic.setStartingLineup(new ArrayList<>(players.subList(0, Math.min(11, players.size()))));
         }
         
         List<IPlayer> starters = bestTactic.getStartingLineup();

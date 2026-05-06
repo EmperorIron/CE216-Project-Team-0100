@@ -30,6 +30,9 @@ public class PlayerVolleyball extends Player {
 
     @Override
     public double calculateOverallRating() {
+        if (isInjured()) {
+            return 0.0;
+        }
         Trait serving  = getTrait("Serving");
         Trait spiking  = getTrait("Spiking");
         Trait setting  = getTrait("Setting");

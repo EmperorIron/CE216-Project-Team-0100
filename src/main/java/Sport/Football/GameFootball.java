@@ -16,7 +16,7 @@ public class GameFootball extends Game {
 
     private static final double YELLOW_CARD_CHANCE = 0.009;
     private static final double RED_CARD_CHANCE = 0.0002;
-    private static final double INJURY_CHANCE = 0.001;
+    private static final double INJURY_CHANCE = 0.5; // Temporarily increased for testing injuries
     private static final double BASE_GOAL_CHANCE = 0.035;
 
     private float homeOffense, homeDefense, awayOffense, awayDefense;    
@@ -92,6 +92,14 @@ public class GameFootball extends Game {
                         if (homeSubsLeft > 0) {
                             performSubstitution(homeTeam, homeTactic, minute, "FORCED SUB (Injury)");
                             homeSubsLeft--;
+                        } else {
+                            List<IPlayer> onField = homeTactic.getStartingLineup();
+                            if (!onField.isEmpty()) {
+                                IPlayer injured = onField.get(getRandom().nextInt(onField.size()));
+                                if (injured instanceof Classes.Player) ((Classes.Player) injured).setInjuryDuration(2);
+                                addLogEntry(minute + "'. INJURY! (" + homeTeam.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
+                                recalculateTeamStrengths();
+                            }
                         }
                     } else {
                         handlePlayerInjury(homeTeam, homeTactic, minute);
@@ -101,6 +109,14 @@ public class GameFootball extends Game {
                         if (awaySubsLeft > 0) {
                             performSubstitution(awayTeam, awayTactic, minute, "FORCED SUB (Injury)");
                             awaySubsLeft--;
+                        } else {
+                            List<IPlayer> onField = awayTactic.getStartingLineup();
+                            if (!onField.isEmpty()) {
+                                IPlayer injured = onField.get(getRandom().nextInt(onField.size()));
+                                if (injured instanceof Classes.Player) ((Classes.Player) injured).setInjuryDuration(2);
+                                addLogEntry(minute + "'. INJURY! (" + awayTeam.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
+                                recalculateTeamStrengths();
+                            }
                         }
                     } else {
                         handlePlayerInjury(awayTeam, awayTactic, minute);
@@ -172,8 +188,8 @@ public class GameFootball extends Game {
         List<IPlayer> onField = tactic.getStartingLineup();
         if (onField.isEmpty()) return;
         
-        int outIndex = getRandom().nextInt(onField.size());
-        IPlayer injured = onField.remove(outIndex);
+        int injuredIndex = getRandom().nextInt(onField.size());
+        IPlayer injured = onField.get(injuredIndex);
         
         if (injured instanceof Classes.Player) {
             double randChance = getRandom().nextDouble();
@@ -183,8 +199,7 @@ public class GameFootball extends Game {
             ((Classes.Player) injured).setInjuryDuration(duration);
         }
         
-        
-        addLogEntry(minute + "'. INJURY! (" + team.getName() + ") -> Injured: " + injured.getFullName() + ". Player taken off for treatment.");
+        addLogEntry(minute + "'. INJURY! (" + team.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
         PositionsFootball.resolvePositionCollisions(tactic);
         recalculateTeamStrengths();
     }

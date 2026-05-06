@@ -12,7 +12,7 @@ import java.util.List;
 
 public class GameVolleyball extends Game {
 
-    private static final double INJURY_CHANCE = 0.01;
+    private static final double INJURY_CHANCE = 0.5; // Temporarily increased for testing injuries
 
     private float homeAttack, homeDefense, awayAttack, awayDefense;
 
@@ -68,14 +68,14 @@ public class GameVolleyball extends Game {
                 homeSetPoints++;
                 addLogEntry("GOAL! " + homeTeam.getName() + " wins the rally! Score: " + homeSetPoints + "-" + awaySetPoints);
                 if (getRandom().nextDouble() < INJURY_CHANCE) {
-                    handleInjury(homeTeam, homeTactic, periodNumber);
+                    handleInjury(homeTeam, homeTactic, periodNumber, true);
                     recalculateStrengths();
                 }
             } else {
                 awaySetPoints++;
                 addLogEntry("GOAL! " + awayTeam.getName() + " wins the rally! Score: " + homeSetPoints + "-" + awaySetPoints);
                 if (getRandom().nextDouble() < INJURY_CHANCE) {
-                    handleInjury(awayTeam, awayTactic, periodNumber);
+                    handleInjury(awayTeam, awayTactic, periodNumber, false);
                     recalculateStrengths();
                 }
             }
@@ -199,19 +199,48 @@ public class GameVolleyball extends Game {
         }
     }
 
-    private void handleInjury(ITeam team, ITactic tactic, int setNumber) {
+    private void handleInjury(ITeam team, ITactic tactic, int setNumber, boolean isHome) {
         List<IPlayer> onField = tactic.getStartingLineup();
+        List<IPlayer> bench = tactic.getSubstitutes();
         if (onField.isEmpty()) return;
 
-        int outIndex = getRandom().nextInt(onField.size());
-        IPlayer injured = onField.remove(outIndex);
+        int injuredIndex = getRandom().nextInt(onField.size());
+        IPlayer injured = onField.get(injuredIndex);
 
         if (injured instanceof Classes.Player p) {
             int duration = 1 + getRandom().nextInt(3);
             p.setInjuryDuration(duration);
         }
 
-        addLogEntry("SET " + setNumber + " - INJURY! (" + team.getName() + ") -> Injured: " + injured.getFullName() + ". Player taken off for treatment.");
+        int subsLeft = isHome ? homeSubsLeft : awaySubsLeft;
+
+        // AI Substitution Logic
+        if (team.isManagerAI() && subsLeft > 0 && !bench.isEmpty()) {
+            IPlayer bestSub = null;
+            double bestOvr = -1;
+            for (IPlayer p : bench) {
+                if (!p.isInjured() && p.calculateOverallRating() > bestOvr) {
+                    bestOvr = p.calculateOverallRating();
+                    bestSub = p;
+                }
+            }
+            if (bestSub != null) {
+                onField.remove(injuredIndex);
+                bench.remove(bestSub);
+                onField.add(bestSub);
+                bench.add(injured);
+                if (bestSub instanceof Classes.Player pSub && injured instanceof Classes.Player pInj) {
+                    pSub.setCurrentPositionId(pInj.getCurrentPositionId());
+                }
+                if (isHome) homeSubsLeft--; else awaySubsLeft--;
+                addLogEntry("SET " + setNumber + " - FORCED SUB (Injury)! (" + team.getName() + ") -> Out: " + injured.getFullName() + " | In: " + bestSub.getFullName());
+                PositionsVolleyball.resolvePositionCollisions(tactic);
+                return;
+            }
+        }
+        
+        // If Human, or AI out of subs/bench (Play through the pain debuff)
+        addLogEntry("SET " + setNumber + " - INJURY! (" + team.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
 
         PositionsVolleyball.resolvePositionCollisions(tactic);
     }

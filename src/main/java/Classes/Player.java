@@ -161,6 +161,9 @@ public abstract class Player implements IPlayer {
      * @return The average of all the player's trait levels, or 0 if no traits exist.
      */
     public double calculateOverallRating() {
+        if (isInjured()) {
+            return 0.0;
+        }
         if (traits.isEmpty()) {
             return 0.0;
         }

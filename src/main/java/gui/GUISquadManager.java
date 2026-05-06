@@ -26,6 +26,7 @@ public class GUISquadManager {
     public ITeam currentTeam = null;
     public boolean isMidMatch = false;
     public Runnable onResumeMatch = null;
+    public int subsMadeThisMatch = 0;
 
     private GUISquadManager() {}
 
@@ -53,6 +54,7 @@ public class GUISquadManager {
             redCardedPlayers.clear();
             yellowCardedPlayers.clear();
             injuredInMatchPlayers.clear();
+            subsMadeThisMatch = 0;
         } else {
             for (IPlayer p : playerTeam.getPlayers()) {
                 if (p.isInjured() || redCardedPlayers.contains(p)) {
@@ -166,7 +168,7 @@ public class GUISquadManager {
         }
         
         for (IPlayer p : playerTeam.getPlayers()) {
-            if (reservePlayersQueue.size() < maxReservePlayers && !playersOnPitchQueue.contains(p) && !reservePlayersQueue.contains(p)) {
+            if (!p.isInjured() && reservePlayersQueue.size() < maxReservePlayers && !playersOnPitchQueue.contains(p) && !reservePlayersQueue.contains(p)) {
                 reservePlayersQueue.add(p);
             }
         }
@@ -190,6 +192,9 @@ public class GUISquadManager {
         if (playersOnPitchQueue.contains(player)) {
             playersOnPitchQueue.remove(player);
             removePlayerFromMatrix(player);
+            if (isMidMatch && !subbedOutPlayers.contains(player)) {
+                subbedOutPlayers.add(player);
+            }
         }
         if (reservePlayersQueue.contains(player)) {
             reservePlayersQueue.remove(player);
@@ -197,10 +202,6 @@ public class GUISquadManager {
     }
 
     public String placePlayerOnBench(IPlayer player, int maxReservePlayers) {
-        if (player.isInjured() && !playersOnPitchQueue.contains(player)) {
-            return player.getFullName() + " cannot be placed on the bench due to injury.";
-        }
-
         if (playersOnPitchQueue.contains(player)) {
             playersOnPitchQueue.remove(player);
             if (isMidMatch && !subbedOutPlayers.contains(player)) {
@@ -237,13 +238,28 @@ public class GUISquadManager {
         Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
         boolean canReEnter = rules.isCanReEnter();
 
-        if (player.isInjured() || (isMidMatch && redCardedPlayers.contains(player)) || (isMidMatch && !canReEnter && subbedOutPlayers.contains(player))) {
-            return "Injured, suspended or subbed out players can only stay on the bench.";
+        if ((isMidMatch && redCardedPlayers.contains(player)) || (isMidMatch && !canReEnter && subbedOutPlayers.contains(player))) {
+            return "Suspended or subbed out players can only stay on the bench.";
+        }
+        
+        if (isMidMatch && player.isInjured() && !playersOnPitchQueue.contains(player)) {
+            return "Injured players cannot be subbed into the match!";
+        }
+        
+        boolean wasOnPitch = playersOnPitchQueue.contains(player);
+        if (isMidMatch && !wasOnPitch && subsMadeThisMatch >= rules.getSubstitutionCount()) {
+            return "No substitutions left! Maximum " + rules.getSubstitutionCount() + " allowed.";
+        }
+
+        IPlayer existingPlayer = pitchPlayers[destX][destY];
+        List<IPlayer> sameZonePlayers = GameContext.getInstance().getSportFactory().getPlayersInSameZone(pitchPlayers, destX, destY);
+        
+        if (isMidMatch && !wasOnPitch && playersOnPitchQueue.size() >= maxFieldPlayers && existingPlayer == null && sameZonePlayers.isEmpty()) {
+            return "Pitch is full! Remove a player to the bench first, or place the substitute directly over the player you want to replace.";
         }
 
         int targetPosId = Positions.getPositionId(destX, destY);
         
-        List<IPlayer> sameZonePlayers = GameContext.getInstance().getSportFactory().getPlayersInSameZone(pitchPlayers, destX, destY);
         for (IPlayer pToRemove : sameZonePlayers) {
             removePlayerFromSquad(pToRemove);
             if (isMidMatch && !subbedOutPlayers.contains(pToRemove)) subbedOutPlayers.add(pToRemove);
@@ -255,7 +271,6 @@ public class GUISquadManager {
             if (!reservePlayersQueue.contains(pToRemove)) reservePlayersQueue.add(pToRemove);
         }
 
-        IPlayer existingPlayer = pitchPlayers[destX][destY];
         if (existingPlayer != null && !existingPlayer.equals(player)) {
             removePlayerFromSquad(existingPlayer);
             if (isMidMatch && !subbedOutPlayers.contains(existingPlayer)) subbedOutPlayers.add(existingPlayer);
@@ -275,7 +290,11 @@ public class GUISquadManager {
 
         playersOnPitchQueue.add(player);
 
-        if (playersOnPitchQueue.size() > maxFieldPlayers) {
+        if (isMidMatch && !wasOnPitch) {
+            subsMadeThisMatch++;
+        }
+
+        if (!isMidMatch && playersOnPitchQueue.size() > maxFieldPlayers) {
             IPlayer oldestPlayer = playersOnPitchQueue.removeFirst();
             removePlayerFromMatrix(oldestPlayer);
             if (oldestPlayer instanceof Classes.Player) {
@@ -283,7 +302,6 @@ public class GUISquadManager {
                 oldestPlayer.setxG(0f);
                 oldestPlayer.setxGA(0f);
             }
-            if (isMidMatch && !subbedOutPlayers.contains(oldestPlayer)) subbedOutPlayers.add(oldestPlayer);
             if (!reservePlayersQueue.contains(oldestPlayer)) reservePlayersQueue.add(oldestPlayer);
         }
 
@@ -456,6 +474,7 @@ public class GUISquadManager {
         redCardedPlayers.clear();
         yellowCardedPlayers.clear();
         injuredInMatchPlayers.clear();
+        subsMadeThisMatch = 0;
         onResumeMatch = null;
     }
 }
