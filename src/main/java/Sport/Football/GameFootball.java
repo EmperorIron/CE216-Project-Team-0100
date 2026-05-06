@@ -14,10 +14,10 @@ import java.util.Map;
 
 public class GameFootball extends Game {
 
-    private static final double YELLOW_CARD_CHANCE = 0.025;
-    private static final double RED_CARD_CHANCE = 0.01;
-    private static final double INJURY_CHANCE = 0.03;
-    private static final double BASE_GOAL_CHANCE = 0.025;
+    private static final double YELLOW_CARD_CHANCE = 0.009;
+    private static final double RED_CARD_CHANCE = 0.0002;
+    private static final double INJURY_CHANCE = 0.001;
+    private static final double BASE_GOAL_CHANCE = 0.035;
 
     private float homeOffense, homeDefense, awayOffense, awayDefense;    
     private Map<IPlayer, Integer> playerYellowCards = new HashMap<>();

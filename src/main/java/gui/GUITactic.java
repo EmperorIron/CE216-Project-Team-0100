@@ -597,6 +597,7 @@ public class GUITactic {
         squadStatusLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
         
         tacticStyleComboBox = new ComboBox<>();
+
         for (Classes.Tactic.TacticStyle style : GameContext.getInstance().getSportFactory().getAvailableTacticStyles()) {
             tacticStyleComboBox.getItems().add(String.format("%s (xG: %.2f, xGA: %.2f)", style.name(), style.xgMult(), style.xgaMult()));
         }
@@ -610,7 +611,7 @@ public class GUITactic {
                     setText(null);
                 } else {
                     setText(item);
-                    setTextFill(Color.WHITE);
+                    setTextFill(Color.BLACK);
                 }
             }
         };
