@@ -190,7 +190,7 @@ public class GUIMain {
         mainLayout = new BorderPane();
         mainLayout.getStyleClass().add("root-dark");
 
-        // Panellerin Eklenmesi
+        // Adding Panels
         mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(null));
         mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar("Home"));
         mainLayout.setCenter(createDashboard());

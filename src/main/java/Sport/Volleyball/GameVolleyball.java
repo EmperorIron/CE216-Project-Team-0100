@@ -211,7 +211,7 @@ public class GameVolleyball extends Game {
             p.setInjuryDuration(duration);
         }
 
-        addLogEntry("SET " + setNumber + " - " + team.getName() + " takımında SAKATLIK! Sakatlanan: " + injured.getFullName() + ". Oyuncu tedavi için kenara alındı.");
+        addLogEntry("SET " + setNumber + " - INJURY! (" + team.getName() + ") -> Injured: " + injured.getFullName() + ". Player taken off for treatment.");
 
         PositionsVolleyball.resolvePositionCollisions(tactic);
     }

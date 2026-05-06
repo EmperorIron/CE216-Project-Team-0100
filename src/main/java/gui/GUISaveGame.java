@@ -65,7 +65,7 @@ public class GUISaveGame {
                 SaveGame tempSave = SaveManager.loadGame(file.getPath());
                 if (tempSave != null) {
                     if (tempSave.getPlayerTeam() != null) clubName = tempSave.getPlayerTeam().getName();
-                    if (tempSave.getCalendar() != null) gameTime = "Hafta " + (tempSave.getCalendar().getCurrentWeek() + 1);
+                    if (tempSave.getCalendar() != null) gameTime = "Week " + (tempSave.getCalendar().getCurrentWeek() + 1);
                 }
             }
 

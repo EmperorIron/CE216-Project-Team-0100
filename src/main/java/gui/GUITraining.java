@@ -500,7 +500,7 @@ public class GUITraining {
         return lbl;
     }
 
-    // --- SEÇİLEN ANTRENMANLARI TAKIMA UYGULAMA ---
+    // --- APPLY SELECTED TRAININGS TO THE TEAM ---
     private void applyWeeklyTraining() {
         applyWeeklyTrainingStatically(playerTeam);
         refreshReportTable();

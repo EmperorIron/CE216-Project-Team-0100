@@ -32,8 +32,8 @@ public class SaveManager {
 
     private static final String SAVE_DIR = "saves/";
 
-    // Interface ve Abstract sınıfların (polimorfik yapıların) Gson tarafından 
-    // hangi alt sınıfa ait olduğunu bilerek kaydedilip yüklenebilmesi için özel Adapter.
+    // Custom Adapter for Gson to know which subclass polymorphic structures (Interfaces and Abstracts) belong to, 
+    // so they can be properly saved and loaded.
     private static class InterfaceAdapter<T> implements JsonSerializer<T>, JsonDeserializer<T> {
         @Override
         public JsonElement serialize(T object, Type interfaceType, JsonSerializationContext context) {
@@ -70,32 +70,32 @@ public class SaveManager {
             .registerTypeAdapter(GameRules.class, new InterfaceAdapter<GameRules>())
             .create();
 
-    // --- OYUNU KAYDETME METODU ---
+    // --- GAME SAVE METHOD ---
     public static boolean saveGame(SaveGame data, String fileName) {
-        // Klasör yoksa oluştur
+        // Create directory if it doesn't exist
         File directory = new File(SAVE_DIR);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        // Dosyaya JSON olarak yaz
+        // Write to file as JSON
         try (FileWriter writer = new FileWriter(SAVE_DIR + fileName + ".json")) {
             gson.toJson(data, writer);
             return true;
         } catch (IOException e) {
-            System.err.println("Kaydetme hatası: " + e.getMessage());
+            System.err.println("Save error: " + e.getMessage());
             return false;
         }
     }
 
-    // --- OYUNU YÜKLEME METODU ---
+    // --- GAME LOAD METHOD ---
     public static SaveGame loadGame(String filePath) {
         try (FileReader reader = new FileReader(filePath)) {
-            // JSON dosyasını oku ve SaveGame objesine çevir
+            // Read the JSON file and convert it to a SaveGame object
             SaveGame loadedData = gson.fromJson(reader, SaveGame.class);
             return loadedData;
         } catch (Exception e) {
-            System.err.println("Yükleme hatası, dosya bozuk olabilir: " + e.getMessage());
+            System.err.println("Load error, file might be corrupted: " + e.getMessage());
             return null;
         }
     }

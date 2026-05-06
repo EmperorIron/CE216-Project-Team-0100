@@ -35,7 +35,7 @@ public class GUITactic {
 
     private ITeam playerTeam;
 
-    // --- UI (GÖRSEL) BİLEŞENLER ---
+    // --- UI (VISUAL) COMPONENTS ---
     private StackPane[][] gridSlots = new StackPane[Positions.GRID_WIDTH][Positions.GRID_HEIGHT];
     private Region[][] highlightBoxes = new Region[Positions.GRID_WIDTH][Positions.GRID_HEIGHT];
     
@@ -770,7 +770,7 @@ public class GUITactic {
             squadListContainer.getChildren().add(row);
         }
         for (IPlayer p : reservePlayersList) {
-            HBox row = createPlayerRow(p, GUISquadManager.getInstance().getPlayerKitNumber(p), 1.0f, 1.0f); // Yedeklere çarpan etki etmez 
+            HBox row = createPlayerRow(p, GUISquadManager.getInstance().getPlayerKitNumber(p), 1.0f, 1.0f); // Multipliers don't affect substitutes 
             if (p == selectedPlayerForPlacement) {
                 row.setStyle("-fx-border-color: #f0a500; -fx-border-width: 2;");
                 selectedPlayerRow = row;
@@ -783,7 +783,7 @@ public class GUITactic {
                 row.setStyle("-fx-border-color: #f0a500; -fx-border-width: 2;");
                 selectedPlayerRow = row;
             }
-            // Sadece maç içindeyken (devre arası/sakatlık) kadro dışı oyuncuları karart ve tıklamayı engelle
+            // Darken unselected players and disable clicking only during mid-match (half-time/injury)
             if (GUISquadManager.getInstance().isMidMatch) {
                 row.setOpacity(0.3);
                 row.setDisable(true);

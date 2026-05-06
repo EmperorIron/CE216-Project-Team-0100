@@ -7,7 +7,7 @@ public class Main extends Application {
     
     @Override
     public void start(Stage primaryStage) {
-        // Uygulamanın penceresini ekranı kaplayacak şekilde (maximized) ayarlar
+        // Sets the application window to maximize to fill the screen
         primaryStage.setMaximized(true);
         gui.SceneManager.setPrimaryStage(primaryStage);
         

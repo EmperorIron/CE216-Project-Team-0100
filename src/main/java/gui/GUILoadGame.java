@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 public class GUILoadGame {
 
-    // Ana menüye dönmek için kullanacağımız callback
+    // Callback to return to the main menu
     private final Runnable onBackToMenu;
     private final Consumer<SaveGame> onGameLoaded;
 
@@ -33,11 +33,11 @@ public class GUILoadGame {
     }
 
     public void show() {
-        // Ana düzen olarak BorderPane kullanıyoruz (Üst başlık, Orta liste, Alt buton)
+        // Using BorderPane as main layout (Top header, Center list, Bottom button)
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root-darker");
 
-        // --- ÜST KISIM (BAŞLIK) ---
+        // --- TOP SECTION (HEADER) ---
         Label lblTitle = new Label("LOAD SAVED GAME");
         lblTitle.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white; -fx-letter-spacing: 2px;");
         HBox header = new HBox(lblTitle);
@@ -45,13 +45,13 @@ public class GUILoadGame {
         header.setPadding(new Insets(30, 0, 20, 0));
         root.setTop(header);
 
-        // --- ORTA KISIM (SCROLL LISTESİ) ---
-        VBox saveList = new VBox(15); // Kartlar arası 15px boşluk
+        // --- CENTER SECTION (SCROLL LIST) ---
+        VBox saveList = new VBox(15); // 15px spacing between cards
         saveList.setAlignment(Pos.TOP_CENTER);
         saveList.setPadding(new Insets(10, 50, 10, 50));
-        saveList.setStyle("-fx-background-color: #050505;"); // Arka plan uyumu
+        saveList.setStyle("-fx-background-color: #050505;");
 
-        // Okunacak kayıt dizini
+        // Save directory to read from
         File saveDir = new File("saves/");
         if (!saveDir.exists()) {
             saveDir.mkdirs();
@@ -71,7 +71,7 @@ public class GUILoadGame {
                 SaveGame tempSave = SaveManager.loadGame(autoSaveFile.getPath());
                 if (tempSave != null) {
                     if (tempSave.getPlayerTeam() != null) clubName = tempSave.getPlayerTeam().getName();
-                    if (tempSave.getCalendar() != null) gameTime = "Hafta " + (tempSave.getCalendar().getCurrentWeek() + 1);
+                    if (tempSave.getCalendar() != null) gameTime = "Week " + (tempSave.getCalendar().getCurrentWeek() + 1);
                 }
                 VBox saveCard = createSaveCard("Quick Save (Autosave)", dateStr, clubName, gameTime, autoSaveFile.getPath());
                 saveList.getChildren().add(saveCard);
@@ -87,7 +87,7 @@ public class GUILoadGame {
                     SaveGame tempSave = SaveManager.loadGame(slotFile.getPath());
                     if (tempSave != null) {
                         if (tempSave.getPlayerTeam() != null) clubName = tempSave.getPlayerTeam().getName();
-                        if (tempSave.getCalendar() != null) gameTime = "Hafta " + (tempSave.getCalendar().getCurrentWeek() + 1);
+                        if (tempSave.getCalendar() != null) gameTime = "Week " + (tempSave.getCalendar().getCurrentWeek() + 1);
                     }
                     VBox saveCard = createSaveCard("Save Slot " + i, dateStr, clubName, gameTime, slotFile.getPath());
                     saveList.getChildren().add(saveCard);
@@ -105,7 +105,7 @@ public class GUILoadGame {
                     SaveGame tempSave = SaveManager.loadGame(file.getPath());
                     if (tempSave != null) {
                         if (tempSave.getPlayerTeam() != null) clubName = tempSave.getPlayerTeam().getName();
-                        if (tempSave.getCalendar() != null) gameTime = "Hafta " + (tempSave.getCalendar().getCurrentWeek() + 1);
+                        if (tempSave.getCalendar() != null) gameTime = "Week " + (tempSave.getCalendar().getCurrentWeek() + 1);
                     }
                     VBox saveCard = createSaveCard(title, dateStr, clubName, gameTime, file.getPath());
                     saveList.getChildren().add(saveCard);
@@ -117,21 +117,21 @@ public class GUILoadGame {
             saveList.getChildren().add(emptyLabel);
         }
 
-        // ScrollPane (Sınırsız Kaydırma Bileşeni)
+        // ScrollPane (Infinite Scrolling Component)
         ScrollPane scrollPane = new ScrollPane(saveList);
-        scrollPane.setFitToWidth(true); // Kartların genişliği ekrana otursun
+        scrollPane.setFitToWidth(true); // Fit cards width to screen
         scrollPane.getStyleClass().add("scroll-pane-transparent");
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED); // Sadece gerekirse dikey scroll çıkar
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Yatay scroll'u tamamen kapat
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED); // Show vertical scroll only if needed
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Completely hide horizontal scroll
 
         root.setCenter(scrollPane);
 
-        // --- ALT KISIM (GERİ BUTONU) ---
+        // --- BOTTOM SECTION (BACK BUTTON) ---
         Button btnBack = new Button("BACK TO MAIN MENU");
         btnBack.setPrefWidth(300);
         btnBack.setPrefHeight(50);
         btnBack.getStyleClass().add("btn-outline");
-        btnBack.setOnAction(e -> onBackToMenu.run()); // Ana menüye dön
+        btnBack.setOnAction(e -> onBackToMenu.run()); // Return to main menu
         
         HBox footer = new HBox(btnBack);
         footer.setAlignment(Pos.CENTER);
@@ -142,7 +142,7 @@ public class GUILoadGame {
     }
 
     /**
-     * Her bir kayıt dosyası için görsel bir kutu (kart) oluşturur.
+     * Creates a visual box (card) for each save file.
      */
     private VBox createSaveCard(String title, String date, String clubName, String gameTime, String filePath) {
         VBox card = new VBox(5);

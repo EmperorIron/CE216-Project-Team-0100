@@ -13,7 +13,7 @@ public class SaveGame {
     private Calendar calendar;
     private ITeam playerTeam;
 
-    // --- Taktik ve Kadro Bilgileri ---
+    // --- Tactic and Squad Information ---
     private IPlayer[][] pitchPlayers;
     private LinkedList<IPlayer> playersOnPitchQueue;
     private LinkedList<IPlayer> reservePlayersQueue;
@@ -36,7 +36,7 @@ public class SaveGame {
         this.tacticStyle = tacticStyle;
     }
 
-    // Geriye dönük uyumluluk veya taktik belirlenmeden önceki kayıtlar için (eski save'ler için)
+    // For backward compatibility or records before tactics were determined (for old saves)
     public SaveGame(String saveName, League currentLeague, Calendar calendar, ITeam playerTeam) {
         this(saveName, currentLeague, calendar, playerTeam, null, null, null, null);
     }

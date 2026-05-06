@@ -273,7 +273,7 @@ public class MatchController {
         ITeam playerTeam = GameContext.getInstance().getPlayerTeam();
         if (playerTeam == null) return;
         
-        String targetString = cardType.equals("YELLOW") ? "Oyuncu: " : "Oyundan Atılan: ";
+        String targetString = cardType.equals("YELLOW") ? "Player: " : "Sent Off: ";
         if (log.contains(playerTeam.getName()) && log.contains(targetString)) {
             String pName = log.substring(log.indexOf(targetString) + targetString.length()).trim();
             for (IPlayer p : playerTeam.getPlayers()) {
@@ -292,17 +292,17 @@ public class MatchController {
     private void syncSubAndInjury(String log) {
         ITeam playerTeam = GameContext.getInstance().getPlayerTeam();
         if (playerTeam == null) return;
-        if (log.contains("Çıkan: ") && log.contains("Giren: ") && log.contains(playerTeam.getName())) {
-            String outName = log.substring(log.indexOf("Çıkan: ") + 7, log.indexOf(" | Giren: ")).trim();
-            String inName  = log.substring(log.indexOf("Giren: ") + 7).trim();
+        if (log.contains("Out: ") && log.contains(" | In: ") && log.contains(playerTeam.getName())) {
+            String outName = log.substring(log.indexOf("Out: ") + 5, log.indexOf(" | In: ")).trim();
+            String inName  = log.substring(log.indexOf(" | In: ") + 7).trim();
             IPlayer pOut = null, pIn = null;
             for (IPlayer p : playerTeam.getPlayers()) {
                 if (p.getFullName().equals(outName)) pOut = p;
                 if (p.getFullName().equals(inName))  pIn  = p;
             }
             if (pOut != null && pIn != null) GUISquadManager.getInstance().performAutomaticSub(pOut, pIn);
-        } else if (log.contains("SAKATLIK!") && log.contains("Sakatlanan: ") && log.contains(playerTeam.getName())) {
-            String injName = log.substring(log.indexOf("Sakatlanan: ") + 12, log.indexOf(". Oyuncu tedavi")).trim();
+        } else if (log.contains("INJURY!") && log.contains("Injured: ") && log.contains(playerTeam.getName())) {
+            String injName = log.substring(log.indexOf("Injured: ") + 9, log.indexOf(". Player taken off")).trim();
             for (IPlayer p : playerTeam.getPlayers()) {
                 if (p.getFullName().equals(injName)) { GUISquadManager.getInstance().performAutomaticInjuryRemoval(p); break; }
             }
