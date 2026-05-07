@@ -269,7 +269,7 @@ public class GUITactic {
         List<String> playerOptions = new ArrayList<>();
 
         final String emptyOption = "--- EMPTY POSITION ---";
-        if (GUISquadManager.getInstance().pitchPlayers[x][y] != null) {
+        if (!GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().pitchPlayers[x][y] != null) {
             playerOptions.add(emptyOption);
         }
 
@@ -660,6 +660,7 @@ public class GUITactic {
         });
 
         Button removeBtn = new Button("REMOVE");
+        removeBtn.setDisable(GUISquadManager.getInstance().isMidMatch);
         removeBtn.getStyleClass().addAll("btn", "btn-secondary");
         removeBtn.setOnAction(e -> {
             if (selectedPlayerForPlacement != null) {
