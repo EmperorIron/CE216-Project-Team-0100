@@ -36,7 +36,7 @@ public class GUIMain {
             if ("FOOTBALL".equals(sport)) {
                 ctx.setSportFactory(new FootballFactory());
                 Classes.GameRules rules = ctx.getSportFactory().createGameRules();
-                ctx.setActiveLeague(ctx.getSportFactory().createLeague("Süper Lig", "Türkiye", 10, rules)); 
+                ctx.setActiveLeague(ctx.getSportFactory().createLeague("Süper Lig", "Turkey", 10, rules)); 
                 ctx.setActiveCalendar(ctx.getSportFactory().createCalendar(rules));
                 ctx.getActiveCalendar().generateFixtures(ctx.getActiveLeague().getTeamRanking());
                 
@@ -46,7 +46,7 @@ public class GUIMain {
             } else if ("VOLLEYBALL".equals(sport)) {
                 ctx.setSportFactory(new VolleyballFactory());
                 Classes.GameRules rules = ctx.getSportFactory().createGameRules();
-                ctx.setActiveVolleyballLeague(ctx.getSportFactory().createLeague("Voleybol Ligi", "Türkiye", 10, rules));
+                ctx.setActiveVolleyballLeague(ctx.getSportFactory().createLeague("Volleyball League", "Turkey", 10, rules));
                 ctx.setActiveVolleyballCalendar(ctx.getSportFactory().createCalendar(rules));
                 ctx.getActiveVolleyballCalendar().generateFixtures(ctx.getActiveVolleyballLeague().getTeamRanking());
     

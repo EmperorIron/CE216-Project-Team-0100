@@ -83,7 +83,7 @@ public class CalendarFootball extends Calendar {
         } else {
             homeManager = new HumanManagerFootball(home);
         }
-        homeTactic = new TacticFootball("1-4-4-2"); // Maç başlarken doldurulacak geçici taktik
+        homeTactic = new TacticFootball("1-4-4-2"); // Temporary tactic to be filled when match starts
 
         if (away.isManagerAI()) {
             awayManager = createRandomAIForTeam(away);

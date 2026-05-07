@@ -148,7 +148,7 @@ public class GUILoadGame {
         VBox card = new VBox(5);
         card.setPadding(new Insets(15, 20, 15, 20));
         card.setPrefHeight(80);
-        card.setMaxWidth(600); // Kartların çok fazla uzamasını engelle
+        card.setMaxWidth(600); // Prevent cards from stretching too much
         
         card.getStyleClass().add("save-card");
 

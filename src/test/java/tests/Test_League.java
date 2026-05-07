@@ -1,7 +1,7 @@
 package tests;
 
 import Interface.ITeam;
-import Sport.*;
+import Sport.Football.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

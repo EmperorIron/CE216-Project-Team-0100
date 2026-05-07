@@ -23,64 +23,64 @@ public class PlayerGeneratorFootball extends PlayerGenerator {
         String id = identity[3];
 
         int defVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
-        int pasVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
-        int sutVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
-        int hizVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
-        int fizVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
-        int menVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int passVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int shotVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int speedVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int physVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
+        int mentVal = RandomGenerator.generateBellCurveStat(50, 15, 10, 100);
         int gkVal  = RandomGenerator.generateBellCurveStat(10, 5, 0, 100); 
 
         switch (exactPosition.toUpperCase()) {
             case "ST": 
-                sutVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); 
-                fizVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
-                hizVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                shotVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); 
+                physVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                speedVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 break;
             case "LW": 
             case "RW": 
-                hizVal = RandomGenerator.generateBellCurveStat(88, 6, 70, 100);
-                sutVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
-                pasVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                speedVal = RandomGenerator.generateBellCurveStat(88, 6, 70, 100);
+                shotVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                passVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 break;
             case "CAM": 
-                pasVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
-                menVal = RandomGenerator.generateBellCurveStat(82, 8, 50, 100);
-                sutVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                passVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
+                mentVal = RandomGenerator.generateBellCurveStat(82, 8, 50, 100);
+                shotVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 break;
             case "CM": 
-                pasVal = RandomGenerator.generateBellCurveStat(80, 8, 60, 100);
-                menVal = RandomGenerator.generateBellCurveStat(80, 8, 60, 100);
-                fizVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                passVal = RandomGenerator.generateBellCurveStat(80, 8, 60, 100);
+                mentVal = RandomGenerator.generateBellCurveStat(80, 8, 60, 100);
+                physVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 defVal = RandomGenerator.generateBellCurveStat(70, 10, 40, 90);
                 break;
             case "CDM": 
                 defVal = RandomGenerator.generateBellCurveStat(82, 8, 60, 100);
-                fizVal = RandomGenerator.generateBellCurveStat(82, 8, 60, 100);
-                pasVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
+                physVal = RandomGenerator.generateBellCurveStat(82, 8, 60, 100);
+                passVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
                 break;
             case "CB": 
                 defVal = RandomGenerator.generateBellCurveStat(88, 6, 70, 100);
-                fizVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
-                hizVal = RandomGenerator.generateBellCurveStat(50, 15, 20, 85); // Stoperler genelde yavaştır
+                physVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
+                speedVal = RandomGenerator.generateBellCurveStat(50, 15, 20, 85); // Center backs are usually slow
                 break;
             case "LB": 
             case "RB": 
-                hizVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
+                speedVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100);
                 defVal = RandomGenerator.generateBellCurveStat(75, 10, 50, 100);
-                pasVal = RandomGenerator.generateBellCurveStat(70, 12, 50, 100);
+                passVal = RandomGenerator.generateBellCurveStat(70, 12, 50, 100);
                 break;
             case "GK": 
                 gkVal = RandomGenerator.generateBellCurveStat(85, 5, 60, 100);
                 defVal = RandomGenerator.generateBellCurveStat(30, 10, 10, 60);
-                hizVal = RandomGenerator.generateBellCurveStat(40, 15, 20, 70);
+                speedVal = RandomGenerator.generateBellCurveStat(40, 15, 20, 70);
                 break;
             
             case "FORWARD": 
-                sutVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); break;
+                shotVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); break;
             case "DEFENDER": 
                 defVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); break;
             case "MIDFIELDER": 
-                pasVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); break;
+                passVal = RandomGenerator.generateBellCurveStat(85, 7, 60, 100); break;
             case "GOALKEEPER": 
                 gkVal = RandomGenerator.generateBellCurveStat(85, 5, 60, 100); break;
         }
@@ -107,7 +107,7 @@ public class PlayerGeneratorFootball extends PlayerGenerator {
         }
 
         return new PlayerFootball(firstName, lastName, country, "Free Agent", id, proficiencyMap, 
-                                  defVal, pasVal, sutVal, hizVal, fizVal, menVal, gkVal, 
+                                  defVal, passVal, shotVal, speedVal, physVal, mentVal, gkVal, 
                                   rules.getExpToLevelUpBase(), rules.getExpGrowthRate());
     }
 

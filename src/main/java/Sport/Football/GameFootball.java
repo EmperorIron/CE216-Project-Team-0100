@@ -124,14 +124,14 @@ public class GameFootball extends Game {
                 }
             }
 
-            // Ev sahibi için kart kontrolü
+            // Card check for the home team
             if (getRandom().nextDouble() < YELLOW_CARD_CHANCE) {
                 handleYellowCard(homeTeam, homeTactic, minute);
             } else if (getRandom().nextDouble() < RED_CARD_CHANCE) {
                 handleRedCard(homeTeam, homeTactic, minute);
             }
 
-            // Deplasman için kart kontrolü
+            // Card check for the away team
             if (getRandom().nextDouble() < YELLOW_CARD_CHANCE) {
                 handleYellowCard(awayTeam, awayTactic, minute);
             } else if (getRandom().nextDouble() < RED_CARD_CHANCE) {
@@ -169,13 +169,13 @@ public class GameFootball extends Game {
      int playerIndex = getRandom().nextInt(onField.size());
      IPlayer bookedPlayer = onField.get(playerIndex);
 
-     // Oyuncunun mevcut sarı kart sayısını al ve 1 artır
+     // Get the player's current yellow card count and increase by 1
      int currentYellows = playerYellowCards.getOrDefault(bookedPlayer, 0) + 1;
      playerYellowCards.put(bookedPlayer, currentYellows);
 
      addLogEntry(minute + "'. YELLOW CARD! (" + team.getName() + ") -> Player: " + bookedPlayer.getFullName());
 
-     // Eğer 2 sarı karta (GameRulesFootball'dan gelir) ulaştıysa oyundan at
+     // If reached 2 yellow cards (from GameRulesFootball), send off
      if (currentYellows >= rules.getYellowCardsForRed()) {
          addLogEntry(minute + "'. RED CARD FROM SECOND YELLOW! (" + team.getName() + ") -> Sent Off: " + bookedPlayer.getFullName());
          onField.remove(playerIndex);
@@ -259,8 +259,8 @@ public class GameFootball extends Game {
         if (log.contains("GOOOAALLL")) return "GOAL";
         if (log.contains("YELLOW CARD!") && !log.contains("RED CARD!")) return "YELLOW";
         if (log.contains("RED CARD!")) return "RED";
+        if (log.contains("SUB") || log.contains("Sub")) return "SUB";
         if (log.contains("Injury") || log.contains("FORCED") || log.contains("INJURY!")) return "INJURY";
-        if (log.contains("Sub")) return "SUB";
         return "INFO";
     }
 

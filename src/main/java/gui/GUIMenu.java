@@ -19,7 +19,7 @@ import javafx.stage.StageStyle;
 
 public class GUIMenu {
 
-    // Menüyü çağırmak için bu metodu kullanacaksın: GUIPauseMenu.show(primaryStage);
+    // You will use this method to call the menu: GUIPauseMenu.show(primaryStage);
     public static void show() {
         Stage ownerStage = SceneManager.getPrimaryStage();
         Stage popupStage = new Stage();

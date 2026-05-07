@@ -253,8 +253,8 @@ public class GameVolleyball extends Game {
     @Override
     public String getEventType(String log) {
         if (log.startsWith("GOAL!")) return "GOAL";
-        if (log.contains("INJURY") || log.contains("SAKATLIK!")) return "INJURY";
-        if (log.contains("Sub") || log.contains("Oyuncu Değişikliği") || log.contains("Çıkan:")) return "SUB";
+        if (log.contains("SUB") || log.contains("Sub") || log.contains("Substitution") || log.contains("Out:")) return "SUB";
+        if (log.contains("INJURY") || log.contains("INJURED!")) return "INJURY";
         return "INFO";
     }
 }
