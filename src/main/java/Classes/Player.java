@@ -178,4 +178,17 @@ public abstract class Player implements IPlayer {
     public void setJerseyNumber(int jerseyNumber) {
         this.jerseyNumber = jerseyNumber;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || !(obj instanceof IPlayer)) return false;
+        IPlayer other = (IPlayer) obj;
+        return this.id != null && this.id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }

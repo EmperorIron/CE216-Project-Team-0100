@@ -61,18 +61,69 @@ public class GUIMain {
 
     public static void loadSavedGame(SaveGame saveGame) {
         GameContext ctx = GameContext.getInstance();
-        ctx.setActiveLeague(saveGame.getCurrentLeague());
-        ctx.setActiveCalendar(saveGame.getCalendar());
-        ctx.setPlayerTeam(saveGame.getPlayerTeam());
         gui.GUITraining.weeklySchedule.clear();
         
-        if (ctx.getActiveLeague() instanceof Sport.Volleyball.LeagueVolleyball) {
+        if (saveGame.getCurrentLeague() != null && saveGame.getCurrentLeague().getClass().getSimpleName().contains("Volleyball")) {
             ctx.setActiveSport("VOLLEYBALL");
             ctx.setSportFactory(new VolleyballFactory());
+            ctx.setActiveVolleyballLeague(saveGame.getCurrentLeague());
+            ctx.setActiveVolleyballCalendar(saveGame.getCalendar());
+            ctx.setActiveLeague(null);
+            ctx.setActiveCalendar(null);
         } else {
             ctx.setActiveSport("FOOTBALL");
             ctx.setSportFactory(new FootballFactory());
+            ctx.setActiveLeague(saveGame.getCurrentLeague());
+            ctx.setActiveCalendar(saveGame.getCalendar());
+            ctx.setActiveVolleyballLeague(null);
+            ctx.setActiveVolleyballCalendar(null);
         }
+
+        ITeam loadedTeam = saveGame.getPlayerTeam();
+        ITeam actualTeamRef = loadedTeam;
+        
+        Classes.League activeLeague = "VOLLEYBALL".equals(ctx.getActiveSport()) ? ctx.getActiveVolleyballLeague() : ctx.getActiveLeague();
+        Classes.Calendar cal = "VOLLEYBALL".equals(ctx.getActiveSport()) ? ctx.getActiveVolleyballCalendar() : ctx.getActiveCalendar();
+
+        if (activeLeague != null) {
+            java.util.Map<String, ITeam> realTeams = new java.util.HashMap<>();
+            for (ITeam t : activeLeague.getTeamRanking()) {
+                realTeams.put(t.getName(), t);
+                if (loadedTeam != null && t.getName().equals(loadedTeam.getName())) {
+                    actualTeamRef = t;
+                }
+            }
+            
+            if (cal != null && cal.getSchedule() != null) {
+                for (java.util.List<Classes.Game> games : cal.getSchedule().values()) {
+                    for (Classes.Game game : games) {
+                        ITeam realHome = realTeams.get(game.getHomeTeam().getName());
+                        ITeam realAway = realTeams.get(game.getAwayTeam().getName());
+                        if (realHome != null) game.setHomeTeam(realHome);
+                        if (realAway != null) game.setAwayTeam(realAway);
+                        
+                        if (!game.isCompleted()) {
+                            if (actualTeamRef != null && game.getHomeTeam().getName().equals(actualTeamRef.getName())) {
+                                game.setHomeManager("VOLLEYBALL".equals(ctx.getActiveSport()) 
+                                        ? new Sport.Volleyball.HumanManagerVolleyball(actualTeamRef) 
+                                        : new Sport.Football.HumanManagerFootball(actualTeamRef));
+                            } else if (realHome != null) {
+                                game.setHomeManager(ctx.getSportFactory().createEasyAI(realHome));
+                            }
+                            
+                            if (actualTeamRef != null && game.getAwayTeam().getName().equals(actualTeamRef.getName())) {
+                                game.setAwayManager("VOLLEYBALL".equals(ctx.getActiveSport()) 
+                                        ? new Sport.Volleyball.HumanManagerVolleyball(actualTeamRef) 
+                                        : new Sport.Football.HumanManagerFootball(actualTeamRef));
+                            } else if (realAway != null) {
+                                game.setAwayManager(ctx.getSportFactory().createEasyAI(realAway));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ctx.setPlayerTeam(actualTeamRef);
         
         gui.GUISquadManager.getInstance().loadTacticData(saveGame.getPitchPlayers(), saveGame.getPlayersOnPitchQueue(), saveGame.getReservePlayersQueue(), ctx.getPlayerTeam(), saveGame.getTacticStyle());
         
@@ -159,7 +210,9 @@ public class GUIMain {
         mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(null));
         mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar("Home"));
         mainLayout.setCenter(createDashboard());
-        SceneManager.changeScene(mainLayout, "Sports Manager - Dashboard");
+        javafx.application.Platform.runLater(() -> {
+            SceneManager.changeScene(mainLayout, "Sports Manager - Dashboard");
+        });
     }
 
     private VBox createDashboard() {

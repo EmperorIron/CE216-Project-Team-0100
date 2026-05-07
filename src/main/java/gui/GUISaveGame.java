@@ -130,9 +130,16 @@ public class GUISaveGame {
         card.setOnMouseClicked(e -> {
             card.setDisable(true); // Disable to prevent double-saving
             
+            Classes.League leagueToSave = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                ? GameContext.getInstance().getActiveVolleyballLeague() 
+                : GameContext.getInstance().getActiveLeague();
+            Classes.Calendar calendarToSave = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                ? GameContext.getInstance().getActiveVolleyballCalendar() 
+                : GameContext.getInstance().getActiveCalendar();
+
             SaveGame saveData = new SaveGame(title, 
-                GameContext.getInstance().getActiveLeague(), 
-                GameContext.getInstance().getActiveCalendar(), 
+                leagueToSave, 
+                calendarToSave, 
                 GameContext.getInstance().getPlayerTeam(),
                 gui.GUISquadManager.getInstance().getPitchPlayers(), 
                 gui.GUISquadManager.getInstance().getPlayersOnPitchQueue(), 

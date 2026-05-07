@@ -75,7 +75,14 @@ public class GUIMenu {
         });
 
         btnQuickSave.setOnAction(e -> {
-            SaveGame saveData = new SaveGame("autosave", GameContext.getInstance().getActiveLeague(), GameContext.getInstance().getActiveCalendar(), GameContext.getInstance().getPlayerTeam(),
+            Classes.League leagueToSave = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                ? GameContext.getInstance().getActiveVolleyballLeague() 
+                : GameContext.getInstance().getActiveLeague();
+            Classes.Calendar calendarToSave = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                ? GameContext.getInstance().getActiveVolleyballCalendar() 
+                : GameContext.getInstance().getActiveCalendar();
+
+            SaveGame saveData = new SaveGame("autosave", leagueToSave, calendarToSave, GameContext.getInstance().getPlayerTeam(),
                     gui.GUISquadManager.getInstance().getPitchPlayers(), gui.GUISquadManager.getInstance().getPlayersOnPitchQueue(), gui.GUISquadManager.getInstance().getReservePlayersQueue(),
                     gui.GUISquadManager.getInstance().getCurrentTacticStyle());
             SaveManager.saveGame(saveData, "autosave");

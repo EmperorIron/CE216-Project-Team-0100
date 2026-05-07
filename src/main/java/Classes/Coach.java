@@ -67,4 +67,17 @@ public abstract class Coach implements ICoach {
             this.traits.put(trait.getName(), trait);
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || !(obj instanceof ICoach)) return false;
+        ICoach other = (ICoach) obj;
+        return this.id != null && this.id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
+    }
 }

@@ -68,6 +68,8 @@ public class SaveManager {
             .registerTypeAdapter(Game.class, new InterfaceAdapter<Game>())
             .registerTypeAdapter(Formation.class, new InterfaceAdapter<Formation>())
             .registerTypeAdapter(GameRules.class, new InterfaceAdapter<GameRules>())
+            .registerTypeAdapter(Classes.League.class, new InterfaceAdapter<Classes.League>())
+            .registerTypeAdapter(Classes.Calendar.class, new InterfaceAdapter<Classes.Calendar>())
             .create();
 
     // --- GAME SAVE METHOD ---

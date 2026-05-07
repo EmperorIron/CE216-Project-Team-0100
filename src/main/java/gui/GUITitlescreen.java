@@ -37,7 +37,11 @@ public class GUITitlescreen {
         btnLoadGame.setOnAction(e -> {
             GUILoadGame loadGameMenu = new GUILoadGame(
                 () -> this.show(), // On Back Button
-                (SaveGame loadedGame) -> GUIMain.loadSavedGame(loadedGame) // On Game Loaded successfully
+                (SaveGame loadedGame) -> {
+                    javafx.application.Platform.runLater(() -> {
+                        GUIMain.loadSavedGame(loadedGame);
+                    });
+                }
             );
             loadGameMenu.show();
         });

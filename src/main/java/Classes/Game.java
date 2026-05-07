@@ -9,8 +9,8 @@ import java.util.Random;
 
 public abstract class Game implements IGame {
     
-    protected final ITeam homeTeam;
-    protected final ITeam awayTeam;
+    protected ITeam homeTeam;
+    protected ITeam awayTeam;
     protected final GameRules rules;
     protected ITactic homeTactic;
     protected ITactic awayTactic;
@@ -58,6 +58,9 @@ public abstract class Game implements IGame {
     @Override public void setHomeSubsLeft(int homeSubsLeft) { this.homeSubsLeft = homeSubsLeft; }
     @Override public int getAwaySubsLeft() { return awaySubsLeft; }
     @Override public void setAwaySubsLeft(int awaySubsLeft) { this.awaySubsLeft = awaySubsLeft; }
+    
+    public void setHomeTeam(ITeam homeTeam) { this.homeTeam = homeTeam; }
+    public void setAwayTeam(ITeam awayTeam) { this.awayTeam = awayTeam; }
 
     public GameRules getRules() {
         return rules;

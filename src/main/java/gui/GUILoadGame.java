@@ -176,6 +176,8 @@ public class GUILoadGame {
                         }
                     } else {
                         card.setDisable(false); // Re-enable if load failed
+                        GUIPopup.showMessage("Load Failed", "File Corrupted", 
+                                "The selected save file could not be read properly. It may belong to an older version of the game.");
                     }
                 });
             });
