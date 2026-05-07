@@ -266,7 +266,7 @@ public class GUIGame {
         Button endBtn = new Button("End Match and Continue ▶");
         endBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
         endBtn.setOnAction(evt -> {
-            if (!isVolleyball) GUISquadManager.getInstance().postMatchCleanup();
+            GUISquadManager.getInstance().postMatchCleanup();
             if ("VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) && GameContext.getInstance().getActiveVolleyballCalendar() != null) {
                 GameContext.getInstance().getActiveVolleyballCalendar().advanceToNextWeek();
                 GUIMain.decrementAllInjuries();

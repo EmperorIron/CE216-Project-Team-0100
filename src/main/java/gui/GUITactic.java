@@ -77,35 +77,47 @@ public class GUITactic {
         mainLayout.getStyleClass().add("root-dark");
 
         Runnable tacticContinueAction = () -> {
-            Runnable finalProceed = () -> {
-                if (GameContext.getInstance().isMatchDay() || GUISquadManager.getInstance().isMidMatch) {
-                    if (GUISquadManager.getInstance().reservePlayersQueue.size() != maxReservePlayers) {
-                        GUIPopup.showConfirmation("Incomplete Bench", "Bench is not full!", "There are not " + maxReservePlayers + " players on the bench. Do you still want to proceed?", 
-                            () -> {
-                                if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().onResumeMatch != null) GUISquadManager.getInstance().onResumeMatch.run();
-                                else { GameContext.getInstance().setTacticConfirmedForMatch(true); GUIMain.handleContinueAction(); }
-                            }, null);
-                        return;
+            boolean isVolleyball = "VOLLEYBALL".equals(GameContext.getInstance().getSportFactory().getSportName());
+            int minRequired = isVolleyball ? 6 : 7;
+            int currentOnPitch = GUISquadManager.getInstance().playersOnPitchQueue.size();
+
+            Runnable executeContinue = () -> {
+                javafx.application.Platform.runLater(() -> {
+                    if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().onResumeMatch != null) {
+                        GUISquadManager.getInstance().onResumeMatch.run();
+                    } else {
+                        GameContext.getInstance().setTacticConfirmedForMatch(true);
+                        GUIMain.handleContinueAction();
                     }
-                }
-                if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().onResumeMatch != null) {
-                    GUISquadManager.getInstance().onResumeMatch.run();
+                });
+            };
+
+            Runnable checkBenchAndContinue = () -> {
+                if ((GameContext.getInstance().isMatchDay() || GUISquadManager.getInstance().isMidMatch) && 
+                    GUISquadManager.getInstance().reservePlayersQueue.size() != maxReservePlayers) {
+                    GUIPopup.showConfirmation("Incomplete Bench", "Bench is not full!", "There are not " + maxReservePlayers + " players on the bench. Do you still want to proceed?", 
+                        executeContinue, null);
                 } else {
-                    GameContext.getInstance().setTacticConfirmedForMatch(true);
-                    GUIMain.handleContinueAction();
+                    executeContinue.run();
                 }
             };
 
             if (GameContext.getInstance().isMatchDay() || GUISquadManager.getInstance().isMidMatch) {
-                
-                
-                if (GUISquadManager.getInstance().playersOnPitchQueue.size() != maxFieldPlayers) {
-                    String startingLabel = "VOLLEYBALL".equals(GameContext.getInstance().getSportFactory().getSportName()) ? "6" : "11";
-                    GUIPopup.showConfirmation("Missing Players", "Players Missing on Pitch!", "You are about to continue the match with fewer than " + startingLabel + " players. Are you sure you want to proceed?", 
-                        finalProceed, null);
+                if (currentOnPitch < minRequired) {
+                    GUIPopup.showConfirmation("Forfeit Warning", "Insufficient Players!", 
+                        "You have fewer than " + minRequired + " players on the pitch! If you proceed, you will automatically FORFEIT the match with a 0-3 defeat.\n\nAre you sure you want to forfeit?", 
+                        executeContinue, null); 
                     return;
                 }
                 
+                if (currentOnPitch != maxFieldPlayers) {
+                    String startingLabel = isVolleyball ? "6" : "11";
+                    GUIPopup.showConfirmation("Missing Players", "Players Missing on Pitch!", 
+                        "You are about to continue the match with fewer than " + startingLabel + " players. Are you sure you want to proceed?", 
+                        checkBenchAndContinue, null);
+                    return;
+                }
+
                 String validationMsg = GUISquadManager.getInstance().getFormationValidationMessage();
                 if (validationMsg != null) {
                     GUIPopup.showMessage("Invalid Formation", "Formation Rule Violated!", validationMsg);
@@ -113,7 +125,7 @@ public class GUITactic {
                 }
             }
             
-            finalProceed.run();
+            checkBenchAndContinue.run();
         };
 
         mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(tacticContinueAction));

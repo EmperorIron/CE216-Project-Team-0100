@@ -183,19 +183,26 @@ public class GUIMain {
                                 gui.GUISquadManager.getInstance().getCurrentTacticStyle());
                         }
 
-                        ctx.getSportFactory().launchGame(playerGame);
-                    } else {
-                        Thread matchThread = new Thread(() -> {
+                        int minRequired = "VOLLEYBALL".equals(ctx.getActiveSport()) ? 6 : 7;
+                        if (gui.GUISquadManager.getInstance().getPlayersOnPitchQueue().size() < minRequired) {
+                            finalPlayerGame.forfeit(ctx.getPlayerTeam());
+                            
                             cal.advanceToNextWeek();
                             decrementAllInjuries();
-                            javafx.application.Platform.runLater(() -> {
-                                ctx.setMatchDay(false);
-                                ctx.setTacticConfirmedForMatch(false);
-                                new GUIMain();
-                            });
-                        });
-                        matchThread.setDaemon(true);
-                        matchThread.start();
+                            gui.GUISquadManager.getInstance().postMatchCleanup();
+                            gui.GUIPopup.showMessage("Match Forfeited", "0-3 Defeat", "You did not have enough players on the pitch to play the match. You have forfeited the match 0-3.");
+                            ctx.setMatchDay(false);
+                            ctx.setTacticConfirmedForMatch(false);
+                            new GUIMain();
+                        } else {
+                            ctx.getSportFactory().launchGame(playerGame);
+                        }
+                    } else {
+                        cal.advanceToNextWeek();
+                        decrementAllInjuries();
+                        ctx.setMatchDay(false);
+                        ctx.setTacticConfirmedForMatch(false);
+                        new GUIMain();
                     }
                 }
             }

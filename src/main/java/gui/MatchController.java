@@ -315,6 +315,15 @@ public class MatchController {
 
     private void executeTacticChanges() {
         ITeam playerTeam = GameContext.getInstance().getPlayerTeam();
+        
+        int minRequired = isVolleyball ? 6 : 7;
+        if (GUISquadManager.getInstance().getPlayersOnPitchQueue().size() < minRequired) {
+            if (isVolleyball) volleyballMatch.forfeit(playerTeam);
+            else footballMatch.forfeit(playerTeam);
+            endMatchLogic();
+            return;
+        }
+        
         if (isVolleyball) {
             homeScore = 0;
             awayScore = 0;

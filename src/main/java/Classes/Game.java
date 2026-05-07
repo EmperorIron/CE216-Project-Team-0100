@@ -104,6 +104,20 @@ public abstract class Game implements IGame {
         return null; // draw
     }
 
+    public void forfeit(ITeam forfeitingTeam) {
+        this.isCompleted = true;
+        if (homeTeam.equals(forfeitingTeam)) {
+            this.homeScore = 0;
+            this.awayScore = 3;
+        } else {
+            this.homeScore = 3;
+            this.awayScore = 0;
+        }
+        addLogEntry("");
+        addLogEntry("--- MATCH FORFEITED! " + forfeitingTeam.getName() + " had insufficient players to continue. ---");
+        postMatchCleanup();
+    }
+
     
     @Override
     public final void play() {

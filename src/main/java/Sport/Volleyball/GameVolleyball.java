@@ -245,6 +245,24 @@ public class GameVolleyball extends Game {
         PositionsVolleyball.resolvePositionCollisions(tactic);
     }
 
+    @Override
+    public void forfeit(ITeam forfeitingTeam) {
+        this.isCompleted = true;
+        if (homeTeam.equals(forfeitingTeam)) {
+            this.homeScore = 0;
+            this.awayScore = 3;
+            this.homeSetsWon = 0;
+            this.awaySetsWon = 3;
+        } else {
+            this.homeScore = 3;
+            this.awayScore = 0;
+            this.homeSetsWon = 3;
+            this.awaySetsWon = 0;
+        }
+        addLogEntry("");
+        addLogEntry("--- MATCH FORFEITED! " + forfeitingTeam.getName() + " had insufficient players. Result: 3-0 SETS. ---");
+        postMatchCleanup();
+    }
 
 
     public int getHomeSetsWon() { return homeSetsWon; }
