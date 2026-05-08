@@ -71,9 +71,14 @@ public abstract class Tactic implements ITactic {
 
     @Override
     public void addStyle(String styleName, float xGMultiplier, float xGAMultiplier) {
-        if (styleName != null && !styleName.trim().isEmpty()) {
-            this.styles.put(styleName, new TacticStyle(styleName, xGMultiplier, xGAMultiplier));
+        if (styleName == null || styleName.trim().isEmpty()) {
+            ErrorHandler.logError("Attempted to add a tactic style with null or empty name.");
+            return;
         }
+        if (xGMultiplier < 0 || xGAMultiplier < 0) {
+            ErrorHandler.logError("Warning: Added tactic style '" + styleName + "' with a negative multiplier.");
+        }
+        this.styles.put(styleName, new TacticStyle(styleName, xGMultiplier, xGAMultiplier));
     }
 
     public void clearStyles() {

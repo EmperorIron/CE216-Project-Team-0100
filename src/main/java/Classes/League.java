@@ -40,7 +40,11 @@ public abstract class League implements ILeague {
     ///////////////////////////////////////////////////////////////////////////////
       @Override
     public void addTeam(ITeam team) {
-        if (team != null && !this.teams.contains(team)) {
+        if (team == null) {
+            ErrorHandler.logError("Attempted to add a null team to league: " + this.name);
+            return;
+        }
+        if (!this.teams.contains(team)) {
             this.teams.add(team);
         }
     }

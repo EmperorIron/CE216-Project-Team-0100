@@ -72,6 +72,7 @@ public class MatchController {
         this.currentState = new PlayingState();
         match.play();
         this.matchLogs = match.getGameLog();
+        if (this.matchLogs == null) this.matchLogs = new java.util.ArrayList<>();
     }
 
     public MatchController(GUIGame view, GameVolleyball match) {
@@ -87,6 +88,7 @@ public class MatchController {
         this.currentState = new PlayingState();
         match.play();
         this.matchLogs = match.getGameLog();
+        if (this.matchLogs == null) this.matchLogs = new java.util.ArrayList<>();
     }
 
     public void initializeFootballStats() {
@@ -114,7 +116,13 @@ public class MatchController {
     }
 
     public void processTick() {
-        currentState.processTick();
+        try {
+            currentState.processTick();
+        } catch (Exception e) {
+            Classes.ErrorHandler.logError(e);
+            view.pauseTimeline(); // Stop timeline on error to prevent cascading UI failure
+            GUIError.show(); // Route to the error screen instead of freezing
+        }
     }
 
     public void applyTacticChanges() {

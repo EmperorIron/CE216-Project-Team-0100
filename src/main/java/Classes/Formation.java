@@ -22,7 +22,11 @@ public abstract class Formation {
     }
 
     private void parseFormation(String formation) {
-        if (formation.trim().isEmpty()) return;
+        if (formation == null || formation.trim().isEmpty()) {
+            ErrorHandler.logError("Attempted to parse a null or empty formation string.");
+            return;
+        }
+
         String[] parts = formation.split("-");
         for (String part : parts) {
             try {

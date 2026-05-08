@@ -38,6 +38,11 @@ public class GUITeamSelection {
                 ? GameContext.getInstance().getActiveVolleyballLeague().getTeamRanking()
                 : GameContext.getInstance().getActiveLeague().getTeamRanking();
 
+        if (teams == null || teams.isEmpty()) {
+            Classes.ErrorHandler.logError("Team list is null or empty in Team Selection.");
+            return;
+        }
+
         // Team List (Scrollable area)
         VBox teamList = new VBox(15);
         teamList.setAlignment(Pos.CENTER);

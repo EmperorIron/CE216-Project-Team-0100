@@ -28,7 +28,7 @@ public abstract class Game implements IGame {
 
     public Game(ITeam homeTeam, ITeam awayTeam, GameRules rules, ITactic homeTactic, ITactic awayTactic) {
         if (homeTeam == null || awayTeam == null || rules == null || homeTactic == null || awayTactic == null) {
-            throw new IllegalArgumentException("Teams, rules, and tactics cannot be null.");
+            ErrorHandler.logError("Teams, rules, and tactics cannot be null for Game initialization.");
         }
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;

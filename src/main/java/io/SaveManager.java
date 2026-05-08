@@ -75,6 +75,11 @@ public class SaveManager {
 
     // --- GAME SAVE METHOD ---
     public static boolean saveGame(SaveGame data, String fileName) {
+        if (data == null || fileName == null || fileName.trim().isEmpty()) {
+            Classes.ErrorHandler.logError("Attempted to save game with null data or invalid filename.");
+            return false;
+        }
+
         // Create directory if it doesn't exist
         File directory = new File(SAVE_DIR);
         if (!directory.exists()) {
@@ -93,6 +98,15 @@ public class SaveManager {
 
     // --- GAME LOAD METHOD ---
     public static SaveGame loadGame(String filePath) {
+        if (filePath == null || filePath.trim().isEmpty()) {
+            Classes.ErrorHandler.logError("Attempted to load game with a null or empty file path.");
+            return null;
+        }
+        File file = new File(filePath);
+        if (!file.exists() || !file.isFile()) {
+            Classes.ErrorHandler.logError("Save file does not exist or is invalid: " + filePath);
+            return null;
+        }
         try (FileReader reader = new FileReader(filePath)) {
             // Read the JSON file and convert it to a SaveGame object
             SaveGame loadedData = gson.fromJson(reader, SaveGame.class);

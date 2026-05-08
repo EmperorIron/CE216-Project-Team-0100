@@ -27,6 +27,10 @@ public class GUIFixture {
     private Calendar calendar;
 
     public GUIFixture(ITeam playerTeam, Calendar calendar) {
+        if (playerTeam == null || calendar == null) {
+            Classes.ErrorHandler.logError("Attempted to open Fixtures with a null team or calendar.");
+            return;
+        }
         this.playerTeam = playerTeam;
         this.calendar = calendar;
         show();

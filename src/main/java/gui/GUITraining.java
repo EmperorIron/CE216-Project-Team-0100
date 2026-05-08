@@ -57,6 +57,10 @@ public class GUITraining {
     }
 
     public GUITraining(ITeam playerTeam) {
+        if (playerTeam == null) {
+            Classes.ErrorHandler.logError("Attempted to open Training with a null team.");
+            return;
+        }
         this.playerTeam = playerTeam;
         
         initWeeklySchedule();

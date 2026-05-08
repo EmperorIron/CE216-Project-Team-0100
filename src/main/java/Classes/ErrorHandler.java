@@ -6,6 +6,29 @@ import java.util.List;
 public class ErrorHandler {
 
     private static final List<String> errorLog = new ArrayList<>();
+    private static boolean isRedirectingToError = false;
+
+    // Intercept all fatal crashes globally
+    static {
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            Exception e = (throwable instanceof Exception) ? (Exception) throwable : new Exception(throwable);
+            logError("FATAL CRASH on thread " + thread.getName() + ": " + e.getMessage());
+            logError(e);
+            
+            if (!isRedirectingToError) {
+                isRedirectingToError = true;
+                try {
+                    javafx.application.Platform.runLater(() -> {
+                        gui.GUIError.show();
+                        isRedirectingToError = false;
+                    });
+                } catch (Exception ex) {
+                    System.err.println("Could not redirect to GUIError: " + ex.getMessage());
+                    isRedirectingToError = false;
+                }
+            }
+        });
+    }
 
     // Add a simple error message to the log
     public static void logError(String errorMessage) {

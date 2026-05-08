@@ -62,9 +62,11 @@ public abstract class GameRules {
         this.matchbetweenTeams = matchbetweenTeams;
         this.matchesPerWeek = matchesPerWeek;
         if (trainingormatch == null || !trainingormatch.matches("[01]{7}")) {
-            throw new IllegalArgumentException("trainingormatch must be a 7-character string of '0's and '1's.");
+            ErrorHandler.logError("trainingormatch must be a 7-character string of '0's and '1's.");
+            this.trainingormatch = "0000001";
+        } else {
+            this.trainingormatch = trainingormatch;
         }
-        this.trainingormatch = trainingormatch;
     }
     // Setters and Getters
     public int getPeriodCount() {
@@ -225,9 +227,11 @@ public abstract class GameRules {
 
     public void setTrainingormatch(String trainingormatch) {
         if (trainingormatch == null || !trainingormatch.matches("[01]{7}")) {
-            throw new IllegalArgumentException("trainingormatch must be a 7-character string of '0's and '1's.");
+            ErrorHandler.logError("trainingormatch must be a 7-character string of '0's and '1's.");
+            this.trainingormatch = "0000001";
+        } else {
+            this.trainingormatch = trainingormatch;
         }
-        this.trainingormatch = trainingormatch;
     }
     ////////////////////////////////////////////////////////////////////////////////
 } 

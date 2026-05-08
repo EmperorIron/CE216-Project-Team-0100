@@ -55,6 +55,10 @@ public class GUITactic {
     private int maxReservePlayers;
 
     public GUITactic(ITeam playerTeam) {
+        if (playerTeam == null) {
+            Classes.ErrorHandler.logError("Attempted to open Tactics with a null team.");
+            return;
+        }
         this.playerTeam = playerTeam;
         
         GUISquadManager.getInstance().initSquad(playerTeam);

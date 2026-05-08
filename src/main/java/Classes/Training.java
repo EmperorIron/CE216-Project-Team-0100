@@ -42,6 +42,10 @@ public abstract class Training {
 
 
     public void apply(ITeam team) {
+        if (team == null) {
+            ErrorHandler.logError("Attempted to apply training to a null team.");
+            return;
+        }
         TraitCategory playerTraitCategory = getPlayerTraitCategory();
         String coachTraitName = getCoachTraitName();
 
@@ -123,7 +127,9 @@ public abstract class Training {
             case DEFENSIVE: return TraitCategory.DEFENSE;
             case PHYSICAL: return TraitCategory.PHYSICAL;
             case MENTAL: return TraitCategory.MENTAL;
-            default: throw new IllegalStateException("Unknown training category: " + this.category);
+            default: 
+                ErrorHandler.logError("Unknown training category: " + this.category);
+                return TraitCategory.PHYSICAL;
         }
     }
 

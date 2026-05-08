@@ -111,6 +111,10 @@ public abstract class Player implements IPlayer {
     }
 
     public int getProficiencyAt(int positionId) {
+        if (this.positionProficiency == null) {
+            ErrorHandler.logError("Position proficiency map is null for player: " + this.name);
+            return 0;
+        }
         return this.positionProficiency.getOrDefault(positionId, 0);
     }
 

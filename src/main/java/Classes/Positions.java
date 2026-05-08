@@ -63,21 +63,24 @@ public abstract class Positions {
 
     public static int getPositionId(int x, int y) {
         if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) {
-            throw new IllegalArgumentException("Coordinates (" + x + "," + y + ") are out of bounds.");
+            ErrorHandler.logError("Coordinates (" + x + "," + y + ") are out of bounds.");
+            return 0;
         }
         return y * GRID_WIDTH + x;
     }
 
     public static int getX(int positionId) {
         if (positionId < 0 || positionId >= TOTAL_POSITIONS) {
-            throw new IllegalArgumentException("Position ID " + positionId + " is out of bounds.");
+            ErrorHandler.logError("Position ID " + positionId + " is out of bounds for getting X.");
+            return 0;
         }
         return positionId % GRID_WIDTH;
     }
 
     public static int getY(int positionId) {
         if (positionId < 0 || positionId >= TOTAL_POSITIONS) {
-            throw new IllegalArgumentException("Position ID " + positionId + " is out of bounds.");
+            ErrorHandler.logError("Position ID " + positionId + " is out of bounds for getting Y.");
+            return 0;
         }
         return positionId / GRID_WIDTH;
     }

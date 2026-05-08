@@ -130,6 +130,10 @@ public class PositionsFootball extends Positions {
     }
 
     public static void resolvePositionCollisions(Interface.ITactic tactic) {
+        if (tactic == null || tactic.getStartingLineup() == null) {
+            Classes.ErrorHandler.logError("Attempted to resolve position collisions for a null tactic or lineup.");
+            return;
+        }
         java.util.Set<Integer> occupied = new java.util.HashSet<>();
         PositionsFootball posInfo = new PositionsFootball();
         java.util.Set<Integer> validPositions = posInfo.getValidPositions();

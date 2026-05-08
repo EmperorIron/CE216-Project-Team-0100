@@ -82,6 +82,11 @@ public class GUIMenu {
                 ? GameContext.getInstance().getActiveVolleyballCalendar() 
                 : GameContext.getInstance().getActiveCalendar();
 
+            if (leagueToSave == null || calendarToSave == null) {
+                Classes.ErrorHandler.logError("Cannot quick save: Active league or calendar is null.");
+                return;
+            }
+
             SaveGame saveData = new SaveGame("autosave", leagueToSave, calendarToSave, GameContext.getInstance().getPlayerTeam(),
                     gui.GUISquadManager.getInstance().getPitchPlayers(), gui.GUISquadManager.getInstance().getPlayersOnPitchQueue(), gui.GUISquadManager.getInstance().getReservePlayersQueue(),
                     gui.GUISquadManager.getInstance().getCurrentTacticStyle());

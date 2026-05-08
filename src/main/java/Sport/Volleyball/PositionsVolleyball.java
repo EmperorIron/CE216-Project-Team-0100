@@ -109,6 +109,10 @@ public class PositionsVolleyball extends Positions {
 
 
     public static void resolvePositionCollisions(ITactic tactic) {
+        if (tactic == null || tactic.getStartingLineup() == null) {
+            Classes.ErrorHandler.logError("Attempted to resolve position collisions for a null tactic or lineup.");
+            return;
+        }
         Set<Integer> occupied = new HashSet<>();
         PositionsVolleyball posInfo = new PositionsVolleyball();
         Set<Integer> validPositions = posInfo.getValidPositions();

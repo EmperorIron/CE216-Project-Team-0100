@@ -140,12 +140,14 @@ public class GameFootball extends Game {
             }
 
             double homeGoalChance = (homeOffense / (homeOffense + awayDefense)) * BASE_GOAL_CHANCE;
+            if (Double.isNaN(homeGoalChance)) homeGoalChance = 0.0;
             if (getRandom().nextDouble() < homeGoalChance) { 
                 homeScore++;
                 addLogEntry(minute + "'. GOOOAALLL! " + homeTeam.getName() + " finds the net! Score: " + homeScore + "-" + awayScore);
             }
 
             double awayGoalChance = (awayOffense / (awayOffense + homeDefense)) * BASE_GOAL_CHANCE;
+            if (Double.isNaN(awayGoalChance)) awayGoalChance = 0.0;
             if (getRandom().nextDouble() < awayGoalChance) {
                 awayScore++;
                 addLogEntry(minute + "'. GOOOAALLL! " + awayTeam.getName() + " scores! Score: " + homeScore + "-" + awayScore);

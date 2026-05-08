@@ -22,7 +22,15 @@ public class SceneManager {
     }
 
     public static void changeScene(Parent root, String title) {
-        if (primaryStage == null) throw new IllegalStateException("Primary stage is not set in SceneManager.");
+        if (primaryStage == null) {
+            Classes.ErrorHandler.logError("Primary stage is not set in SceneManager.");
+            return;
+        }
+        if (root == null) {
+            Classes.ErrorHandler.logError("Attempted to change to a null scene root for title: " + title);
+            return;
+        }
+
         if (title != null) primaryStage.setTitle(title);
         
         if (primaryStage.getScene() == null) {

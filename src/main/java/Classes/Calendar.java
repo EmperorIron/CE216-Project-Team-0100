@@ -16,7 +16,9 @@ public abstract class Calendar {
     protected final GameRules rules;
 
     protected Calendar(GameRules rules) {
-        if (rules == null) throw new IllegalArgumentException("GameRules cannot be null for Calendar.");
+        if (rules == null) {
+            ErrorHandler.logError("GameRules cannot be null for Calendar.");
+        }
         this.rules = rules;
         this.currentWeek = 0;
     }

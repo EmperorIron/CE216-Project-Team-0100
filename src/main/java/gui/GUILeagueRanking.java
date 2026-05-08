@@ -31,6 +31,10 @@ public class GUILeagueRanking {
     private boolean sortAscending = false;
 
     public GUILeagueRanking(ITeam playerTeam, League activeLeague) {
+        if (playerTeam == null || activeLeague == null) {
+            Classes.ErrorHandler.logError("Attempted to open League Ranking with a null team or league.");
+            return;
+        }
         this.playerTeam = playerTeam;
         this.activeLeague = activeLeague;
         show();
