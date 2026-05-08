@@ -254,6 +254,7 @@ public class GUITactic {
 
         List<IPlayer> availablePlayers = new ArrayList<>();
         for (IPlayer p : playerTeam.getPlayers()) {
+            if (GUISquadManager.getInstance().isMidMatch && !GUISquadManager.getInstance().playersOnPitchQueue.contains(p) && !GUISquadManager.getInstance().reservePlayersQueue.contains(p)) continue;
             if (GUISquadManager.getInstance().isMidMatch && p.isInjured() && !GUISquadManager.getInstance().playersOnPitchQueue.contains(p)) continue;
             if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().redCardedPlayers.contains(p)) continue;
             if (GUISquadManager.getInstance().isMidMatch && !canReEnter && GUISquadManager.getInstance().subbedOutPlayers.contains(p)) continue;
