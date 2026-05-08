@@ -34,7 +34,7 @@ public class GUISportSelection {
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root-darker");
 
-        // --- ORTA KISIM (KAYDIRILABİLİR KARTLAR) ---
+        // --- CENTER SECTION (SCROLLABLE CARDS) ---
         HBox cardBox = new HBox(50);
         cardBox.setAlignment(Pos.CENTER);
         cardBox.setStyle("-fx-background-color: transparent;");
@@ -48,7 +48,7 @@ public class GUISportSelection {
 
         cardBox.getChildren().addAll(footballCard, volleyballCard);
 
-        // ScrollPane Ayarları (Yatay kaydırma)
+        // ScrollPane Settings (Horizontal scrolling)
         ScrollPane scrollPane = new ScrollPane(cardBox);
         scrollPane.setFitToHeight(true); 
         scrollPane.setFitToWidth(false);
@@ -58,7 +58,7 @@ public class GUISportSelection {
 
         root.setCenter(scrollPane);
 
-        // --- ALT KISIM (GERİ BUTONU) ---
+        // --- BOTTOM SECTION (BACK BUTTON) ---
         Button btnBack = new Button("BACK TO MAIN MENU");
         btnBack.setPrefWidth(300);
         btnBack.setPrefHeight(50);
@@ -89,10 +89,10 @@ public class GUISportSelection {
                 imageView.setPreserveRatio(true);
                 imageView.setOpacity(0.8);
             } else {
-                System.err.println("Uyarı: Görsel bulunamadı -> " + imagePath);
+                System.err.println("Warning: Image not found -> " + imagePath);
             }
         } catch (Exception e) {
-            System.err.println("Görsel yüklenemedi: " + imagePath);
+            System.err.println("Failed to load image: " + imagePath);
         }
 
         Label lblName = new Label(sportName);

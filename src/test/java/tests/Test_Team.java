@@ -3,7 +3,7 @@ package tests;
 import Classes.*;
 import Interface.ICoach;
 import Interface.IPlayer;
-import Sport.*;
+import Sport.Football.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -109,5 +109,19 @@ public class Test_Team {
             assertEquals(Positions.TOTAL_POSITIONS, player.getPositionProficiency().size(),
                     player.getFullName() + " proficiency map should have 100 entries.");
         }
+    }
+
+    @Test
+    void testTeamEqualityAndHashCode() {
+        assertEquals(team, team, "Team should be equal to itself.");
+        assertNotEquals(team, null, "Team should not be equal to null.");
+        assertNotNull(team.hashCode(), "Team hash code should not be null.");
+    }
+
+    @Test
+    void testSetEmblemPath() {
+        String newPath = "images/custom_logo.png";
+        team.setEmblemPath(newPath);
+        assertEquals(newPath, team.getEmblemPath(), "Team emblem path should update correctly.");
     }
 }

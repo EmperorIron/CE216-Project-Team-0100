@@ -148,5 +148,17 @@ public abstract class Team implements ITeam {
     public void addCoach(ICoach coach) {
         this.coaches.add(coach);
     }
-     
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || !(obj instanceof ITeam)) return false;
+        ITeam other = (ITeam) obj;
+        return this.name != null && this.name.equals(other.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return name != null ? name.hashCode() : 0;
+    }
 }

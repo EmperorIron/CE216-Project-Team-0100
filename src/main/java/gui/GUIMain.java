@@ -36,7 +36,7 @@ public class GUIMain {
             if ("FOOTBALL".equals(sport)) {
                 ctx.setSportFactory(new FootballFactory());
                 Classes.GameRules rules = ctx.getSportFactory().createGameRules();
-                ctx.setActiveLeague(ctx.getSportFactory().createLeague("Süper Lig", "Türkiye", 10, rules)); 
+                ctx.setActiveLeague(ctx.getSportFactory().createLeague("Süper Lig", "Turkey", 10, rules)); 
                 ctx.setActiveCalendar(ctx.getSportFactory().createCalendar(rules));
                 ctx.getActiveCalendar().generateFixtures(ctx.getActiveLeague().getTeamRanking());
                 
@@ -46,7 +46,7 @@ public class GUIMain {
             } else if ("VOLLEYBALL".equals(sport)) {
                 ctx.setSportFactory(new VolleyballFactory());
                 Classes.GameRules rules = ctx.getSportFactory().createGameRules();
-                ctx.setActiveVolleyballLeague(ctx.getSportFactory().createLeague("Voleybol Ligi", "Türkiye", 10, rules));
+                ctx.setActiveVolleyballLeague(ctx.getSportFactory().createLeague("Volleyball League", "Turkey", 10, rules));
                 ctx.setActiveVolleyballCalendar(ctx.getSportFactory().createCalendar(rules));
                 ctx.getActiveVolleyballCalendar().generateFixtures(ctx.getActiveVolleyballLeague().getTeamRanking());
     
@@ -61,18 +61,69 @@ public class GUIMain {
 
     public static void loadSavedGame(SaveGame saveGame) {
         GameContext ctx = GameContext.getInstance();
-        ctx.setActiveLeague(saveGame.getCurrentLeague());
-        ctx.setActiveCalendar(saveGame.getCalendar());
-        ctx.setPlayerTeam(saveGame.getPlayerTeam());
         gui.GUITraining.weeklySchedule.clear();
         
-        if (ctx.getActiveLeague() instanceof Sport.Volleyball.LeagueVolleyball) {
+        if (saveGame.getCurrentLeague() != null && saveGame.getCurrentLeague().getClass().getSimpleName().contains("Volleyball")) {
             ctx.setActiveSport("VOLLEYBALL");
             ctx.setSportFactory(new VolleyballFactory());
+            ctx.setActiveVolleyballLeague(saveGame.getCurrentLeague());
+            ctx.setActiveVolleyballCalendar(saveGame.getCalendar());
+            ctx.setActiveLeague(null);
+            ctx.setActiveCalendar(null);
         } else {
             ctx.setActiveSport("FOOTBALL");
             ctx.setSportFactory(new FootballFactory());
+            ctx.setActiveLeague(saveGame.getCurrentLeague());
+            ctx.setActiveCalendar(saveGame.getCalendar());
+            ctx.setActiveVolleyballLeague(null);
+            ctx.setActiveVolleyballCalendar(null);
         }
+
+        ITeam loadedTeam = saveGame.getPlayerTeam();
+        ITeam actualTeamRef = loadedTeam;
+        
+        Classes.League activeLeague = "VOLLEYBALL".equals(ctx.getActiveSport()) ? ctx.getActiveVolleyballLeague() : ctx.getActiveLeague();
+        Classes.Calendar cal = "VOLLEYBALL".equals(ctx.getActiveSport()) ? ctx.getActiveVolleyballCalendar() : ctx.getActiveCalendar();
+
+        if (activeLeague != null) {
+            java.util.Map<String, ITeam> realTeams = new java.util.HashMap<>();
+            for (ITeam t : activeLeague.getTeamRanking()) {
+                realTeams.put(t.getName(), t);
+                if (loadedTeam != null && t.getName().equals(loadedTeam.getName())) {
+                    actualTeamRef = t;
+                }
+            }
+            
+            if (cal != null && cal.getSchedule() != null) {
+                for (java.util.List<Classes.Game> games : cal.getSchedule().values()) {
+                    for (Classes.Game game : games) {
+                        ITeam realHome = realTeams.get(game.getHomeTeam().getName());
+                        ITeam realAway = realTeams.get(game.getAwayTeam().getName());
+                        if (realHome != null) game.setHomeTeam(realHome);
+                        if (realAway != null) game.setAwayTeam(realAway);
+                        
+                        if (!game.isCompleted()) {
+                            if (actualTeamRef != null && game.getHomeTeam().getName().equals(actualTeamRef.getName())) {
+                                game.setHomeManager("VOLLEYBALL".equals(ctx.getActiveSport()) 
+                                        ? new Sport.Volleyball.HumanManagerVolleyball(actualTeamRef) 
+                                        : new Sport.Football.HumanManagerFootball(actualTeamRef));
+                            } else if (realHome != null) {
+                                game.setHomeManager(ctx.getSportFactory().createEasyAI(realHome));
+                            }
+                            
+                            if (actualTeamRef != null && game.getAwayTeam().getName().equals(actualTeamRef.getName())) {
+                                game.setAwayManager("VOLLEYBALL".equals(ctx.getActiveSport()) 
+                                        ? new Sport.Volleyball.HumanManagerVolleyball(actualTeamRef) 
+                                        : new Sport.Football.HumanManagerFootball(actualTeamRef));
+                            } else if (realAway != null) {
+                                game.setAwayManager(ctx.getSportFactory().createEasyAI(realAway));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        ctx.setPlayerTeam(actualTeamRef);
         
         gui.GUISquadManager.getInstance().loadTacticData(saveGame.getPitchPlayers(), saveGame.getPlayersOnPitchQueue(), saveGame.getReservePlayersQueue(), ctx.getPlayerTeam(), saveGame.getTacticStyle());
         
@@ -117,42 +168,7 @@ public class GUIMain {
                     }
 
                     if (playerGame != null && !playerGame.isCompleted()) {
-                        Classes.GameRules rules = ctx.getSportFactory().createGameRules();
-                        if (gui.GUISquadManager.getInstance().getPlayersOnPitchQueue().size() != (rules.getFieldPlayerCount() - gui.GUISquadManager.getInstance().redCardedPlayers.size())) {
-                            ctx.setTacticConfirmedForMatch(false);
-                            gui.GUIPopup.showMessage("Incomplete Squad", "Squad Incomplete!", "Starting " + rules.getFieldPlayerCount() + " must be full to play the match! Please set your squad.");
-                            new gui.GUITactic(ctx.getPlayerTeam());
-                            return;
-                        }
-                            
-                        boolean hasInjuredStarter = false;
-                        for (Interface.IPlayer p : gui.GUISquadManager.getInstance().getPlayersOnPitchQueue()) {
-                            if (p.isInjured()) { hasInjuredStarter = true; break; }
-                        }
-                        if (hasInjuredStarter) {
-                            ctx.setTacticConfirmedForMatch(false);
-                            gui.GUIPopup.showMessage("Injured Player", "Injured Player in Starting " + rules.getFieldPlayerCount() + "!", "There must be no injured players on the pitch to play the match. Please substitute the injured player.");
-                            new gui.GUITactic(ctx.getPlayerTeam());
-                            return;
-                        }
-                            
-                        String validationMsg = ctx.getSportFactory().validateFormation(new java.util.ArrayList<>(gui.GUISquadManager.getInstance().getPlayersOnPitchQueue()));
-                        if (validationMsg != null) {
-                            ctx.setTacticConfirmedForMatch(false);
-                            gui.GUIPopup.showMessage("Invalid Formation", "Formation Rule Violated!", validationMsg);
-                            new gui.GUITactic(ctx.getPlayerTeam());
-                            return;
-                        }
-                            
                         final Classes.Game finalPlayerGame = playerGame;
-                        if (gui.GUISquadManager.getInstance().getReservePlayersQueue().size() != rules.getReservePlayerCount()) {
-                            gui.GUIPopup.showConfirmation("Incomplete Bench", "Bench is not full!", 
-                                "There are not " + rules.getReservePlayerCount() + " players on the bench. Do you still want to play the match?", 
-                                () -> ctx.getSportFactory().launchGame(finalPlayerGame),
-                                () -> { ctx.setTacticConfirmedForMatch(false); new gui.GUITactic(ctx.getPlayerTeam()); }
-                            );
-                            return;
-                        }
                         
                         // Inject the GUI choices into the domain manager BEFORE the game starts
                         if (finalPlayerGame.getHomeManager() instanceof Classes.HumanManager hm) {
@@ -167,19 +183,26 @@ public class GUIMain {
                                 gui.GUISquadManager.getInstance().getCurrentTacticStyle());
                         }
 
-                        ctx.getSportFactory().launchGame(playerGame);
-                    } else {
-                        Thread matchThread = new Thread(() -> {
+                        int minRequired = "VOLLEYBALL".equals(ctx.getActiveSport()) ? 6 : 7;
+                        if (gui.GUISquadManager.getInstance().getPlayersOnPitchQueue().size() < minRequired) {
+                            finalPlayerGame.forfeit(ctx.getPlayerTeam());
+                            
                             cal.advanceToNextWeek();
                             decrementAllInjuries();
-                            javafx.application.Platform.runLater(() -> {
-                                ctx.setMatchDay(false);
-                                ctx.setTacticConfirmedForMatch(false);
-                                new GUIMain();
-                            });
-                        });
-                        matchThread.setDaemon(true);
-                        matchThread.start();
+                            gui.GUISquadManager.getInstance().postMatchCleanup();
+                            gui.GUIPopup.showMessage("Match Forfeited", "0-3 Defeat", "You did not have enough players on the pitch to play the match. You have forfeited the match 0-3.");
+                            ctx.setMatchDay(false);
+                            ctx.setTacticConfirmedForMatch(false);
+                            new GUIMain();
+                        } else {
+                            ctx.getSportFactory().launchGame(playerGame);
+                        }
+                    } else {
+                        cal.advanceToNextWeek();
+                        decrementAllInjuries();
+                        ctx.setMatchDay(false);
+                        ctx.setTacticConfirmedForMatch(false);
+                        new GUIMain();
                     }
                 }
             }
@@ -190,11 +213,13 @@ public class GUIMain {
         mainLayout = new BorderPane();
         mainLayout.getStyleClass().add("root-dark");
 
-        // Panellerin Eklenmesi
+        // Adding Panels
         mainLayout.setTop(GUILeftandTopBarHelper.createTopBar(null));
         mainLayout.setLeft(GUILeftandTopBarHelper.createSidebar("Home"));
         mainLayout.setCenter(createDashboard());
-        SceneManager.changeScene(mainLayout, "Sports Manager - Dashboard");
+        javafx.application.Platform.runLater(() -> {
+            SceneManager.changeScene(mainLayout, "Sports Manager - Dashboard");
+        });
     }
 
     private VBox createDashboard() {

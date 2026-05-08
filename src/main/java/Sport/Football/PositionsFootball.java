@@ -13,7 +13,7 @@ import Classes.Positions;
 
 public class PositionsFootball extends Positions {
     private static final Set<Integer> VALID_POSITIONS = definePitch();
-    private static final Set<Integer> GK_POSITIONS = defineZone(4, 4, 0, 0); // Goalkeeper (Kaleci) Sadece 1 pozisyon
+    private static final Set<Integer> GK_POSITIONS = defineZone(4, 4, 0, 0); // Goalkeeper: Only 1 position
     
     // --- DEFENSE (Y: between 1-3) ---
     private static final Set<Integer> LB_POSITIONS = defineZone(1, 2, 1, 3); // Left Back
@@ -23,7 +23,7 @@ public class PositionsFootball extends Positions {
     // --- MIDFIELD (Y: between 4-6) ---
     private static final Set<Integer> CDM_POSITIONS = defineZone(3, 6, 4, 4); // Defensive Midfielder
     private static final Set<Integer> CM_POSITIONS  = defineZone(3, 6, 5, 5); // Central Midfielder
-    private static final Set<Integer> CAM_POSITIONS = defineZone(3, 6, 6, 6); // Attacking Midfielder (10 Numara)
+    private static final Set<Integer> CAM_POSITIONS = defineZone(3, 6, 6, 6); // Attacking Midfielder (Number 10)
     private static final Set<Integer> LM_POSITIONS  = defineZone(1, 2, 4, 6); // Left Midfielder
     private static final Set<Integer> RM_POSITIONS  = defineZone(7, 8, 4, 6); // Right Midfielder
 
@@ -47,7 +47,7 @@ public class PositionsFootball extends Positions {
                 pitch.add(getPositionId(x, y));
             }
         }
-        pitch.add(getPositionId(4, 0)); // Sadece tam ortadaki Kaleci noktası geçerli
+        pitch.add(getPositionId(4, 0)); // Only the exact center Goalkeeper spot is valid
         return pitch;
     }
 

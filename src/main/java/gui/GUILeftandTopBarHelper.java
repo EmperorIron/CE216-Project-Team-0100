@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 
 public class GUILeftandTopBarHelper {
 
-    // Performansı artırmak için logoları bellekte saklayan Cache (Önbellek)
+    // Cache to store logos in memory to improve performance
     private static final java.util.Map<String, javafx.scene.image.Image> emblemCache = new java.util.HashMap<>();
 
     public static HBox createTopBar(Runnable onContinueOverride) {
@@ -132,10 +132,10 @@ public class GUILeftandTopBarHelper {
     }
 
     public static javafx.scene.Node createEmblem(Interface.ITeam team, double size) {
-        Color teamColor = Color.web("#1f4068"); // Varsayılan renk
+        Color teamColor = Color.web("#1f4068"); // Default color
         if (team != null && team.getName() != null && !team.getName().isEmpty()) {
             int hash = Math.abs(team.getName().hashCode());
-            teamColor = Color.hsb(hash % 360, 0.8, 0.9); // Takım ismine özel kalıcı bir renk üret
+            teamColor = Color.hsb(hash % 360, 0.8, 0.9); // Generate a persistent unique color based on team name
         }
         
         if (team instanceof Classes.Team) {
@@ -156,7 +156,7 @@ public class GUILeftandTopBarHelper {
                         iv.setFitHeight(size);
                         iv.setPreserveRatio(true);
                         
-                        // Kesilme (clip) sorununu çözmek için efektleri doğrudan tek bir ImageView üzerinde zincirliyoruz.
+                        // Chain the effects directly on a single ImageView to solve clipping issues.
                         javafx.scene.effect.ColorInput colorInput = new javafx.scene.effect.ColorInput(0, 0, size * 2, size * 2, teamColor);
                         javafx.scene.effect.Blend diffBlend = new javafx.scene.effect.Blend(javafx.scene.effect.BlendMode.DIFFERENCE);
                         diffBlend.setTopInput(colorInput);
@@ -170,7 +170,7 @@ public class GUILeftandTopBarHelper {
             }
         }
         
-        // Görsel yüklenemezse bile takıma özel renkte ve baş harfli bir daire oluştur
+        // Create a circle with the team's custom color and initial even if the image fails to load
         javafx.scene.shape.Circle fallback = new javafx.scene.shape.Circle(size / 2, teamColor);
         fallback.setStroke(javafx.scene.paint.Color.WHITE);
         fallback.setStrokeWidth(2);

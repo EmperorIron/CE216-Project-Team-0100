@@ -19,19 +19,19 @@ import javafx.stage.StageStyle;
 
 public class GUIMenu {
 
-    // Menüyü çağırmak için bu metodu kullanacaksın: GUIPauseMenu.show(primaryStage);
+    // You will use this method to call the menu: GUIPauseMenu.show(primaryStage);
     public static void show() {
         Stage ownerStage = SceneManager.getPrimaryStage();
         Stage popupStage = new Stage();
         popupStage.initOwner(ownerStage);
         
-        // İŞTE SİHİRLİ KOD: İşletim sisteminin klasik pencere kenarlıklarını (Windows görünümünü) tamamen siler
+        // MAGIC CODE: Completely removes the OS's classic window borders (Windows look)
         popupStage.initStyle(StageStyle.TRANSPARENT);
         
-        // Bu menü açıkken arka plandaki oyuna tıklanmasını engeller
+        // Prevents clicking on the background game while this menu is open
         popupStage.initModality(Modality.APPLICATION_MODAL);
 
-        // Menü Kutusu (Lacivert arka plan, kırmızı ince kenarlık)
+        // Menu Box (Navy blue background, red thin border)
         VBox menuBox = new VBox(15);
         menuBox.setPadding(new Insets(40, 60, 40, 60));
         menuBox.setAlignment(Pos.CENTER);
@@ -43,7 +43,7 @@ public class GUIMenu {
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 24));
         VBox.setMargin(title, new Insets(0, 0, 20, 0));
 
-        // Butonları oluştur (Tasarım temasına uygun renklerle)
+        // Create buttons (With colors matching the design theme)
         Button btnSave = createMenuButton("Save Game", "btn-success");
         Button btnQuickSave = createMenuButton("Quick Save", "btn-success");
         Button btnLoad = createMenuButton("Load Game", "btn-warning");
@@ -53,10 +53,10 @@ public class GUIMenu {
         Button btnExit = createMenuButton("Exit to Desktop", "btn-purple");
         Button btnClose = createMenuButton("Back to Game", "btn-info");
 
-        // --- BUTON İŞLEVLERİ ---
+        // --- BUTTON FUNCTIONS ---
         btnClose.setOnAction(e -> popupStage.close());
         
-        btnExit.setOnAction(e -> System.exit(0)); // Tüm programı kapatır
+        btnExit.setOnAction(e -> System.exit(0)); // Closes the entire program
         
         btnMainMenu.setOnAction(e -> {
             popupStage.close();
@@ -75,11 +75,18 @@ public class GUIMenu {
         });
 
         btnQuickSave.setOnAction(e -> {
-            SaveGame saveData = new SaveGame("autosave", GameContext.getInstance().getActiveLeague(), GameContext.getInstance().getActiveCalendar(), GameContext.getInstance().getPlayerTeam(),
+            Classes.League leagueToSave = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                ? GameContext.getInstance().getActiveVolleyballLeague() 
+                : GameContext.getInstance().getActiveLeague();
+            Classes.Calendar calendarToSave = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                ? GameContext.getInstance().getActiveVolleyballCalendar() 
+                : GameContext.getInstance().getActiveCalendar();
+
+            SaveGame saveData = new SaveGame("autosave", leagueToSave, calendarToSave, GameContext.getInstance().getPlayerTeam(),
                     gui.GUISquadManager.getInstance().getPitchPlayers(), gui.GUISquadManager.getInstance().getPlayersOnPitchQueue(), gui.GUISquadManager.getInstance().getReservePlayersQueue(),
                     gui.GUISquadManager.getInstance().getCurrentTacticStyle());
             SaveManager.saveGame(saveData, "autosave");
-            // İsteğe bağlı: Ekranda küçük bir onay mesajı gösterilebilir.
+            // Optional: A small confirmation message can be displayed on screen.
         });
 
         btnQuickLoad.setOnAction(e -> {
@@ -119,15 +126,15 @@ public class GUIMenu {
             }).show();
         });
 
-        // Butonları kutuya ekle
+        // Add buttons to the box
         menuBox.getChildren().addAll(title, btnSave, btnQuickSave, btnLoad, btnQuickLoad, btnGuide, btnMainMenu, btnExit, new Region(), btnClose);
 
-        // Kapatma butonundan önce biraz boşluk bırakmak için Region kullandık
+        // Used Region to leave some space before the close button
         VBox.setVgrow(menuBox.getChildren().get(menuBox.getChildren().size() - 2), Priority.ALWAYS);
 
-        // Tam ekran arka plan (Ana ekranı karartmak için)
+        // Full screen background (To darken the main screen)
         StackPane root = new StackPane(menuBox);
-        root.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);"); // Arka planı %70 siyah yapar
+        root.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);"); // Makes background 70% black
         root.setPadding(new Insets(50));
 
         Scene scene = new Scene(root);
@@ -136,20 +143,20 @@ public class GUIMenu {
         } catch (Exception e) {
             System.err.println("Warning: styles.css not found in resources folder.");
         }
-        scene.setFill(Color.TRANSPARENT); // JavaFX penceresinin arka planını şeffaf yapar
+        scene.setFill(Color.TRANSPARENT); // Makes JavaFX window background transparent
         popupStage.setScene(scene);
 
-        // Pop-up'ın boyutunu ve pozisyonunu ana pencere ile tam eşle
+        // Perfectly match pop-up's size and position with the main window
         popupStage.setWidth(ownerStage.getWidth());
         popupStage.setHeight(ownerStage.getHeight());
         popupStage.setX(ownerStage.getX());
         popupStage.setY(ownerStage.getY());
 
-        // Menüyü göster
+        // Show menu
         popupStage.showAndWait();
     }
 
-    // Özel tasarımlı buton üretici
+    // Custom designed button generator
     private static Button createMenuButton(String text, String cssClass) {
         Button btn = new Button(text);
         btn.setMaxWidth(Double.MAX_VALUE);

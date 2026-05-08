@@ -161,6 +161,9 @@ public abstract class Player implements IPlayer {
      * @return The average of all the player's trait levels, or 0 if no traits exist.
      */
     public double calculateOverallRating() {
+        if (isInjured()) {
+            return 0.0;
+        }
         if (traits.isEmpty()) {
             return 0.0;
         }
@@ -174,5 +177,18 @@ public abstract class Player implements IPlayer {
 
     public void setJerseyNumber(int jerseyNumber) {
         this.jerseyNumber = jerseyNumber;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || !(obj instanceof IPlayer)) return false;
+        IPlayer other = (IPlayer) obj;
+        return this.id != null && this.id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 }

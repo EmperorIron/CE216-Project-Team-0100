@@ -29,7 +29,7 @@ public class GUIGuide {
         this.playerTeam = playerTeam;
         this.onBack = onBack;
         
-        // Rehber içeriklerini hazırla
+        // Prepare guide contents
         for (int i = 1; i <= 10; i++) {
             guideTexts.put("Guide " + i, "Text " + i + "\n\nThis area is reserved for the " + i + "th guide content. You can add detailed explanations about the game here.");
         }
@@ -41,15 +41,15 @@ public class GUIGuide {
         BorderPane mainLayout = new BorderPane();
         mainLayout.setStyle("-fx-background-color: #1b1b2f;");
 
-        // GUIMain ile aynı üst bar
+        // Same top bar as GUIMain
         mainLayout.setTop(createTopBar());
 
-        // Ana İçerik Alanı
+        // Main Content Area
         HBox contentBox = new HBox(20);
         contentBox.setPadding(new Insets(30));
         contentBox.setAlignment(Pos.TOP_CENTER);
 
-        // --- SOL TARAF: KAYDIRILABİLİR BUTON LİSTESİ ---
+        // --- LEFT SIDE: SCROLLABLE BUTTON LIST ---
         VBox buttonList = new VBox(10);
         buttonList.setPadding(new Insets(10));
         buttonList.setStyle("-fx-background-color: #162447; -cite-background-radius: 10;");
@@ -74,7 +74,7 @@ public class GUIGuide {
         scrollPane.setPrefHeight(600);
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
 
-        // --- SAĞ TARAF: DEVASA TEXTBOX (Metin Alanı) ---
+        // --- RIGHT SIDE: HUGE TEXTBOX (Text Area) ---
         guideContentArea = new TextArea("Please select a topic you want to learn from the list on the left.");
         guideContentArea.setEditable(false);
         guideContentArea.setWrapText(true);
@@ -89,7 +89,7 @@ public class GUIGuide {
         SceneManager.changeScene(mainLayout, "Sports Manager - Guide");
     }
 
-    // --- GUIMAIN İLE BİREBİR AYNI METODLAR ---
+    // --- EXACTLY THE SAME METHODS AS GUIMAIN ---
     private HBox createTopBar() {
         HBox topBar = new HBox(20);
         topBar.setPadding(new Insets(15, 20, 15, 20));

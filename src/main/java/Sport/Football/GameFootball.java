@@ -14,10 +14,10 @@ import java.util.Map;
 
 public class GameFootball extends Game {
 
-    private static final double YELLOW_CARD_CHANCE = 0.025;
-    private static final double RED_CARD_CHANCE = 0.01;
-    private static final double INJURY_CHANCE = 0.03;
-    private static final double BASE_GOAL_CHANCE = 0.025;
+    private static final double YELLOW_CARD_CHANCE = 0.009;
+    private static final double RED_CARD_CHANCE = 0.0002;
+    private static final double INJURY_CHANCE = 0.5; // Temporarily increased for testing injuries
+    private static final double BASE_GOAL_CHANCE = 0.035;
 
     private float homeOffense, homeDefense, awayOffense, awayDefense;    
     private Map<IPlayer, Integer> playerYellowCards = new HashMap<>();
@@ -92,6 +92,14 @@ public class GameFootball extends Game {
                         if (homeSubsLeft > 0) {
                             performSubstitution(homeTeam, homeTactic, minute, "FORCED SUB (Injury)");
                             homeSubsLeft--;
+                        } else {
+                            List<IPlayer> onField = homeTactic.getStartingLineup();
+                            if (!onField.isEmpty()) {
+                                IPlayer injured = onField.get(getRandom().nextInt(onField.size()));
+                                if (injured instanceof Classes.Player) ((Classes.Player) injured).setInjuryDuration(2);
+                                addLogEntry(minute + "'. INJURY! (" + homeTeam.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
+                                recalculateTeamStrengths();
+                            }
                         }
                     } else {
                         handlePlayerInjury(homeTeam, homeTactic, minute);
@@ -101,6 +109,14 @@ public class GameFootball extends Game {
                         if (awaySubsLeft > 0) {
                             performSubstitution(awayTeam, awayTactic, minute, "FORCED SUB (Injury)");
                             awaySubsLeft--;
+                        } else {
+                            List<IPlayer> onField = awayTactic.getStartingLineup();
+                            if (!onField.isEmpty()) {
+                                IPlayer injured = onField.get(getRandom().nextInt(onField.size()));
+                                if (injured instanceof Classes.Player) ((Classes.Player) injured).setInjuryDuration(2);
+                                addLogEntry(minute + "'. INJURY! (" + awayTeam.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
+                                recalculateTeamStrengths();
+                            }
                         }
                     } else {
                         handlePlayerInjury(awayTeam, awayTactic, minute);
@@ -108,14 +124,14 @@ public class GameFootball extends Game {
                 }
             }
 
-            // Ev sahibi için kart kontrolü
+            // Card check for the home team
             if (getRandom().nextDouble() < YELLOW_CARD_CHANCE) {
                 handleYellowCard(homeTeam, homeTactic, minute);
             } else if (getRandom().nextDouble() < RED_CARD_CHANCE) {
                 handleRedCard(homeTeam, homeTactic, minute);
             }
 
-            // Deplasman için kart kontrolü
+            // Card check for the away team
             if (getRandom().nextDouble() < YELLOW_CARD_CHANCE) {
                 handleYellowCard(awayTeam, awayTactic, minute);
             } else if (getRandom().nextDouble() < RED_CARD_CHANCE) {
@@ -153,13 +169,13 @@ public class GameFootball extends Game {
      int playerIndex = getRandom().nextInt(onField.size());
      IPlayer bookedPlayer = onField.get(playerIndex);
 
-     // Oyuncunun mevcut sarı kart sayısını al ve 1 artır
+     // Get the player's current yellow card count and increase by 1
      int currentYellows = playerYellowCards.getOrDefault(bookedPlayer, 0) + 1;
      playerYellowCards.put(bookedPlayer, currentYellows);
 
      addLogEntry(minute + "'. YELLOW CARD! (" + team.getName() + ") -> Player: " + bookedPlayer.getFullName());
 
-     // Eğer 2 sarı karta (GameRulesFootball'dan gelir) ulaştıysa oyundan at
+     // If reached 2 yellow cards (from GameRulesFootball), send off
      if (currentYellows >= rules.getYellowCardsForRed()) {
          addLogEntry(minute + "'. RED CARD FROM SECOND YELLOW! (" + team.getName() + ") -> Sent Off: " + bookedPlayer.getFullName());
          onField.remove(playerIndex);
@@ -172,8 +188,8 @@ public class GameFootball extends Game {
         List<IPlayer> onField = tactic.getStartingLineup();
         if (onField.isEmpty()) return;
         
-        int outIndex = getRandom().nextInt(onField.size());
-        IPlayer injured = onField.remove(outIndex);
+        int injuredIndex = getRandom().nextInt(onField.size());
+        IPlayer injured = onField.get(injuredIndex);
         
         if (injured instanceof Classes.Player) {
             double randChance = getRandom().nextDouble();
@@ -183,8 +199,7 @@ public class GameFootball extends Game {
             ((Classes.Player) injured).setInjuryDuration(duration);
         }
         
-        
-        addLogEntry(minute + "'. INJURY! (" + team.getName() + ") -> Injured: " + injured.getFullName() + ". Player taken off for treatment.");
+        addLogEntry(minute + "'. INJURY! (" + team.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
         PositionsFootball.resolvePositionCollisions(tactic);
         recalculateTeamStrengths();
     }
@@ -244,8 +259,8 @@ public class GameFootball extends Game {
         if (log.contains("GOOOAALLL")) return "GOAL";
         if (log.contains("YELLOW CARD!") && !log.contains("RED CARD!")) return "YELLOW";
         if (log.contains("RED CARD!")) return "RED";
+        if (log.contains("SUB") || log.contains("Sub")) return "SUB";
         if (log.contains("Injury") || log.contains("FORCED") || log.contains("INJURY!")) return "INJURY";
-        if (log.contains("Sub")) return "SUB";
         return "INFO";
     }
 

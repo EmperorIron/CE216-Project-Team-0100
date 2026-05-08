@@ -36,15 +36,15 @@ public class GUIFixture {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #1b1b2f;");
 
-        // Üst ve Sol Menüleri Ekle
+        // Add Top and Left Menus
         root.setTop(GUILeftandTopBarHelper.createTopBar(null));
         root.setLeft(GUILeftandTopBarHelper.createSidebar("Fixture"));
 
-        // İçerik Alanı
+        // Content Area
         VBox content = new VBox(20);
         content.setPadding(new Insets(25, 40, 20, 40));
 
-        // Üst Başlık Alanı
+        // Top Header Area
         VBox header = new VBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -56,7 +56,7 @@ public class GUIFixture {
         subtitle.setTextFill(Color.web("#a5a5b0"));
         subtitle.setFont(Font.font("Segoe UI", 14));
 
-        // Hafta Seçici (Yatay Kaydırılabilir)
+        // Week Selector (Horizontally Scrollable)
         HBox weekSelectorBox = new HBox(10);
         weekSelectorBox.setAlignment(Pos.CENTER_LEFT);
         weekSelectorBox.setPadding(new Insets(15, 0, 15, 0));
@@ -69,12 +69,12 @@ public class GUIFixture {
 
         header.getChildren().addAll(title, subtitle, weekScroll);
 
-        // Maç Listesi (Kaydırılabilir)
+        // Match List (Scrollable)
         VBox fixtureList = new VBox(30);
         fixtureList.setPadding(new Insets(10, 0, 20, 0));
         fixtureList.setStyle("-fx-background-color: transparent;");
 
-        // Calendar nesnesinden haftaları çekiyoruz
+        // Fetch weeks from the Calendar object
         Map<Integer, List<Game>> schedule = calendar.getSchedule();
         
         int actualCurrentWeek = calendar.getCurrentWeek() + 1;
@@ -86,7 +86,7 @@ public class GUIFixture {
             fixtureList.getChildren().add(createWeekSection(actualCurrentWeek, schedule.get(actualCurrentWeek)));
         }
 
-        // Seçili haftaya otomatik kaydır
+        // Automatically scroll to the selected week
         final int targetWeek = actualCurrentWeek;
         javafx.application.Platform.runLater(() -> {
             double scrollPosition = (double) (targetWeek - 1) / Math.max(1, schedule.size() - 1);
@@ -115,16 +115,16 @@ public class GUIFixture {
             btn.setCursor(javafx.scene.Cursor.HAND);
 
             if (w == selectedWeek) {
-                // Seçili Hafta (Parlak Turuncu ve Beyaz Çerçeve)
+                // Selected Week (Bright Orange and White Border)
                 btn.setStyle("-fx-background-color: #f0a500; -fx-text-fill: white; -fx-background-radius: 25; -fx-border-color: white; -fx-border-width: 2; -fx-border-radius: 25;");
             } else if (w < actualCurrentWeek) {
-                // Geçmiş Haftalar (Soluk / Gri)
+                // Past Weeks (Faded / Gray)
                 btn.setStyle("-fx-background-color: #4e4e6a; -fx-text-fill: #a5a5b0; -fx-background-radius: 25;");
             } else if (w == actualCurrentWeek) {
-                // İçinde Bulunulan Hafta (Kırmızı)
+                // Current Week (Red)
                 btn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-background-radius: 25;");
             } else {
-                // Gelecek Haftalar (Koyu Mavi)
+                // Future Weeks (Dark Blue)
                 btn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-background-radius: 25;");
             }
 
@@ -143,7 +143,7 @@ public class GUIFixture {
     private VBox createWeekSection(int weekNum, List<Game> games) {
         VBox weekContainer = new VBox(10);
         
-        // Hafta Başlığı
+        // Week Title
         Label weekLabel = new Label("WEEK " + weekNum);
         weekLabel.setTextFill(Color.web("#e43f5a"));
         weekLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 18));
@@ -164,7 +164,7 @@ public class GUIFixture {
         row.setPadding(new Insets(15, 25, 15, 25));
         row.setStyle("-fx-background-color: #162447; -fx-background-radius: 8; -fx-border-color: #1f4068; -fx-border-width: 1;");
 
-        // Ev Sahibi
+        // Home Team
         HBox homeBox = new HBox(10);
         homeBox.setAlignment(Pos.CENTER_RIGHT);
         homeBox.setPrefWidth(250);
@@ -174,37 +174,37 @@ public class GUIFixture {
         javafx.scene.Node homeEmblem = GUILeftandTopBarHelper.createEmblem(game.getHomeTeam(), 30);
         homeBox.getChildren().addAll(homeTeam, homeEmblem);
 
-        // Skor veya "VS"
+        // Score or "VS"
         Label vsLabel = new Label(" VS ");
         if (game.isCompleted()) {
             int hScore = game.getHomeScore();
             int aScore = game.getAwayScore();
             vsLabel.setText(hScore + " - " + aScore);
             
-            // Varsayılan renk (Kullanıcının takımı oynamıyorsa)
+            // Default color (If the user's team is not playing)
             String scoreColor = "#1f4068"; 
 
-            // Kullanıcının takımına göre Galibiyet(Yeşil), Beraberlik(Gri), Mağlubiyet(Kırmızı) kontrolü
+            // Win(Green), Draw(Gray), Loss(Red) check based on user's team
             if (game.getHomeTeam().equals(playerTeam)) {
-                if (hScore > aScore) scoreColor = "#4CAF50"; // Galibiyet - Yeşil
-                else if (hScore == aScore) scoreColor = "#9E9E9E"; // Beraberlik - Gri
-                else scoreColor = "#F44336"; // Mağlubiyet - Kırmızı
+                if (hScore > aScore) scoreColor = "#4CAF50"; // Win - Green
+                else if (hScore == aScore) scoreColor = "#9E9E9E"; // Draw - Gray
+                else scoreColor = "#F44336"; // Loss - Red
             } else if (game.getAwayTeam().equals(playerTeam)) {
-                if (aScore > hScore) scoreColor = "#4CAF50"; // Galibiyet - Yeşil
-                else if (aScore == hScore) scoreColor = "#9E9E9E"; // Beraberlik - Gri
-                else scoreColor = "#F44336"; // Mağlubiyet - Kırmızı
+                if (aScore > hScore) scoreColor = "#4CAF50"; // Win - Green
+                else if (aScore == hScore) scoreColor = "#9E9E9E"; // Draw - Gray
+                else scoreColor = "#F44336"; // Loss - Red
             }
 
             vsLabel.setStyle("-fx-background-color: " + scoreColor + "; -fx-padding: 5 15; -fx-background-radius: 15;");
         } else {
-            // Oynanmamış maçlar
+            // Unplayed matches
             vsLabel.setStyle("-fx-background-color: #e43f5a; -fx-padding: 5 15; -fx-background-radius: 5;");
         }
         
         vsLabel.setTextFill(Color.WHITE);
         vsLabel.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
 
-        // Deplasman
+        // Away Team
         HBox awayBox = new HBox(10);
         awayBox.setAlignment(Pos.CENTER_LEFT);
         awayBox.setPrefWidth(250);
@@ -214,14 +214,14 @@ public class GUIFixture {
         awayTeam.setFont(Font.font("Segoe UI", FontWeight.MEDIUM, 16));
         awayBox.getChildren().addAll(awayEmblem, awayTeam);
 
-        // Kullanıcının takımıysa satırın dış kenarlığını vurgula
+        // Highlight the outer border of the row if it's the user's team
         if (game.getHomeTeam().equals(playerTeam) || game.getAwayTeam().equals(playerTeam)) {
             row.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 8; -fx-border-color: #e43f5a; -fx-border-width: 1.5;");
         }
 
         row.getChildren().addAll(homeBox, vsLabel, awayBox);
 
-        // Hover Efekti
+        // Hover Effect
         row.setOnMouseEntered(e -> row.setOpacity(0.85));
         row.setOnMouseExited(e -> row.setOpacity(1.0));
 

@@ -180,7 +180,7 @@ public class GUITraining {
 
     private VBox createCoachTableContainer() {
         VBox panel = new VBox(10);
-        panel.setPrefWidth(420);
+        panel.setPrefWidth(580);
         panel.setPadding(new Insets(15));
         panel.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
 
@@ -192,8 +192,8 @@ public class GUITraining {
         refreshCoachList();
 
         ScrollPane scroll = new ScrollPane(coachListContainer);
-        scroll.setFitToWidth(true);
-        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scroll.setFitToWidth(false);
+        scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scroll.setStyle("-fx-background: #162447; -fx-background-color: transparent; -fx-control-inner-background: #162447;");
         scroll.setPrefHeight(500);
@@ -231,7 +231,7 @@ public class GUITraining {
             StringBuilder roleBuilder = new StringBuilder();
             for (String trait : coachTraitNames) {
                 if (c == bestCoaches.get(trait)) {
-                    roleBuilder.append(getShortTraitName(trait)).append("\n");
+                    roleBuilder.append(trait.toUpperCase()).append("\n");
                 }
             }
 
@@ -261,27 +261,17 @@ public class GUITraining {
         return best;
     }
 
-    private String getShortTraitName(String traitName) {
-        if (traitName == null) return "";
-        if (traitName.length() <= 4) return traitName.toUpperCase();
-        String[] parts = traitName.split(" ");
-        if (parts.length > 1) {
-            return (parts[0].substring(0, Math.min(3, parts[0].length())) + " " + parts[1].substring(0, Math.min(3, parts[1].length()))).toUpperCase();
-        }
-        return traitName.substring(0, 4).toUpperCase();
-    }
-
     private HBox createCoachHeaderRow() {
         HBox row = new HBox(5);
         row.setPadding(new Insets(10, 5, 10, 5));
         row.setStyle("-fx-background-color: #1f4068; -fx-background-radius: 5;");
         row.setAlignment(Pos.CENTER_LEFT);
 
-        row.getChildren().add(createCoachHeaderBtn("Full Name", "NAME", 95));
-        row.getChildren().add(createCoachHeaderBtn("Role", "NAME", 60));
+        row.getChildren().add(createCoachHeaderBtn("Full Name", "NAME", 100));
+        row.getChildren().add(createCoachHeaderBtn("Role", "NAME", 100));
         
         for (String trait : coachTraitNames) {
-            row.getChildren().add(createCoachHeaderBtn(getShortTraitName(trait), trait, 40));
+            row.getChildren().add(createCoachHeaderBtn(trait.toUpperCase(), trait, 140));
         }
 
         return row;
@@ -321,12 +311,12 @@ public class GUITraining {
         row.setAlignment(Pos.CENTER_LEFT);
 
         Label nameLbl = new Label(c.getName() + "\n" + c.getSurname());
-        nameLbl.setPrefWidth(95);
+        nameLbl.setPrefWidth(100);
         nameLbl.setTextFill(Color.WHITE);
         nameLbl.setFont(Font.font("Segoe UI", FontWeight.BOLD, 12));
 
         Label roleLbl = new Label(role);
-        roleLbl.setPrefWidth(60);
+        roleLbl.setPrefWidth(100);
         roleLbl.setTextFill(Color.web("#f0a500"));
         roleLbl.setFont(Font.font("Segoe UI", 11));
         roleLbl.setWrapText(true);
@@ -335,7 +325,7 @@ public class GUITraining {
         
         for (String trait : coachTraitNames) {
             StackPane statBox = createCoachStatBox(getTraitVal(c, trait));
-            statBox.setPrefWidth(40);
+            statBox.setPrefWidth(140);
             row.getChildren().add(statBox);
         }
 
@@ -420,7 +410,7 @@ public class GUITraining {
         header.getChildren().add(createReportLabel("TRAINING", 80, true));
         
         for (String tName : playerTraitNames) {
-            header.getChildren().add(createReportLabel(getShortTraitName(tName), 145, true));
+            header.getChildren().add(createReportLabel(tName.toUpperCase(), 145, true));
         }
         
         reportTableContainer.getChildren().add(header);
@@ -500,7 +490,7 @@ public class GUITraining {
         return lbl;
     }
 
-    // --- SEÇİLEN ANTRENMANLARI TAKIMA UYGULAMA ---
+    // --- APPLY SELECTED TRAININGS TO THE TEAM ---
     private void applyWeeklyTraining() {
         applyWeeklyTrainingStatically(playerTeam);
         refreshReportTable();

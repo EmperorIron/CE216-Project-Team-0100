@@ -32,7 +32,12 @@ public class GameContext {
     }
 
     public ITeam getPlayerTeam() { return playerTeam; }
-    public void setPlayerTeam(ITeam playerTeam) { this.playerTeam = playerTeam; }
+    public void setPlayerTeam(ITeam playerTeam) { 
+        this.playerTeam = playerTeam; 
+        if (this.playerTeam != null) {
+            this.playerTeam.setManagerAI(false);
+        }
+    }
 
     public League getActiveLeague() { return activeLeague; }
     public void setActiveLeague(League activeLeague) { this.activeLeague = activeLeague; }

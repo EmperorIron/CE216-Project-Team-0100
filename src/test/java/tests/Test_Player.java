@@ -1,7 +1,7 @@
 package tests;
 
 import Classes.*;
-import Sport.*;
+import Sport.Football.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -128,5 +128,25 @@ public class Test_Player {
         int primaryProficiency = forward.getProficiencyAt(forward.getPrimaryPositionId());
         assertTrue(primaryProficiency >= 90,
                 "Primary position proficiency should be >= 90, was: " + primaryProficiency);
+    }
+
+    @Test
+    void testPlayerEqualityAndHashCode() {
+        assertEquals(forward, forward, "Player should be equal to itself.");
+        assertNotEquals(forward, goalkeeper, "Different players should not be equal.");
+        assertNotEquals(forward, null, "Player should not be equal to null.");
+        assertNotNull(forward.hashCode(), "Player hash code should not be null.");
+    }
+
+    @Test
+    void testSetJerseyNumber() {
+        forward.setJerseyNumber(10);
+        assertEquals(10, forward.getJerseyNumber(), "Player jersey number should update correctly.");
+    }
+    
+    @Test
+    void testExpectedGoalsAssignment() {
+        forward.setxG(1.5f);
+        assertEquals(1.5f, forward.getxG(), "Expected Goals (xG) should update correctly.");
     }
 }

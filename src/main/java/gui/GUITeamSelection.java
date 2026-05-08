@@ -28,17 +28,17 @@ public class GUITeamSelection {
         layout.setAlignment(Pos.TOP_CENTER);
         layout.getStyleClass().add("root-dark");
 
-        // Başlık
+        // Title
         Label title = new Label("SELECT THE TEAM YOU WILL MANAGE");
         title.setTextFill(Color.WHITE);
         title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 32));
 
-        // GUIMain'de oluşturulan aktif ligden takımları çekiyoruz
+        // Fetch teams from the active league created in GUIMain
         List<ITeam> teams = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport())
                 ? GameContext.getInstance().getActiveVolleyballLeague().getTeamRanking()
                 : GameContext.getInstance().getActiveLeague().getTeamRanking();
 
-        // Takım Listesi (Kaydırılabilir alan)
+        // Team List (Scrollable area)
         VBox teamList = new VBox(15);
         teamList.setAlignment(Pos.CENTER);
         
@@ -51,7 +51,7 @@ public class GUITeamSelection {
         scrollPane.getStyleClass().add("scroll-pane-transparent");
         scrollPane.setPrefHeight(500);
 
-        // Geri Dön Butonu
+        // Back Button
         Button backBtn = new Button("Back to Main Menu");
         backBtn.getStyleClass().addAll("btn", "btn-secondary");
         backBtn.setOnAction(e -> {
@@ -71,7 +71,7 @@ public class GUITeamSelection {
         card.setMaxWidth(800);
         card.getStyleClass().add("card-box");
 
-        // Takım İsmi ve Amblem
+        // Team Name and Emblem
         HBox nameBox = new HBox(15);
         nameBox.setAlignment(Pos.CENTER_LEFT);
         nameBox.setPrefWidth(350);
@@ -92,13 +92,36 @@ public class GUITeamSelection {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Seç Butonu
+        // Select Button
         Button selectBtn = new Button("MANAGE TEAM");
         selectBtn.getStyleClass().addAll("btn", "btn-primary");
         
         selectBtn.setOnAction(e -> {
             team.setManagerAI(false); 
             GameContext.getInstance().setPlayerTeam(team); 
+            
+            // Ensure all scheduled games for this team have a HumanManager instead of the default AI manager
+            Classes.Calendar cal = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                    ? GameContext.getInstance().getActiveVolleyballCalendar() 
+                    : GameContext.getInstance().getActiveCalendar();
+            
+            if (cal != null && cal.getSchedule() != null) {
+                for (java.util.List<Classes.Game> games : cal.getSchedule().values()) {
+                    for (Classes.Game game : games) {
+                        if (game.getHomeTeam().equals(team)) {
+                            game.setHomeManager("VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                                    ? new Sport.Volleyball.HumanManagerVolleyball(team) 
+                                    : new Sport.Football.HumanManagerFootball(team));
+                        }
+                        if (game.getAwayTeam().equals(team)) {
+                            game.setAwayManager("VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+                                    ? new Sport.Volleyball.HumanManagerVolleyball(team) 
+                                    : new Sport.Football.HumanManagerFootball(team));
+                        }
+                    }
+                }
+            }
+
             new GUIMain(); 
         });
 

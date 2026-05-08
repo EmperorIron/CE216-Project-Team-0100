@@ -27,7 +27,7 @@ public class GUILeagueRanking {
     private League activeLeague;
 
     private VBox tableContainer;
-    private String activeSortColumn = "P"; // Default Puan (Points)
+    private String activeSortColumn = "P"; // Default Points
     private boolean sortAscending = false;
 
     public GUILeagueRanking(ITeam playerTeam, League activeLeague) {
@@ -46,7 +46,7 @@ public class GUILeagueRanking {
         VBox content = new VBox(20);
         content.setPadding(new Insets(25, 40, 20, 40));
 
-        // Üst Başlık Alanı
+        // Top Header Area
         VBox header = new VBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -60,7 +60,7 @@ public class GUILeagueRanking {
 
         header.getChildren().addAll(title, subtitle);
 
-        // Tablo Düzeni
+        // Table Layout
         VBox tableLayout = new VBox(0);
         tableLayout.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
         tableLayout.setPadding(new Insets(10));
@@ -189,8 +189,8 @@ public class GUILeagueRanking {
 
         Label posLbl = createLabel(String.valueOf(position), 50, true);
         posLbl.setAlignment(Pos.CENTER);
-        if (position <= 3) posLbl.setTextFill(Color.web("#4CAF50")); // Şampiyonlar Ligi / Avrupa potası
-        else if (position >= activeLeague.getTeamRanking().size() - 2) posLbl.setTextFill(Color.web("#e43f5a")); // Küme düşme potası
+        if (position <= 3) posLbl.setTextFill(Color.web("#4CAF50")); // Champions League / Europe spots
+        else if (position >= activeLeague.getTeamRanking().size() - 2) posLbl.setTextFill(Color.web("#e43f5a")); // Relegation spots
         
         HBox nameBox = new HBox(10);
         nameBox.setAlignment(Pos.CENTER_LEFT);

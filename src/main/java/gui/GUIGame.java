@@ -45,7 +45,7 @@ public class GUIGame {
     // MVC Controller
     private MatchController controller;
 
-    // ─── Futbol constructor ───────────────────────────────────────────────────
+    // ─── Football constructor ─────────────────────────────────────────────────
     public GUIGame(GameFootball match) {
         GUISquadManager.getInstance().redCardedPlayers.clear();
         this.homeTeam = match.getHomeTeam();
@@ -55,7 +55,7 @@ public class GUIGame {
         show();
     }
 
-    // ─── Voleybol constructor ─────────────────────────────────────────────────
+    // ─── Volleyball constructor ───────────────────────────────────────────────
     public GUIGame(GameVolleyball match) {
         this.isVolleyball = true;
         this.homeTeam = match.getHomeTeam();
@@ -211,7 +211,7 @@ public class GUIGame {
         eventLogContainer.getChildren().add(0, row);
     }
 
-    // ─── Ana Simülasyon ───────────────────────────────────────────────────────
+    // ─── Main Simulation ──────────────────────────────────────────────────────
     private void startMatchSimulation() {
         if (isVolleyball) {
             controller.initializeVolleyballStats();
@@ -229,13 +229,13 @@ public class GUIGame {
         matchTimeline.play();
     }
 
-    // ─── Controller İçin Public UI Metotları ───────────────────────────────────
+    // ─── Public UI Methods for Controller ─────────────────────────────────────
     
     public void pauseTimeline() {
         if (matchTimeline != null) matchTimeline.pause();
     }
 
-    // ─── Ortak: Set/Devre arası butonu ───────────────────────────────────────
+    // ─── Common: Set/Half-time break button ───────────────────────────────────
     public void showBreakButton(String btnText) {
         pauseTimeline();
 
@@ -261,12 +261,12 @@ public class GUIGame {
         mainLayout.setBottom(btnContainer);
     }
 
-    // ─── Ortak: Maç sonu ─────────────────────────────────────────────────────
+    // ─── Common: Match end ────────────────────────────────────────────────────
     public void endMatch() {
         Button endBtn = new Button("End Match and Continue ▶");
         endBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-padding: 10 30; -fx-background-radius: 5; -fx-cursor: hand;");
         endBtn.setOnAction(evt -> {
-            if (!isVolleyball) GUISquadManager.getInstance().postMatchCleanup();
+            GUISquadManager.getInstance().postMatchCleanup();
             if ("VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) && GameContext.getInstance().getActiveVolleyballCalendar() != null) {
                 GameContext.getInstance().getActiveVolleyballCalendar().advanceToNextWeek();
                 GUIMain.decrementAllInjuries();
@@ -285,7 +285,7 @@ public class GUIGame {
         mainLayout.setBottom(btnContainer);
     }
 
-    // ─── Görsel yardımcılar ───────────────────────────────────────────────────
+    // ─── Visual helpers ───────────────────────────────────────────────────────
     private VBox createTeamHeader(ITeam team, String color) {
         VBox box = new VBox(10);
         box.setAlignment(Pos.CENTER);

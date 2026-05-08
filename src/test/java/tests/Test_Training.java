@@ -1,7 +1,7 @@
 package tests;
 import Classes.*;
 import Interface.IPlayer;
-import Sport.*;
+import Sport.Football.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ public class Test_Training {
     void testInjuredPlayerIsNotTrained() {
         IPlayer bestPlayer = team.getPlayers().stream()
                 .filter(p -> !p.isInjured())
-                .max(Comparator.comparingDouble(p -> p.getTraits().values().stream()
+                .max(Comparator.comparingDouble((IPlayer p) -> p.getTraits().values().stream()
                         .filter(t -> t.getCategory() == TraitCategory.OFFENSE)
                         .mapToInt(Trait::getCurrentLevel)
                         .average().orElse(0.0)))
