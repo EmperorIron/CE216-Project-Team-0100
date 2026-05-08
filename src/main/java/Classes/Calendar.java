@@ -25,6 +25,9 @@ public abstract class Calendar {
     public int getCurrentWeek() {
         return currentWeek;
     }
+    public GameRules getRules() {
+        return rules;
+    }
     public abstract void generateFixtures(List<ITeam> teams);
     public abstract void displayWeeklyFixture();
     public abstract void displayFixtureForWeek(int weekNumber);

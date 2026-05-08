@@ -61,8 +61,8 @@ public abstract class GameRules {
         this.weekCount = weekCount;
         this.matchbetweenTeams = matchbetweenTeams;
         this.matchesPerWeek = matchesPerWeek;
-        if (trainingormatch == null || !trainingormatch.matches("[01]{7}")) {
-            ErrorHandler.logError("trainingormatch must be a 7-character string of '0's and '1's.");
+        if (trainingormatch == null || !trainingormatch.matches("[01PODMpodm]{7}")) {
+            ErrorHandler.logError("trainingormatch must be a 7-character string.");
             this.trainingormatch = "0000001";
         } else {
             this.trainingormatch = trainingormatch;
@@ -226,8 +226,8 @@ public abstract class GameRules {
     }
 
     public void setTrainingormatch(String trainingormatch) {
-        if (trainingormatch == null || !trainingormatch.matches("[01]{7}")) {
-            ErrorHandler.logError("trainingormatch must be a 7-character string of '0's and '1's.");
+        if (trainingormatch == null || !trainingormatch.matches("[01PODMpodm]{7}")) {
+            ErrorHandler.logError("trainingormatch must be a 7-character string.");
             this.trainingormatch = "0000001";
         } else {
             this.trainingormatch = trainingormatch;

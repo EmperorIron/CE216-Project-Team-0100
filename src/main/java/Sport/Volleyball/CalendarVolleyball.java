@@ -141,7 +141,7 @@ public class CalendarVolleyball extends Calendar {
         boolean matchPlayedThisWeek = false;
 
         for (char dayActivity : weeklySchedule.toCharArray()) {
-            if (dayActivity == '0') {
+            if (dayActivity != '1') {
                 for (ITeam team : this.teams) {
                     if (!team.getName().equals("BYE") && team.isManagerAI()) {
                         genericTraining.apply(team);
