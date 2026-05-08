@@ -20,7 +20,7 @@ public class GameFootball extends Game {
     private static final double BASE_GOAL_CHANCE = 0.035;
 
     private float homeOffense, homeDefense, awayOffense, awayDefense;    
-    private Map<IPlayer, Integer> playerYellowCards = new HashMap<>();
+    private transient Map<IPlayer, Integer> playerYellowCards = new HashMap<>();
 
     public GameFootball(ITeam homeTeam, ITeam awayTeam, GameRules rules, ITactic homeTactic, ITactic awayTactic) {
         super(homeTeam, awayTeam, rules, homeTactic, awayTactic);
@@ -28,6 +28,7 @@ public class GameFootball extends Game {
 
     @Override
     protected void preMatchSetup() {
+        this.playerYellowCards = new HashMap<>();
         PositionsFootball.resolvePositionCollisions(homeTactic);
         PositionsFootball.resolvePositionCollisions(awayTactic);
 

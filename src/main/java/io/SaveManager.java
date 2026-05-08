@@ -59,6 +59,7 @@ public class SaveManager {
 
     private static final Gson gson = new GsonBuilder()
             .setPrettyPrinting()
+            .enableComplexMapKeySerialization()
             .registerTypeAdapter(ITeam.class, new InterfaceAdapter<ITeam>())
             .registerTypeAdapter(IPlayer.class, new InterfaceAdapter<IPlayer>())
             .registerTypeAdapter(ICoach.class, new InterfaceAdapter<ICoach>())

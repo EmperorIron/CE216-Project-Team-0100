@@ -710,8 +710,17 @@ public class GUITactic {
         }
 
         Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
-        int subsLeft = Math.max(0, rules.getSubstitutionCount() - GUISquadManager.getInstance().subsMadeThisMatch);
-        String subsInfo = GUISquadManager.getInstance().isMidMatch ? String.format(" | SUBS LEFT: %d", subsLeft) : "";
+        String subsInfo;
+        if (GUISquadManager.getInstance().isMidMatch) {
+            if (rules.getSubstitutionCount() == Integer.MAX_VALUE) {
+                subsInfo = " | SUBS LEFT: Unlimited";
+            } else {
+                int subsLeft = Math.max(0, rules.getSubstitutionCount() - GUISquadManager.getInstance().subsMadeThisMatch);
+                subsInfo = String.format(" | SUBS LEFT: %d", subsLeft);
+            }
+        } else {
+            subsInfo = "";
+        }
 
         squadStatusLabel.setText(String.format("PITCH: %d/%d | BENCH: %d/%d%s", 
                 GUISquadManager.getInstance().playersOnPitchQueue.size(), maxFieldPlayers, 
