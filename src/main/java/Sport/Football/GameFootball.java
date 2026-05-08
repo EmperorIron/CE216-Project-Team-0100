@@ -290,4 +290,29 @@ public class GameFootball extends Game {
             awayTeam.setPoints(awayTeam.getPoints() + rules.getDrawPoints());
         }
     }
+
+    @Override
+    protected void undoPostMatchCleanup() {
+        homeTeam.setGoalsScored(homeTeam.getGoalsScored() - homeScore);
+        homeTeam.setGoalsConceded(homeTeam.getGoalsConceded() - awayScore);
+        awayTeam.setGoalsScored(awayTeam.getGoalsScored() - awayScore);
+        awayTeam.setGoalsConceded(awayTeam.getGoalsConceded() - homeScore);
+
+        if (homeScore > awayScore) {
+            homeTeam.setWins(homeTeam.getWins() - 1);
+            homeTeam.setPoints(homeTeam.getPoints() - rules.getVictoryPoints());
+            awayTeam.setLosses(awayTeam.getLosses() - 1);
+            awayTeam.setPoints(awayTeam.getPoints() - rules.getDefeatPoints());
+        } else if (awayScore > homeScore) {
+            awayTeam.setWins(awayTeam.getWins() - 1);
+            awayTeam.setPoints(awayTeam.getPoints() - rules.getVictoryPoints());
+            homeTeam.setLosses(homeTeam.getLosses() - 1);
+            homeTeam.setPoints(homeTeam.getPoints() - rules.getDefeatPoints());
+        } else {
+            homeTeam.setDraws(homeTeam.getDraws() - 1);
+            homeTeam.setPoints(homeTeam.getPoints() - rules.getDrawPoints());
+            awayTeam.setDraws(awayTeam.getDraws() - 1);
+            awayTeam.setPoints(awayTeam.getPoints() - rules.getDrawPoints());
+        }
+    }
 }

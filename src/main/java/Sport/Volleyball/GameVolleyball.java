@@ -247,6 +247,9 @@ public class GameVolleyball extends Game {
 
     @Override
     public void forfeit(ITeam forfeitingTeam) {
+        if (this.isCompleted) {
+            undoPostMatchCleanup();
+        }
         this.isCompleted = true;
         if (homeTeam.equals(forfeitingTeam)) {
             this.homeScore = 0;
@@ -260,10 +263,39 @@ public class GameVolleyball extends Game {
             this.awaySetsWon = 0;
         }
         addLogEntry("");
-        addLogEntry("--- MATCH FORFEITED! " + forfeitingTeam.getName() + " had insufficient players. Result: 3-0 SETS. ---");
+        addLogEntry("--- MATCH FORFEITED! " + forfeitingTeam.getName() + " had insufficient players. Result: 0-3 SETS. ---");
         postMatchCleanup();
     }
 
+    @Override
+    protected void undoPostMatchCleanup() {
+        homeTeam.setGoalsScored(homeTeam.getGoalsScored() - homeSetsWon);
+        homeTeam.setGoalsConceded(homeTeam.getGoalsConceded() - awaySetsWon);
+        awayTeam.setGoalsScored(awayTeam.getGoalsScored() - awaySetsWon);
+        awayTeam.setGoalsConceded(awayTeam.getGoalsConceded() - homeSetsWon);
+
+        if (homeSetsWon > awaySetsWon) {
+            homeTeam.setWins(homeTeam.getWins() - 1);
+            awayTeam.setLosses(awayTeam.getLosses() - 1);
+            if (awaySetsWon >= 2) {
+                homeTeam.setPoints(homeTeam.getPoints() - 2);
+                awayTeam.setPoints(awayTeam.getPoints() - 1);
+            } else {
+                homeTeam.setPoints(homeTeam.getPoints() - rules.getVictoryPoints());
+                awayTeam.setPoints(awayTeam.getPoints() - rules.getDefeatPoints());
+            }
+        } else {
+            awayTeam.setWins(awayTeam.getWins() - 1);
+            homeTeam.setLosses(homeTeam.getLosses() - 1);
+            if (homeSetsWon >= 2) {
+                awayTeam.setPoints(awayTeam.getPoints() - 2);
+                homeTeam.setPoints(homeTeam.getPoints() - 1);
+            } else {
+                awayTeam.setPoints(awayTeam.getPoints() - rules.getVictoryPoints());
+                homeTeam.setPoints(homeTeam.getPoints() - rules.getDefeatPoints());
+            }
+        }
+    }
 
     public int getHomeSetsWon() { return homeSetsWon; }
     public int getAwaySetsWon() { return awaySetsWon; }

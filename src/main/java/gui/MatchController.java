@@ -318,8 +318,23 @@ public class MatchController {
         
         int minRequired = isVolleyball ? 6 : 7;
         if (GUISquadManager.getInstance().getPlayersOnPitchQueue().size() < minRequired) {
-            if (isVolleyball) volleyballMatch.forfeit(playerTeam);
-            else footballMatch.forfeit(playerTeam);
+            if (currentLogIndex < matchLogs.size()) {
+                matchLogs.subList(currentLogIndex, matchLogs.size()).clear();
+            }
+            
+            if (isVolleyball) {
+                volleyballMatch.forfeit(playerTeam);
+                homeScore = volleyballMatch.getHomeScore();
+                awayScore = volleyballMatch.getAwayScore();
+                homeSetsWon = volleyballMatch.getHomeSetsWon();
+                awaySetsWon = volleyballMatch.getAwaySetsWon();
+                scoreProperty.set(homeSetsWon + " - " + awaySetsWon + " (SETS)");
+            } else {
+                footballMatch.forfeit(playerTeam);
+                homeScore = footballMatch.getHomeScore();
+                awayScore = footballMatch.getAwayScore();
+                scoreProperty.set(homeScore + " - " + awayScore);
+            }
             endMatchLogic();
             return;
         }
