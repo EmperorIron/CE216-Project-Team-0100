@@ -58,7 +58,7 @@ public class Test_GameFootball {
         assertEquals("YELLOW", game.getEventType("34'. YELLOW CARD! (Team A)"));
         assertEquals("RED", game.getEventType("55'. RED CARD! (Team B)"));
         assertEquals("INJURY", game.getEventType("67'. INJURY! Player X is injured"));
-        assertEquals("SUB", game.getEventType("70'. FORCED SUB (Injury)"));
+        assertEquals("SUB", game.getEventType("HT. Tactical Sub: Player Y In"));
         assertEquals("INFO", game.getEventType("Kickoff!"));
     }
 

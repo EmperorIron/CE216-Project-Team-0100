@@ -45,40 +45,6 @@ public class GameFootball extends Game {
         awayDefense = awayTeam.getTotalDefensiveRating() * awayTactic.getTotalXGAMultiplier() * (1.0f / awayRatio);
     }
 
-    private void performSubstitution(ITeam team, ITactic tactic, int minute, String reason) {
-        List<IPlayer> onField = tactic.getStartingLineup();
-        List<IPlayer> bench = tactic.getSubstitutes();
-        
-        if (onField.isEmpty() || bench.isEmpty()) return;
-
-        int outIndex = getRandom().nextInt(onField.size());
-        int inIndex = getRandom().nextInt(bench.size());
-
-        IPlayer playerOut = onField.remove(outIndex);
-        IPlayer playerIn = bench.remove(inIndex);
-        
-        if (playerOut instanceof Classes.Player) {
-            if (reason.contains("Injury")) {
-                double randChance = getRandom().nextDouble();
-                int duration = 3;
-                if (randChance < 0.05) duration = 1;
-                else if (randChance < 0.10) duration = 2;
-                ((Classes.Player) playerOut).setInjuryDuration(duration);
-            }
-        }
-
-        if (playerOut instanceof Classes.Player && playerIn instanceof Classes.Player) {
-            ((Classes.Player) playerIn).setCurrentPositionId(((Classes.Player) playerOut).getCurrentPositionId());
-        }
-        
-        onField.add(playerIn);
-        bench.add(playerOut);
-        
-        addLogEntry(minute + "'. " + reason + " (" + team.getName() + ") -> Out: " + playerOut.getFullName() + " | In: " + playerIn.getFullName());
-        
-        PositionsFootball.resolvePositionCollisions(tactic);
-    }
-
     @Override
     protected void simulatePeriod(int periodNumber) {
         int duration = rules.getPeriodDuration();
@@ -89,39 +55,9 @@ public class GameFootball extends Game {
 
             if (getRandom().nextDouble() < INJURY_CHANCE) {
                 if (getRandom().nextBoolean()) {
-                    if (homeTeam.isManagerAI()) {
-                        if (homeSubsLeft > 0) {
-                            performSubstitution(homeTeam, homeTactic, minute, "FORCED SUB (Injury)");
-                            homeSubsLeft--;
-                        } else {
-                            List<IPlayer> onField = homeTactic.getStartingLineup();
-                            if (!onField.isEmpty()) {
-                                IPlayer injured = onField.get(getRandom().nextInt(onField.size()));
-                                if (injured instanceof Classes.Player) ((Classes.Player) injured).setInjuryDuration(2);
-                                addLogEntry(minute + "'. INJURY! (" + homeTeam.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
-                                recalculateTeamStrengths();
-                            }
-                        }
-                    } else {
-                        handlePlayerInjury(homeTeam, homeTactic, minute);
-                    }
+                    handlePlayerInjury(homeTeam, homeTactic, minute);
                 } else {
-                    if (awayTeam.isManagerAI()) {
-                        if (awaySubsLeft > 0) {
-                            performSubstitution(awayTeam, awayTactic, minute, "FORCED SUB (Injury)");
-                            awaySubsLeft--;
-                        } else {
-                            List<IPlayer> onField = awayTactic.getStartingLineup();
-                            if (!onField.isEmpty()) {
-                                IPlayer injured = onField.get(getRandom().nextInt(onField.size()));
-                                if (injured instanceof Classes.Player) ((Classes.Player) injured).setInjuryDuration(2);
-                                addLogEntry(minute + "'. INJURY! (" + awayTeam.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
-                                recalculateTeamStrengths();
-                            }
-                        }
-                    } else {
-                        handlePlayerInjury(awayTeam, awayTactic, minute);
-                    }
+                    handlePlayerInjury(awayTeam, awayTactic, minute);
                 }
             }
 
@@ -263,7 +199,7 @@ public class GameFootball extends Game {
         if (log.contains("YELLOW CARD!") && !log.contains("RED CARD!")) return "YELLOW";
         if (log.contains("RED CARD!")) return "RED";
         if (log.contains("SUB") || log.contains("Sub")) return "SUB";
-        if (log.contains("Injury") || log.contains("FORCED") || log.contains("INJURY!")) return "INJURY";
+        if (log.contains("Injury") || log.contains("INJURY!")) return "INJURY";
         return "INFO";
     }
 
