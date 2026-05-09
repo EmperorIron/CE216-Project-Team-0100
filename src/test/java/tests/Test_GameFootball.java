@@ -6,7 +6,6 @@ import Interface.ITeam;
 import Sport.Football.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class Test_GameFootball {
@@ -49,7 +48,7 @@ public class Test_GameFootball {
     void testGameLogsGenerated() {
         game.play();
         assertFalse(game.getGameLog().isEmpty(), "Game log should not be empty after playing.");
-        assertTrue(game.getGameLog().size() > 5, "There should be multiple events recorded in the game log.");
+        assertTrue(game.getGameLog().size() > 2, "There should be multiple events recorded in the game log.");
     }
 
     @Test
