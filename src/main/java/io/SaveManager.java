@@ -30,7 +30,11 @@ import Interface.ITeam;
 
 public class SaveManager {
 
-    private static final String SAVE_DIR = "saves/";
+    private static final String SAVE_DIR = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "GlobalManagerSaves" + File.separator;
+
+    public static String getSaveDirectory() {
+        return SAVE_DIR;
+    }
 
     // Custom Adapter for Gson to know which subclass polymorphic structures (Interfaces and Abstracts) belong to, 
     // so they can be properly saved and loaded.

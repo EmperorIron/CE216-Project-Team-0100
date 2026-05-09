@@ -95,9 +95,10 @@ public class GUIMenu {
         });
 
         btnQuickLoad.setOnAction(e -> {
-            java.io.File autoSaveFile = new java.io.File("saves/autosave.json");
+            String autoSavePath = SaveManager.getSaveDirectory() + "autosave.json";
+            java.io.File autoSaveFile = new java.io.File(autoSavePath);
             if (autoSaveFile.exists()) {
-                SaveGame loadedGame = SaveManager.loadGame("saves/autosave.json");
+                SaveGame loadedGame = SaveManager.loadGame(autoSavePath);
                 if (loadedGame != null) {
                     popupStage.close();
                     GUIMain.loadSavedGame(loadedGame);

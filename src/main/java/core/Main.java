@@ -11,6 +11,8 @@ public class Main extends Application {
         primaryStage.setMaximized(true);
         gui.SceneManager.setPrimaryStage(primaryStage);
         
+        Classes.TeamNameImport.loadFromDisk();
+
         GUITitlescreen titleScreen = new GUITitlescreen();
         titleScreen.show();
     }

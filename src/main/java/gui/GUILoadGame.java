@@ -52,7 +52,7 @@ public class GUILoadGame {
         saveList.setStyle("-fx-background-color: #050505;");
 
         // Save directory to read from
-        File saveDir = new File("saves/");
+        File saveDir = new File(SaveManager.getSaveDirectory());
         if (!saveDir.exists()) {
             saveDir.mkdirs();
         }

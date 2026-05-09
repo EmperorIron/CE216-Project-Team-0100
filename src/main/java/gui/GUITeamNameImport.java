@@ -72,6 +72,7 @@ public class GUITeamNameImport {
                         .collect(Collectors.toList());
                 TeamNameImport.setCustomNames(names);
                 TeamNameImport.setUseCustomNames(chkUseCustomNames.isSelected());
+                TeamNameImport.saveToDisk();
                 if (TeamNameImport.isUseCustomNames()) {
                     GUIPopup.showMessage("Success", null, "Successfully imported " + names.size() + " team names! Custom names are enabled.");
                 } else {
@@ -81,6 +82,7 @@ public class GUITeamNameImport {
                 TeamNameImport.setCustomNames(null);
                 chkUseCustomNames.setSelected(false);
                 TeamNameImport.setUseCustomNames(false);
+                TeamNameImport.saveToDisk();
                 GUIPopup.showMessage("Cleared", null, "Custom team names cleared. The game will generate random names.");
             }
         });

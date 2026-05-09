@@ -2,6 +2,7 @@ package Classes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
 
 public class TeamNameImport {
     private static List<String> customTeamNames = new ArrayList<>();
@@ -22,6 +23,31 @@ public class TeamNameImport {
         } else {
             useCustomNames = false;
         }
+    }
+
+    public static void saveToDisk() {
+        try {
+            File dir = new File(io.SaveManager.getSaveDirectory());
+            if (!dir.exists()) dir.mkdirs();
+            File file = new File(dir, "custom_teams.txt");
+            if (useCustomNames && !customTeamNames.isEmpty()) {
+                java.nio.file.Files.write(file.toPath(), customTeamNames);
+            } else {
+                if (file.exists()) file.delete();
+            }
+        } catch (Exception e) {
+            ErrorHandler.logError("Failed to save custom team names: " + e.getMessage());
+        }
+    }
+
+    public static void loadFromDisk() {
+        try {
+            File file = new File(io.SaveManager.getSaveDirectory(), "custom_teams.txt");
+            if (file.exists()) {
+                List<String> names = java.nio.file.Files.readAllLines(file.toPath());
+                setCustomNames(names);
+            }
+        } catch (Exception e) { }
     }
     
     public static String getNextCustomName() {

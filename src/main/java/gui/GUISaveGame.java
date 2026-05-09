@@ -45,7 +45,7 @@ public class GUISaveGame {
         saveList.setPadding(new Insets(10, 50, 10, 50));
         saveList.setStyle("-fx-background-color: #050505;");
 
-        File saveDir = new File("saves/");
+        File saveDir = new File(SaveManager.getSaveDirectory());
         if (!saveDir.exists()) {
             saveDir.mkdirs();
         }
@@ -55,7 +55,7 @@ public class GUISaveGame {
         // Generate 10 predefined save slots
         for (int i = 1; i <= 10; i++) {
             String fileName = "slot_" + i;
-            File file = new File("saves/" + fileName + ".json");
+            File file = new File(saveDir, fileName + ".json");
 
             String dateStr = "Empty Slot";
             String clubName = "";

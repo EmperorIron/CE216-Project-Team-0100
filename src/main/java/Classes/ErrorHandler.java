@@ -2,6 +2,10 @@ package Classes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Date;
 
 public class ErrorHandler {
 
@@ -14,6 +18,7 @@ public class ErrorHandler {
             Exception e = (throwable instanceof Exception) ? (Exception) throwable : new Exception(throwable);
             logError("FATAL CRASH on thread " + thread.getName() + ": " + e.getMessage());
             logError(e);
+            exportCrashLog();
             
             if (!isRedirectingToError) {
                 isRedirectingToError = true;
@@ -42,6 +47,21 @@ public class ErrorHandler {
         errorLog.add(message);
         System.err.println("[EXCEPTION] " + message);
         e.printStackTrace();
+    }
+
+    // Export crash log to the GlobalManagerSaves directory
+    private static void exportCrashLog() {
+        try {
+            File dir = new File(io.SaveManager.getSaveDirectory());
+            if (!dir.exists()) dir.mkdirs();
+            File logFile = new File(dir, "crash_log.txt");
+            
+            String timeStamp = "\n\n--- CRASH LOG: " + new Date().toString() + " ---\n";
+            Files.writeString(logFile.toPath(), timeStamp, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Files.writeString(logFile.toPath(), getErrorsAsString(), StandardOpenOption.APPEND);
+        } catch (Exception ex) {
+            System.err.println("Failed to write crash log to disk: " + ex.getMessage());
+        }
     }
 
     // Retrieve all stored errors

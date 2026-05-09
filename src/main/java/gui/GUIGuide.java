@@ -20,6 +20,8 @@ import javafx.stage.Stage;
 import java.util.HashMap;
 import java.util.Map;
 
+import Classes.Player;
+
 public class GUIGuide {
 
     private ITeam playerTeam;
@@ -56,54 +58,66 @@ public class GUIGuide {
         guideImageView.setFitHeight(600);
         guideImageView.setPreserveRatio(true);
 
-        java.io.File folder = new java.io.File("src/main/resources/images/guideguide");
-        if (folder.exists() && folder.isDirectory()) {
-            java.io.File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
-            if (files != null && files.length > 0) {
-                java.util.Arrays.sort(files, (f1, f2) -> {
-                    String num1 = f1.getName().replaceAll("\\D+", "");
-                    String num2 = f2.getName().replaceAll("\\D+", "");
-                    int n1 = num1.isEmpty() ? 0 : Integer.parseInt(num1);
-                    int n2 = num2.isEmpty() ? 0 : Integer.parseInt(num2);
-                    if (n1 == n2) {
-                        return f1.getName().compareToIgnoreCase(f2.getName());
-                    }
-                    return Integer.compare(n1, n2);
-                });
-                
-                for (java.io.File file : files) {
-                    String fileName = file.getName();
-                    String guideTitle = fileName.substring(0, fileName.lastIndexOf('.'));
-                    
-                    Button guideBtn = new Button(guideTitle);
-                    guideBtn.setMaxWidth(Double.MAX_VALUE);
-                    guideBtn.setPrefHeight(45);
-                    guideBtn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;");
-                    
-                    guideBtn.setOnMouseEntered(e -> guideBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"));
-                    guideBtn.setOnMouseExited(e -> guideBtn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"));
-                    
-                    guideBtn.setOnAction(e -> {
-                        try {
-                            Image img = new Image(file.toURI().toString());
-                            guideImageView.setImage(img);
-                        } catch (Exception ex) {
-                            guideImageView.setImage(null);
-                        }
-                    });
-                    buttonList.getChildren().add(guideBtn);
+        java.util.List<String> validImagePaths = new java.util.ArrayList<>();
+        
+        // --- 100% Bulletproof Approach for JARs ---
+        // Explicitly list the names of your PNGs here! Add as many as you need.
+        String[] explicitFiles = {
+            "1-TitleScreen.png", "2-SportsSelection.png", "3-TeamSelection.png", "4-HomeScreen.png", "5-LeagueTable.png",
+            "6-Fixture.png", "7-Training.png", "8-GameMenu.png", "9-save screen.png", "10-load screen.png", "11-Error screen.png","12-Tactic right table.png",
+            "13-Tactic player placing.png","14-Tactic Style pitch bench.png","15-Tactic Player Selection.png","16-Game screen.png",
+            "17-GameBreak.png","18-End of season screen.png"
+        };
+        
+        for (String fileName : explicitFiles) {
+            try {
+                if (getClass().getResource("/images/guideguide/" + fileName) != null) {
+                    validImagePaths.add(fileName);
                 }
-                try {
-                    Image firstImg = new Image(files[0].toURI().toString());
-                    guideImageView.setImage(firstImg);
-                } catch (Exception ex) { }
-            } else {
-                Label lbl = new Label("No PNG files found in:\nsrc/main/resources/images/guideguide/");
-                lbl.setTextFill(Color.web("#e43f5a"));
-                buttonList.getChildren().add(lbl);
+            } catch (Exception e) { }
+        }
+
+        if (!validImagePaths.isEmpty()) {
+            validImagePaths.sort((s1, s2) -> {
+                String num1 = s1.replaceAll("\\D+", "");
+                String num2 = s2.replaceAll("\\D+", "");
+                int n1 = num1.isEmpty() ? 0 : Integer.parseInt(num1);
+                int n2 = num2.isEmpty() ? 0 : Integer.parseInt(num2);
+                if (n1 == n2) return s1.compareToIgnoreCase(s2);
+                return Integer.compare(n1, n2);
+            });
+            
+            for (int i = 0; i < validImagePaths.size(); i++) {
+                String fileName = validImagePaths.get(i);
+                String guideTitle = fileName.substring(0, fileName.lastIndexOf('.'));
+                
+                Button guideBtn = new Button(guideTitle);
+                guideBtn.setMaxWidth(Double.MAX_VALUE);
+                guideBtn.setPrefHeight(45);
+                guideBtn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;");
+                
+                guideBtn.setOnMouseEntered(e -> guideBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"));
+                guideBtn.setOnMouseExited(e -> guideBtn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"));
+                
+                guideBtn.setOnAction(e -> {
+                    try {
+                        Image img = new Image(getClass().getResource("/images/guideguide/" + fileName).toExternalForm());
+                        guideImageView.setImage(img);
+                    } catch (Exception ex) {
+                        guideImageView.setImage(null);
+                    }
+                });
+                buttonList.getChildren().add(guideBtn);
+                
+                if (i == 0) {
+                    try {
+                        Image firstImg = new Image(getClass().getResource("/images/guideguide/" + fileName).toExternalForm());
+                        guideImageView.setImage(firstImg);
+                    } catch (Exception ex) { }
+                }
             }
         } else {
-            Label lbl = new Label("Folder not found:\nsrc/main/resources/images/guideguide/");
+            Label lbl = new Label("No PNG files found in:\n/images/guideguide/");
             lbl.setTextFill(Color.web("#e43f5a"));
             buttonList.getChildren().add(lbl);
         }
