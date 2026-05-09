@@ -12,7 +12,7 @@ import java.util.List;
 
 public class GameVolleyball extends Game {
 
-    private static final double INJURY_CHANCE = 0.5; // Temporarily increased for testing injuries
+    private static final double INJURY_CHANCE = 0.01; // Restored to a realistic chance
 
     private float homeAttack, homeDefense, awayAttack, awayDefense;
 

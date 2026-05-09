@@ -16,7 +16,7 @@ public class GameFootball extends Game {
 
     private static final double YELLOW_CARD_CHANCE = 0.009;
     private static final double RED_CARD_CHANCE = 0.0002;
-    private static final double INJURY_CHANCE = 0.5; // Temporarily increased for testing injuries
+    private static final double INJURY_CHANCE = 0.01; // Restored to a realistic chance
     private static final double BASE_GOAL_CHANCE = 0.035;
 
     private float homeOffense, homeDefense, awayOffense, awayDefense;    
