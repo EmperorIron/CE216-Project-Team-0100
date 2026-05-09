@@ -9,6 +9,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -21,19 +23,12 @@ import java.util.Map;
 public class GUIGuide {
 
     private ITeam playerTeam;
-    private TextArea guideContentArea;
-    private Map<String, String> guideTexts = new HashMap<>();
+    private ImageView guideImageView;
     private Runnable onBack;
 
     public GUIGuide(ITeam playerTeam, Runnable onBack) {
         this.playerTeam = playerTeam;
         this.onBack = onBack;
-        
-        // Prepare guide contents
-        for (int i = 1; i <= 10; i++) {
-            guideTexts.put("Guide " + i, "Text " + i + "\n\nThis area is reserved for the " + i + "th guide content. You can add detailed explanations about the game here.");
-        }
-        
         show();
     }
 
@@ -52,21 +47,56 @@ public class GUIGuide {
         // --- LEFT SIDE: SCROLLABLE BUTTON LIST ---
         VBox buttonList = new VBox(10);
         buttonList.setPadding(new Insets(10));
-        buttonList.setStyle("-fx-background-color: #162447; -cite-background-radius: 10;");
+        buttonList.setStyle("-fx-background-color: #162447; -fx-background-radius: 10;");
         buttonList.setPrefWidth(250);
 
-        for (int i = 1; i <= 10; i++) {
-            String guideTitle = "Guide " + i;
-            Button guideBtn = new Button(guideTitle);
-            guideBtn.setMaxWidth(Double.MAX_VALUE);
-            guideBtn.setPrefHeight(45);
-            guideBtn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;");
-            
-            guideBtn.setOnMouseEntered(e -> guideBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"));
-            guideBtn.setOnMouseExited(e -> guideBtn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"));
-            
-            guideBtn.setOnAction(e -> guideContentArea.setText(guideTexts.get(guideTitle)));
-            buttonList.getChildren().add(guideBtn);
+        // --- RIGHT SIDE: IMAGE ---
+        guideImageView = new ImageView();
+        guideImageView.setFitWidth(850);
+        guideImageView.setFitHeight(600);
+        guideImageView.setPreserveRatio(true);
+
+        java.io.File folder = new java.io.File("src/main/resources/images/guideguide");
+        if (folder.exists() && folder.isDirectory()) {
+            java.io.File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
+            if (files != null && files.length > 0) {
+                java.util.Arrays.sort(files, java.util.Comparator.comparing(java.io.File::getName));
+                
+                for (java.io.File file : files) {
+                    String fileName = file.getName();
+                    String guideTitle = fileName.substring(0, fileName.lastIndexOf('.'));
+                    
+                    Button guideBtn = new Button(guideTitle);
+                    guideBtn.setMaxWidth(Double.MAX_VALUE);
+                    guideBtn.setPrefHeight(45);
+                    guideBtn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;");
+                    
+                    guideBtn.setOnMouseEntered(e -> guideBtn.setStyle("-fx-background-color: #e43f5a; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"));
+                    guideBtn.setOnMouseExited(e -> guideBtn.setStyle("-fx-background-color: #1f4068; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;"));
+                    
+                    guideBtn.setOnAction(e -> {
+                        try {
+                            Image img = new Image(file.toURI().toString());
+                            guideImageView.setImage(img);
+                        } catch (Exception ex) {
+                            guideImageView.setImage(null);
+                        }
+                    });
+                    buttonList.getChildren().add(guideBtn);
+                }
+                try {
+                    Image firstImg = new Image(files[0].toURI().toString());
+                    guideImageView.setImage(firstImg);
+                } catch (Exception ex) { }
+            } else {
+                Label lbl = new Label("No PNG files found in:\nsrc/main/resources/images/guideguide/");
+                lbl.setTextFill(Color.web("#e43f5a"));
+                buttonList.getChildren().add(lbl);
+            }
+        } else {
+            Label lbl = new Label("Folder not found:\nsrc/main/resources/images/guideguide/");
+            lbl.setTextFill(Color.web("#e43f5a"));
+            buttonList.getChildren().add(lbl);
         }
 
         ScrollPane scrollPane = new ScrollPane(buttonList);
@@ -74,16 +104,12 @@ public class GUIGuide {
         scrollPane.setPrefHeight(600);
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
 
-        // --- RIGHT SIDE: HUGE TEXTBOX (Text Area) ---
-        guideContentArea = new TextArea("Please select a topic you want to learn from the list on the left.");
-        guideContentArea.setEditable(false);
-        guideContentArea.setWrapText(true);
-        guideContentArea.setPrefHeight(600);
-        guideContentArea.setStyle("-fx-control-inner-background: #162447; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-family: 'Segoe UI'; -fx-background-radius: 10; -fx-border-color: #1f4068; -fx-border-width: 2;");
-        
-        HBox.setHgrow(guideContentArea, Priority.ALWAYS);
+        VBox rightSide = new VBox(15, guideImageView);
+        rightSide.setAlignment(Pos.CENTER);
+        rightSide.setStyle("-fx-background-color: #162447; -fx-background-radius: 10; -fx-padding: 10;");
+        HBox.setHgrow(rightSide, Priority.ALWAYS);
 
-        contentBox.getChildren().addAll(scrollPane, guideContentArea);
+        contentBox.getChildren().addAll(scrollPane, rightSide);
         mainLayout.setCenter(contentBox);
 
         SceneManager.changeScene(mainLayout, "Sports Manager - Guide");
