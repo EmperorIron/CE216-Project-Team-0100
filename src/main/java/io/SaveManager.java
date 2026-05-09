@@ -15,6 +15,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.lang.reflect.Type;
 import io.SaveGame;
 
@@ -62,7 +68,6 @@ public class SaveManager {
     }
 
     private static final Gson gson = new GsonBuilder()
-            .setPrettyPrinting()
             .enableComplexMapKeySerialization()
             .registerTypeAdapter(ITeam.class, new InterfaceAdapter<ITeam>())
             .registerTypeAdapter(IPlayer.class, new InterfaceAdapter<IPlayer>())
@@ -91,7 +96,9 @@ public class SaveManager {
         }
 
         // Write to file as JSON
-        try (FileWriter writer = new FileWriter(SAVE_DIR + fileName + ".json")) {
+        try (FileOutputStream fos = new FileOutputStream(SAVE_DIR + fileName + ".json");
+             GZIPOutputStream gos = new GZIPOutputStream(fos);
+             OutputStreamWriter writer = new OutputStreamWriter(gos, "UTF-8")) {
             gson.toJson(data, writer);
             return true;
         } catch (IOException e) {
@@ -111,10 +118,20 @@ public class SaveManager {
             Classes.ErrorHandler.logError("Save file does not exist or is invalid: " + filePath);
             return null;
         }
-        try (FileReader reader = new FileReader(filePath)) {
-            // Read the JSON file and convert it to a SaveGame object
-            SaveGame loadedData = gson.fromJson(reader, SaveGame.class);
-            return loadedData;
+        
+        // Try to load as compressed GZIP first
+        try (FileInputStream fis = new FileInputStream(filePath);
+             GZIPInputStream gis = new GZIPInputStream(fis);
+             InputStreamReader reader = new InputStreamReader(gis, "UTF-8")) {
+            return gson.fromJson(reader, SaveGame.class);
+        } catch (java.util.zip.ZipException ze) {
+            // Fallback for old, uncompressed save files
+            try (FileReader reader = new FileReader(filePath)) {
+                return gson.fromJson(reader, SaveGame.class);
+            } catch (Exception e) {
+                System.err.println("Load error, file might be corrupted: " + e.getMessage());
+                return null;
+            }
         } catch (Exception e) {
             System.err.println("Load error, file might be corrupted: " + e.getMessage());
             return null;
