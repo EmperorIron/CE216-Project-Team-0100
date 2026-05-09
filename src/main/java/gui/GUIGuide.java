@@ -60,7 +60,16 @@ public class GUIGuide {
         if (folder.exists() && folder.isDirectory()) {
             java.io.File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".png"));
             if (files != null && files.length > 0) {
-                java.util.Arrays.sort(files, java.util.Comparator.comparing(java.io.File::getName));
+                java.util.Arrays.sort(files, (f1, f2) -> {
+                    String num1 = f1.getName().replaceAll("\\D+", "");
+                    String num2 = f2.getName().replaceAll("\\D+", "");
+                    int n1 = num1.isEmpty() ? 0 : Integer.parseInt(num1);
+                    int n2 = num2.isEmpty() ? 0 : Integer.parseInt(num2);
+                    if (n1 == n2) {
+                        return f1.getName().compareToIgnoreCase(f2.getName());
+                    }
+                    return Integer.compare(n1, n2);
+                });
                 
                 for (java.io.File file : files) {
                     String fileName = file.getName();
