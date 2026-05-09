@@ -141,6 +141,15 @@ public class GUILeftandTopBarHelper {
         if (team instanceof Classes.Team) {
             String path = ((Classes.Team) team).getEmblemPath();
             if (path != null && !path.isEmpty()) {
+                // Normalize Turkish characters and Q to O for logo file path matching
+                path = path.replace("Ö", "O").replace("ö", "o")
+                           .replace("Ç", "C").replace("ç", "c")
+                           .replace("Ş", "S").replace("ş", "s")
+                           .replace("Ğ", "G").replace("ğ", "g")
+                           .replace("Ü", "U").replace("ü", "u")
+                           .replace("İ", "I").replace("ı", "i")
+                           .replace("Q", "O").replace("q", "o");
+
                 try {
                     javafx.scene.image.Image img = emblemCache.get(path);
                     if (img == null) {
@@ -175,7 +184,14 @@ public class GUILeftandTopBarHelper {
         fallback.setStroke(javafx.scene.paint.Color.WHITE);
         fallback.setStrokeWidth(2);
         
-        Label initial = new Label(team != null && team.getName() != null && !team.getName().isEmpty() ? team.getName().substring(0, 1).toUpperCase() : "?");
+        String initialStr = "?";
+        if (team != null && team.getName() != null && !team.getName().isEmpty()) {
+            initialStr = team.getName().substring(0, 1).toUpperCase(new java.util.Locale("tr", "TR"));
+            initialStr = initialStr.replace("Ö", "O").replace("Ç", "C").replace("Ş", "S")
+                                   .replace("Ğ", "G").replace("Ü", "U").replace("İ", "I")
+                                   .replace("Q", "O");
+        }
+        Label initial = new Label(initialStr);
         initial.setTextFill(Color.WHITE);
         initial.setFont(Font.font("Segoe UI", FontWeight.BOLD, size / 2.5));
         
