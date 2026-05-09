@@ -21,6 +21,10 @@ public class CalendarVolleyball extends Calendar {
 
     @Override
     public void generateFixtures(List<ITeam> teams) {
+        if (teams == null || teams.isEmpty()) {
+            ErrorHandler.logError("Attempted to generate fixtures with a null or empty team list.");
+            return;
+        }
         this.teams = new ArrayList<>(teams);
         this.schedule.clear();
         this.currentWeek = 0;
@@ -137,7 +141,7 @@ public class CalendarVolleyball extends Calendar {
         boolean matchPlayedThisWeek = false;
 
         for (char dayActivity : weeklySchedule.toCharArray()) {
-            if (dayActivity == '0') {
+            if (dayActivity != '1') {
                 for (ITeam team : this.teams) {
                     if (!team.getName().equals("BYE") && team.isManagerAI()) {
                         genericTraining.apply(team);

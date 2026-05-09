@@ -43,20 +43,60 @@ public class GUITraining {
     public static String lastTrainedCategory = "-";
 
     public static void initWeeklySchedule() {
-        if (!weeklySchedule.isEmpty() || GameContext.getInstance().getSportFactory() == null) return;
-        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
+        if (!weeklySchedule.isEmpty()) return;
+        Classes.Calendar cal = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+            ? GameContext.getInstance().getActiveVolleyballCalendar() 
+            : GameContext.getInstance().getActiveCalendar();
+        if (cal == null) return;
+        Classes.GameRules rules = cal.getRules();
         String scheduleStr = rules.getTrainingormatch();
         String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
         
         for (int i = 0; i < 7; i++) {
-            if (scheduleStr.charAt(i) == '0') {
-                if (i % 2 == 0) weeklySchedule.put(days[i], TrainingCategory.PHYSICAL);
-                else weeklySchedule.put(days[i], TrainingCategory.OFFENSIVE);
+            char c = scheduleStr.charAt(i);
+            if (c != '1') {
+                TrainingCategory cat = TrainingCategory.PHYSICAL;
+                if (c == 'O') cat = TrainingCategory.OFFENSIVE;
+                else if (c == 'D') cat = TrainingCategory.DEFENSIVE;
+                else if (c == 'M') cat = TrainingCategory.MENTAL;
+                else if (c == 'P') cat = TrainingCategory.PHYSICAL;
+                else {
+                    if (i % 2 == 0) cat = TrainingCategory.PHYSICAL;
+                    else cat = TrainingCategory.OFFENSIVE;
+                }
+                weeklySchedule.put(days[i], cat);
             }
         }
     }
 
+    public static void updateRulesScheduleString() {
+        Classes.Calendar cal = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+            ? GameContext.getInstance().getActiveVolleyballCalendar() 
+            : GameContext.getInstance().getActiveCalendar();
+        if (cal == null) return;
+        Classes.GameRules rules = cal.getRules();
+        String current = rules.getTrainingormatch();
+        StringBuilder sb = new StringBuilder();
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+        for (int i = 0; i < 7; i++) {
+            if (current.charAt(i) == '1') {
+                sb.append('1');
+            } else {
+                TrainingCategory cat = weeklySchedule.getOrDefault(days[i], TrainingCategory.PHYSICAL);
+                if (cat == TrainingCategory.OFFENSIVE) sb.append('O');
+                else if (cat == TrainingCategory.DEFENSIVE) sb.append('D');
+                else if (cat == TrainingCategory.MENTAL) sb.append('M');
+                else sb.append('P');
+            }
+        }
+        rules.setTrainingormatch(sb.toString());
+    }
+
     public GUITraining(ITeam playerTeam) {
+        if (playerTeam == null) {
+            Classes.ErrorHandler.logError("Attempted to open Training with a null team.");
+            return;
+        }
         this.playerTeam = playerTeam;
         
         initWeeklySchedule();
@@ -119,7 +159,11 @@ public class GUITraining {
         container.setMaxWidth(300);
 
         String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
+        Classes.Calendar cal = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+            ? GameContext.getInstance().getActiveVolleyballCalendar() 
+            : GameContext.getInstance().getActiveCalendar();
+        if (cal == null) return container;
+        Classes.GameRules rules = cal.getRules();
         String scheduleStr = rules.getTrainingormatch();
 
         for (int i = 0; i < days.length; i++) {
@@ -167,7 +211,10 @@ public class GUITraining {
                 categoryBox.setCellFactory(cellFactory);
                 categoryBox.setButtonCell(cellFactory.call(null));
 
-                categoryBox.setOnAction(e -> weeklySchedule.put(day, categoryBox.getValue()));
+                categoryBox.setOnAction(e -> {
+                    weeklySchedule.put(day, categoryBox.getValue());
+                    updateRulesScheduleString();
+                });
 
                 dayRow.getChildren().addAll(dayLabel, spacer, categoryBox);
             }
@@ -513,7 +560,11 @@ public class GUITraining {
         }
 
         initWeeklySchedule();
-        Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
+        Classes.Calendar cal = "VOLLEYBALL".equals(GameContext.getInstance().getActiveSport()) 
+            ? GameContext.getInstance().getActiveVolleyballCalendar() 
+            : GameContext.getInstance().getActiveCalendar();
+        if (cal == null) return;
+        Classes.GameRules rules = cal.getRules();
         String scheduleStr = rules.getTrainingormatch();
         String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
@@ -523,7 +574,7 @@ public class GUITraining {
         xpMental = 0;
 
         for (int i = 0; i < 7; i++) {
-            if (scheduleStr.charAt(i) == '0') {
+            if (scheduleStr.charAt(i) != '1') {
                 String day = days[i];
                 TrainingCategory category = weeklySchedule.get(day);
                 if (category == null) continue;

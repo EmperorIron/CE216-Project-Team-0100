@@ -77,8 +77,8 @@ public class GUIPopup {
         Button btnYes = createMenuButton("Yes", "btn-success");
         Button btnNo = createMenuButton("No", "btn-primary");
 
-        btnYes.setOnAction(e -> { popupStage.close(); if (onConfirm != null) onConfirm.run(); });
-        btnNo.setOnAction(e -> { popupStage.close(); if (onCancel != null) onCancel.run(); });
+        btnYes.setOnAction(e -> { popupStage.close(); if (onConfirm != null) javafx.application.Platform.runLater(onConfirm); });
+        btnNo.setOnAction(e -> { popupStage.close(); if (onCancel != null) javafx.application.Platform.runLater(onCancel); });
 
         HBox btnBox = new HBox(10, btnYes, btnNo);
         btnBox.setAlignment(Pos.CENTER);
@@ -111,7 +111,7 @@ public class GUIPopup {
         choicesBox.setAlignment(Pos.CENTER);
         for (String choice : choices) {
             Button btnChoice = createMenuButton(choice, "btn-info");
-            btnChoice.setOnAction(e -> { popupStage.close(); if (onSelect != null) onSelect.accept(choice); });
+            btnChoice.setOnAction(e -> { popupStage.close(); if (onSelect != null) javafx.application.Platform.runLater(() -> onSelect.accept(choice)); });
             choicesBox.getChildren().add(btnChoice);
         }
 

@@ -51,6 +51,7 @@ Sport\Volleyball\HumanManagerVolleyball.class
 gui\GUIGame.class
 gui\GUIError.class
 Sport\Volleyball\GameRulesVolleyball.class
+core\Launcher.class
 gui\GUITraining$2.class
 Sport\Volleyball\PlayerVolleyball.class
 Sport\Football\AIDefenseHardFootball.class

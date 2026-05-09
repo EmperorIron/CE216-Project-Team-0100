@@ -28,7 +28,7 @@ public abstract class Game implements IGame {
 
     public Game(ITeam homeTeam, ITeam awayTeam, GameRules rules, ITactic homeTactic, ITactic awayTactic) {
         if (homeTeam == null || awayTeam == null || rules == null || homeTactic == null || awayTactic == null) {
-            throw new IllegalArgumentException("Teams, rules, and tactics cannot be null.");
+            ErrorHandler.logError("Teams, rules, and tactics cannot be null for Game initialization.");
         }
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
@@ -105,6 +105,9 @@ public abstract class Game implements IGame {
     }
 
     public void forfeit(ITeam forfeitingTeam) {
+        if (this.isCompleted) {
+            undoPostMatchCleanup();
+        }
         this.isCompleted = true;
         if (homeTeam.equals(forfeitingTeam)) {
             this.homeScore = 0;
@@ -114,9 +117,11 @@ public abstract class Game implements IGame {
             this.awayScore = 0;
         }
         addLogEntry("");
-        addLogEntry("--- MATCH FORFEITED! " + forfeitingTeam.getName() + " had insufficient players to continue. ---");
+        addLogEntry("--- MATCH FORFEITED! " + forfeitingTeam.getName() + " had insufficient players. ---");
         postMatchCleanup();
     }
+
+    protected abstract void undoPostMatchCleanup();
 
     
     @Override

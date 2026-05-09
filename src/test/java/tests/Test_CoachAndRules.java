@@ -83,8 +83,8 @@ public class Test_CoachAndRules {
     }
 
     @Test
-    void testFootballCannotReEnter() {
-        assertFalse(rules.isCanReEnter());
+    void testFootballCanReEnter() {
+        assertTrue(rules.isCanReEnter(), "Football rules should allow substituted players to re-enter during the half-time break.");
     }
 
     @Test

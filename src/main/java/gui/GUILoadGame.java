@@ -52,7 +52,7 @@ public class GUILoadGame {
         saveList.setStyle("-fx-background-color: #050505;");
 
         // Save directory to read from
-        File saveDir = new File("saves/");
+        File saveDir = new File(SaveManager.getSaveDirectory());
         if (!saveDir.exists()) {
             saveDir.mkdirs();
         }
@@ -96,9 +96,9 @@ public class GUILoadGame {
             
             // 3. Add any other custom saves (legacy support)
             for (File file : files) {
-                String name = file.getName();
-                if (!name.equals("autosave.json") && !name.matches("slot_([1-9]|10)\\.json")) {
-                    String title = name.replace(".json", "");
+                String fName = file.getName();
+                if (!fName.equals("autosave.json") && !fName.matches("slot_([1-9]|10)\\.json")) {
+                    String title = fName.replace(".json", "");
                     String dateStr = sdf.format(new Date(file.lastModified()));
                     String clubName = "";
                     String gameTime = "";

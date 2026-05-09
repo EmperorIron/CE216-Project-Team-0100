@@ -141,11 +141,19 @@ public abstract class Team implements ITeam {
     }
     @Override
     public void addPlayer(IPlayer player) {
+        if (player == null) {
+            ErrorHandler.logError("Attempted to add a null player to team: " + this.name);
+            return;
+        }
         this.players.add(player);
     }
 
         @Override
     public void addCoach(ICoach coach) {
+        if (coach == null) {
+            ErrorHandler.logError("Attempted to add a null coach to team: " + this.name);
+            return;
+        }
         this.coaches.add(coach);
     }
 

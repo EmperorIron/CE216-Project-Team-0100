@@ -21,7 +21,7 @@ public class Test_SaveManager {
 
     private SaveGame saveData;
     private final String TEST_FILENAME = "test_save_unit_test";
-    private final String SAVE_PATH = "saves/" + TEST_FILENAME + ".json";
+    private final String SAVE_PATH = SaveManager.getSaveDirectory() + TEST_FILENAME + ".json";
 
     @BeforeEach
     void setUp() {
@@ -74,7 +74,7 @@ public class Test_SaveManager {
     
     @Test
     void testLoadNonExistentGame() {
-        SaveGame loadedData = SaveManager.loadGame("saves/this_file_does_not_exist_at_all.json");
+        SaveGame loadedData = SaveManager.loadGame(SaveManager.getSaveDirectory() + "this_file_does_not_exist_at_all.json");
         assertNull(loadedData, "Loading a non-existent file should gracefully return null instead of crashing.");
     }
 }

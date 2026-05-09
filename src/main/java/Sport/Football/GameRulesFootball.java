@@ -17,7 +17,7 @@ public class GameRulesFootball extends GameRules {
             3,                                  // coachCount: 3 coaches (Offensive, Defensive, Youth)
             9,                                  // reservePlayerCount: 9 substitutes on the bench
             5,                                  // substitutionCount: 5 substitutions allowed
-            false,                              // canReEnter: Substituted players cannot re-enter
+            true,                               // canReEnter: Substituted players can re-enter
             createFootballScoreProbabilities(), // scoreProbabilities: {1: 1.0} for a goal
             3,                                  // victoryPoints: 3 points for a win
             1,                                  // drawPoints: 1 point for a draw

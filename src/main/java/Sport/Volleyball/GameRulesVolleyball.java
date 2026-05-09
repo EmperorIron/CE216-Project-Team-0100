@@ -23,8 +23,8 @@ public class GameRulesVolleyball extends GameRules {
             6,                                       // fieldPlayerCount: 6 on court
             3,                                       // coachCount    : head coach + assistant + analyst
             8,                                       // reservePlayerCount
-            6,                                       // substitutionCount: 6 per set (FIVB rule)
-            false,                                   // canReEnter    : false (standard FIVB)
+            Integer.MAX_VALUE,                       // substitutionCount: No limit
+            true,                                    // canReEnter    : true (allowing re-entry)
             createVolleyballScoreProbabilities(),
             3,                                       // victoryPoints
             0,                                       // drawPoints    : no draws in volleyball

@@ -47,6 +47,10 @@ public class GUIGame {
 
     // ─── Football constructor ─────────────────────────────────────────────────
     public GUIGame(GameFootball match) {
+        if (match == null) {
+            Classes.ErrorHandler.logError("Attempted to initialize GUIGame with a null football match.");
+            return;
+        }
         GUISquadManager.getInstance().redCardedPlayers.clear();
         this.homeTeam = match.getHomeTeam();
         this.awayTeam = match.getAwayTeam();
@@ -57,6 +61,10 @@ public class GUIGame {
 
     // ─── Volleyball constructor ───────────────────────────────────────────────
     public GUIGame(GameVolleyball match) {
+        if (match == null) {
+            Classes.ErrorHandler.logError("Attempted to initialize GUIGame with a null volleyball match.");
+            return;
+        }
         this.isVolleyball = true;
         this.homeTeam = match.getHomeTeam();
         this.awayTeam = match.getAwayTeam();

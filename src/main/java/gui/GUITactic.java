@@ -55,6 +55,10 @@ public class GUITactic {
     private int maxReservePlayers;
 
     public GUITactic(ITeam playerTeam) {
+        if (playerTeam == null) {
+            Classes.ErrorHandler.logError("Attempted to open Tactics with a null team.");
+            return;
+        }
         this.playerTeam = playerTeam;
         
         GUISquadManager.getInstance().initSquad(playerTeam);
@@ -254,6 +258,7 @@ public class GUITactic {
 
         List<IPlayer> availablePlayers = new ArrayList<>();
         for (IPlayer p : playerTeam.getPlayers()) {
+            if (GUISquadManager.getInstance().isMidMatch && !GUISquadManager.getInstance().playersOnPitchQueue.contains(p) && !GUISquadManager.getInstance().reservePlayersQueue.contains(p)) continue;
             if (GUISquadManager.getInstance().isMidMatch && p.isInjured() && !GUISquadManager.getInstance().playersOnPitchQueue.contains(p)) continue;
             if (GUISquadManager.getInstance().isMidMatch && GUISquadManager.getInstance().redCardedPlayers.contains(p)) continue;
             if (GUISquadManager.getInstance().isMidMatch && !canReEnter && GUISquadManager.getInstance().subbedOutPlayers.contains(p)) continue;
@@ -710,8 +715,17 @@ public class GUITactic {
         }
 
         Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
-        int subsLeft = Math.max(0, rules.getSubstitutionCount() - GUISquadManager.getInstance().subsMadeThisMatch);
-        String subsInfo = GUISquadManager.getInstance().isMidMatch ? String.format(" | SUBS LEFT: %d", subsLeft) : "";
+        String subsInfo;
+        if (GUISquadManager.getInstance().isMidMatch) {
+            if (rules.getSubstitutionCount() == Integer.MAX_VALUE) {
+                subsInfo = " | SUBS LEFT: Unlimited";
+            } else {
+                int subsLeft = Math.max(0, rules.getSubstitutionCount() - GUISquadManager.getInstance().subsMadeThisMatch);
+                subsInfo = String.format(" | SUBS LEFT: %d", subsLeft);
+            }
+        } else {
+            subsInfo = "";
+        }
 
         squadStatusLabel.setText(String.format("PITCH: %d/%d | BENCH: %d/%d%s", 
                 GUISquadManager.getInstance().playersOnPitchQueue.size(), maxFieldPlayers, 

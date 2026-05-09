@@ -82,6 +82,11 @@ public class GUIMenu {
                 ? GameContext.getInstance().getActiveVolleyballCalendar() 
                 : GameContext.getInstance().getActiveCalendar();
 
+            if (leagueToSave == null || calendarToSave == null) {
+                Classes.ErrorHandler.logError("Cannot quick save: Active league or calendar is null.");
+                return;
+            }
+
             SaveGame saveData = new SaveGame("autosave", leagueToSave, calendarToSave, GameContext.getInstance().getPlayerTeam(),
                     gui.GUISquadManager.getInstance().getPitchPlayers(), gui.GUISquadManager.getInstance().getPlayersOnPitchQueue(), gui.GUISquadManager.getInstance().getReservePlayersQueue(),
                     gui.GUISquadManager.getInstance().getCurrentTacticStyle());
@@ -90,9 +95,10 @@ public class GUIMenu {
         });
 
         btnQuickLoad.setOnAction(e -> {
-            java.io.File autoSaveFile = new java.io.File("saves/autosave.json");
+            String autoSavePath = SaveManager.getSaveDirectory() + "autosave.json";
+            java.io.File autoSaveFile = new java.io.File(autoSavePath);
             if (autoSaveFile.exists()) {
-                SaveGame loadedGame = SaveManager.loadGame("saves/autosave.json");
+                SaveGame loadedGame = SaveManager.loadGame(autoSavePath);
                 if (loadedGame != null) {
                     popupStage.close();
                     GUIMain.loadSavedGame(loadedGame);

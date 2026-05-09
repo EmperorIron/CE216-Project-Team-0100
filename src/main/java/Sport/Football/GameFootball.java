@@ -16,11 +16,11 @@ public class GameFootball extends Game {
 
     private static final double YELLOW_CARD_CHANCE = 0.009;
     private static final double RED_CARD_CHANCE = 0.0002;
-    private static final double INJURY_CHANCE = 0.5; // Temporarily increased for testing injuries
+    private static final double INJURY_CHANCE = 0.01; // Restored to a realistic chance
     private static final double BASE_GOAL_CHANCE = 0.035;
 
     private float homeOffense, homeDefense, awayOffense, awayDefense;    
-    private Map<IPlayer, Integer> playerYellowCards = new HashMap<>();
+    private transient Map<IPlayer, Integer> playerYellowCards = new HashMap<>();
 
     public GameFootball(ITeam homeTeam, ITeam awayTeam, GameRules rules, ITactic homeTactic, ITactic awayTactic) {
         super(homeTeam, awayTeam, rules, homeTactic, awayTactic);
@@ -28,6 +28,7 @@ public class GameFootball extends Game {
 
     @Override
     protected void preMatchSetup() {
+        this.playerYellowCards = new HashMap<>();
         PositionsFootball.resolvePositionCollisions(homeTactic);
         PositionsFootball.resolvePositionCollisions(awayTactic);
 
@@ -44,40 +45,6 @@ public class GameFootball extends Game {
         awayDefense = awayTeam.getTotalDefensiveRating() * awayTactic.getTotalXGAMultiplier() * (1.0f / awayRatio);
     }
 
-    private void performSubstitution(ITeam team, ITactic tactic, int minute, String reason) {
-        List<IPlayer> onField = tactic.getStartingLineup();
-        List<IPlayer> bench = tactic.getSubstitutes();
-        
-        if (onField.isEmpty() || bench.isEmpty()) return;
-
-        int outIndex = getRandom().nextInt(onField.size());
-        int inIndex = getRandom().nextInt(bench.size());
-
-        IPlayer playerOut = onField.remove(outIndex);
-        IPlayer playerIn = bench.remove(inIndex);
-        
-        if (playerOut instanceof Classes.Player) {
-            if (reason.contains("Injury")) {
-                double randChance = getRandom().nextDouble();
-                int duration = 3;
-                if (randChance < 0.05) duration = 1;
-                else if (randChance < 0.10) duration = 2;
-                ((Classes.Player) playerOut).setInjuryDuration(duration);
-            }
-        }
-
-        if (playerOut instanceof Classes.Player && playerIn instanceof Classes.Player) {
-            ((Classes.Player) playerIn).setCurrentPositionId(((Classes.Player) playerOut).getCurrentPositionId());
-        }
-        
-        onField.add(playerIn);
-        bench.add(playerOut);
-        
-        addLogEntry(minute + "'. " + reason + " (" + team.getName() + ") -> Out: " + playerOut.getFullName() + " | In: " + playerIn.getFullName());
-        
-        PositionsFootball.resolvePositionCollisions(tactic);
-    }
-
     @Override
     protected void simulatePeriod(int periodNumber) {
         int duration = rules.getPeriodDuration();
@@ -88,39 +55,9 @@ public class GameFootball extends Game {
 
             if (getRandom().nextDouble() < INJURY_CHANCE) {
                 if (getRandom().nextBoolean()) {
-                    if (homeTeam.isManagerAI()) {
-                        if (homeSubsLeft > 0) {
-                            performSubstitution(homeTeam, homeTactic, minute, "FORCED SUB (Injury)");
-                            homeSubsLeft--;
-                        } else {
-                            List<IPlayer> onField = homeTactic.getStartingLineup();
-                            if (!onField.isEmpty()) {
-                                IPlayer injured = onField.get(getRandom().nextInt(onField.size()));
-                                if (injured instanceof Classes.Player) ((Classes.Player) injured).setInjuryDuration(2);
-                                addLogEntry(minute + "'. INJURY! (" + homeTeam.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
-                                recalculateTeamStrengths();
-                            }
-                        }
-                    } else {
-                        handlePlayerInjury(homeTeam, homeTactic, minute);
-                    }
+                    handlePlayerInjury(homeTeam, homeTactic, minute);
                 } else {
-                    if (awayTeam.isManagerAI()) {
-                        if (awaySubsLeft > 0) {
-                            performSubstitution(awayTeam, awayTactic, minute, "FORCED SUB (Injury)");
-                            awaySubsLeft--;
-                        } else {
-                            List<IPlayer> onField = awayTactic.getStartingLineup();
-                            if (!onField.isEmpty()) {
-                                IPlayer injured = onField.get(getRandom().nextInt(onField.size()));
-                                if (injured instanceof Classes.Player) ((Classes.Player) injured).setInjuryDuration(2);
-                                addLogEntry(minute + "'. INJURY! (" + awayTeam.getName() + ") -> " + injured.getFullName() + " is injured but must play through the pain!");
-                                recalculateTeamStrengths();
-                            }
-                        }
-                    } else {
-                        handlePlayerInjury(awayTeam, awayTactic, minute);
-                    }
+                    handlePlayerInjury(awayTeam, awayTactic, minute);
                 }
             }
 
@@ -139,12 +76,14 @@ public class GameFootball extends Game {
             }
 
             double homeGoalChance = (homeOffense / (homeOffense + awayDefense)) * BASE_GOAL_CHANCE;
+            if (Double.isNaN(homeGoalChance)) homeGoalChance = 0.0;
             if (getRandom().nextDouble() < homeGoalChance) { 
                 homeScore++;
                 addLogEntry(minute + "'. GOOOAALLL! " + homeTeam.getName() + " finds the net! Score: " + homeScore + "-" + awayScore);
             }
 
             double awayGoalChance = (awayOffense / (awayOffense + homeDefense)) * BASE_GOAL_CHANCE;
+            if (Double.isNaN(awayGoalChance)) awayGoalChance = 0.0;
             if (getRandom().nextDouble() < awayGoalChance) {
                 awayScore++;
                 addLogEntry(minute + "'. GOOOAALLL! " + awayTeam.getName() + " scores! Score: " + homeScore + "-" + awayScore);
@@ -260,7 +199,7 @@ public class GameFootball extends Game {
         if (log.contains("YELLOW CARD!") && !log.contains("RED CARD!")) return "YELLOW";
         if (log.contains("RED CARD!")) return "RED";
         if (log.contains("SUB") || log.contains("Sub")) return "SUB";
-        if (log.contains("Injury") || log.contains("FORCED") || log.contains("INJURY!")) return "INJURY";
+        if (log.contains("Injury") || log.contains("INJURY!")) return "INJURY";
         return "INFO";
     }
 
@@ -288,6 +227,31 @@ public class GameFootball extends Game {
             homeTeam.setPoints(homeTeam.getPoints() + rules.getDrawPoints());
             awayTeam.setDraws(awayTeam.getDraws() + 1);
             awayTeam.setPoints(awayTeam.getPoints() + rules.getDrawPoints());
+        }
+    }
+
+    @Override
+    protected void undoPostMatchCleanup() {
+        homeTeam.setGoalsScored(homeTeam.getGoalsScored() - homeScore);
+        homeTeam.setGoalsConceded(homeTeam.getGoalsConceded() - awayScore);
+        awayTeam.setGoalsScored(awayTeam.getGoalsScored() - awayScore);
+        awayTeam.setGoalsConceded(awayTeam.getGoalsConceded() - homeScore);
+
+        if (homeScore > awayScore) {
+            homeTeam.setWins(homeTeam.getWins() - 1);
+            homeTeam.setPoints(homeTeam.getPoints() - rules.getVictoryPoints());
+            awayTeam.setLosses(awayTeam.getLosses() - 1);
+            awayTeam.setPoints(awayTeam.getPoints() - rules.getDefeatPoints());
+        } else if (awayScore > homeScore) {
+            awayTeam.setWins(awayTeam.getWins() - 1);
+            awayTeam.setPoints(awayTeam.getPoints() - rules.getVictoryPoints());
+            homeTeam.setLosses(homeTeam.getLosses() - 1);
+            homeTeam.setPoints(homeTeam.getPoints() - rules.getDefeatPoints());
+        } else {
+            homeTeam.setDraws(homeTeam.getDraws() - 1);
+            homeTeam.setPoints(homeTeam.getPoints() - rules.getDrawPoints());
+            awayTeam.setDraws(awayTeam.getDraws() - 1);
+            awayTeam.setPoints(awayTeam.getPoints() - rules.getDrawPoints());
         }
     }
 }

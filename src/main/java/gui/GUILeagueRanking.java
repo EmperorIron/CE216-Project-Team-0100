@@ -27,10 +27,14 @@ public class GUILeagueRanking {
     private League activeLeague;
 
     private VBox tableContainer;
-    private String activeSortColumn = "P"; // Default Points
+    private String activeSortColumn = "PTS"; // Default Points
     private boolean sortAscending = false;
 
     public GUILeagueRanking(ITeam playerTeam, League activeLeague) {
+        if (playerTeam == null || activeLeague == null) {
+            Classes.ErrorHandler.logError("Attempted to open League Ranking with a null team or league.");
+            return;
+        }
         this.playerTeam = playerTeam;
         this.activeLeague = activeLeague;
         show();

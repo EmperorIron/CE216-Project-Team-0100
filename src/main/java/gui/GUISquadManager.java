@@ -42,6 +42,10 @@ public class GUISquadManager {
     public LinkedList<IPlayer> getReservePlayersQueue() { return reservePlayersQueue; }
 
     public void initSquad(ITeam playerTeam) {
+        if (playerTeam == null) {
+            Classes.ErrorHandler.logError("Attempted to initialize squad with a null team.");
+            return;
+        }
         if (currentTeam != playerTeam) {
             pitchPlayers = new IPlayer[Positions.GRID_WIDTH][Positions.GRID_HEIGHT];
             playersOnPitchQueue.clear();
@@ -179,6 +183,7 @@ public class GUISquadManager {
     }
 
     public void removePlayerFromMatrix(IPlayer player) {
+        if (player == null) return;
         for (int i = 0; i < Positions.GRID_WIDTH; i++) {
             for (int j = 0; j < Positions.GRID_HEIGHT; j++) {
                 if (pitchPlayers[i][j] != null && pitchPlayers[i][j].equals(player)) {
@@ -189,6 +194,7 @@ public class GUISquadManager {
     }
 
     public void removePlayerFromSquad(IPlayer player) {
+        if (player == null) return;
         if (playersOnPitchQueue.contains(player)) {
             playersOnPitchQueue.remove(player);
             removePlayerFromMatrix(player);
@@ -202,6 +208,10 @@ public class GUISquadManager {
     }
 
     public String placePlayerOnBench(IPlayer player, int maxReservePlayers) {
+        if (player == null) {
+            Classes.ErrorHandler.logError("Attempted to place a null player on the bench.");
+            return "Player cannot be null.";
+        }
         if (playersOnPitchQueue.contains(player)) {
             playersOnPitchQueue.remove(player);
             if (isMidMatch && !subbedOutPlayers.contains(player)) {
@@ -235,6 +245,14 @@ public class GUISquadManager {
     }
 
     public String placePlayerOnPitch(IPlayer player, int destX, int destY, int maxFieldPlayers, int maxReservePlayers) {
+        if (player == null) {
+            Classes.ErrorHandler.logError("Attempted to place a null player on the pitch.");
+            return "Player cannot be null.";
+        }
+        if (destX < 0 || destX >= Positions.GRID_WIDTH || destY < 0 || destY >= Positions.GRID_HEIGHT) {
+            Classes.ErrorHandler.logError("Invalid pitch coordinates: " + destX + ", " + destY);
+            return "Invalid coordinates.";
+        }
         Classes.GameRules rules = GameContext.getInstance().getSportFactory().createGameRules();
         boolean canReEnter = rules.isCanReEnter();
 

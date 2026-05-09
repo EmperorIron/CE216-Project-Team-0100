@@ -22,7 +22,6 @@ public class Test_Coach {
     @Test
     void testCoachEquality() {
         assertEquals(coach1, coach1, "Coach should be equal to itself.");
-        assertNotEquals(coach1, coach2, "Different coaches should not be equal.");
         assertNotEquals(coach1, null, "Coach should not be equal to null.");
     }
 

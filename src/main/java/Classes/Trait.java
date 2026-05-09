@@ -87,6 +87,9 @@ public class Trait {
      * @param experienceToAdd The amount of experience points to add.
      */
     public void addExperience(int experienceToAdd) {
+        if (experienceToAdd <= 0) {
+            return; // Prevent negative or zero experience addition
+        }
         if (currentLevel >= maxLevel) {
             return; // Cannot gain experience at max level
         }

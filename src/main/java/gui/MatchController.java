@@ -72,6 +72,7 @@ public class MatchController {
         this.currentState = new PlayingState();
         match.play();
         this.matchLogs = match.getGameLog();
+        if (this.matchLogs == null) this.matchLogs = new java.util.ArrayList<>();
     }
 
     public MatchController(GUIGame view, GameVolleyball match) {
@@ -87,6 +88,7 @@ public class MatchController {
         this.currentState = new PlayingState();
         match.play();
         this.matchLogs = match.getGameLog();
+        if (this.matchLogs == null) this.matchLogs = new java.util.ArrayList<>();
     }
 
     public void initializeFootballStats() {
@@ -114,7 +116,13 @@ public class MatchController {
     }
 
     public void processTick() {
-        currentState.processTick();
+        try {
+            currentState.processTick();
+        } catch (Exception e) {
+            Classes.ErrorHandler.logError(e);
+            view.pauseTimeline(); // Stop timeline on error to prevent cascading UI failure
+            GUIError.show(); // Route to the error screen instead of freezing
+        }
     }
 
     public void applyTacticChanges() {
@@ -318,8 +326,23 @@ public class MatchController {
         
         int minRequired = isVolleyball ? 6 : 7;
         if (GUISquadManager.getInstance().getPlayersOnPitchQueue().size() < minRequired) {
-            if (isVolleyball) volleyballMatch.forfeit(playerTeam);
-            else footballMatch.forfeit(playerTeam);
+            if (currentLogIndex < matchLogs.size()) {
+                matchLogs.subList(currentLogIndex, matchLogs.size()).clear();
+            }
+            
+            if (isVolleyball) {
+                volleyballMatch.forfeit(playerTeam);
+                homeScore = volleyballMatch.getHomeScore();
+                awayScore = volleyballMatch.getAwayScore();
+                homeSetsWon = volleyballMatch.getHomeSetsWon();
+                awaySetsWon = volleyballMatch.getAwaySetsWon();
+                scoreProperty.set(homeSetsWon + " - " + awaySetsWon + " (SETS)");
+            } else {
+                footballMatch.forfeit(playerTeam);
+                homeScore = footballMatch.getHomeScore();
+                awayScore = footballMatch.getAwayScore();
+                scoreProperty.set(homeScore + " - " + awayScore);
+            }
             endMatchLogic();
             return;
         }
@@ -331,13 +354,13 @@ public class MatchController {
             Interface.ITactic playerTactic = volleyballMatch.getHomeTeam().equals(playerTeam)
                     ? volleyballMatch.getHomeTactic()
                     : volleyballMatch.getAwayTactic();
-            if (volleyballMatch.getHomeTeam().equals(playerTeam) && volleyballMatch.getHomeManager() instanceof Classes.HumanManager hm) {
-                hm.applyTacticalChanges(playerTactic, 
+            if (volleyballMatch.getHomeTeam().equals(playerTeam) && volleyballMatch.getHomeManager() instanceof Classes.HumanManager hmHome) {
+                hmHome.applyTacticalChanges(playerTactic, 
                     GUISquadManager.getInstance().getPlayersOnPitchQueue(), 
                     GUISquadManager.getInstance().getReservePlayersQueue(), 
                     GUISquadManager.getInstance().getCurrentTacticStyle());
-            } else if (volleyballMatch.getAwayTeam().equals(playerTeam) && volleyballMatch.getAwayManager() instanceof Classes.HumanManager hm) {
-                hm.applyTacticalChanges(playerTactic, 
+            } else if (volleyballMatch.getAwayTeam().equals(playerTeam) && volleyballMatch.getAwayManager() instanceof Classes.HumanManager hmAway) {
+                hmAway.applyTacticalChanges(playerTactic, 
                     GUISquadManager.getInstance().getPlayersOnPitchQueue(), 
                     GUISquadManager.getInstance().getReservePlayersQueue(), 
                     GUISquadManager.getInstance().getCurrentTacticStyle());
@@ -346,13 +369,13 @@ public class MatchController {
             Interface.ITactic playerTactic = footballMatch.getHomeTeam().equals(playerTeam)
                     ? footballMatch.getHomeTactic()
                     : footballMatch.getAwayTactic();
-            if (footballMatch.getHomeTeam().equals(playerTeam) && footballMatch.getHomeManager() instanceof Classes.HumanManager hm) {
-                hm.applyTacticalChanges(playerTactic, 
+            if (footballMatch.getHomeTeam().equals(playerTeam) && footballMatch.getHomeManager() instanceof Classes.HumanManager hmHome) {
+                hmHome.applyTacticalChanges(playerTactic, 
                     GUISquadManager.getInstance().getPlayersOnPitchQueue(), 
                     GUISquadManager.getInstance().getReservePlayersQueue(), 
                     GUISquadManager.getInstance().getCurrentTacticStyle());
-            } else if (footballMatch.getAwayTeam().equals(playerTeam) && footballMatch.getAwayManager() instanceof Classes.HumanManager hm) {
-                hm.applyTacticalChanges(playerTactic, 
+            } else if (footballMatch.getAwayTeam().equals(playerTeam) && footballMatch.getAwayManager() instanceof Classes.HumanManager hmAway) {
+                hmAway.applyTacticalChanges(playerTactic, 
                     GUISquadManager.getInstance().getPlayersOnPitchQueue(), 
                     GUISquadManager.getInstance().getReservePlayersQueue(), 
                     GUISquadManager.getInstance().getCurrentTacticStyle());
