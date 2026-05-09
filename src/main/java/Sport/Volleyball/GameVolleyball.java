@@ -207,9 +207,9 @@ public class GameVolleyball extends Game {
         int injuredIndex = getRandom().nextInt(onField.size());
         IPlayer injured = onField.get(injuredIndex);
 
-        if (injured instanceof Classes.Player p) {
+        if (injured instanceof Classes.Player pInjured) {
             int duration = 1 + getRandom().nextInt(3);
-            p.setInjuryDuration(duration);
+            pInjured.setInjuryDuration(duration);
         }
 
         int subsLeft = isHome ? homeSubsLeft : awaySubsLeft;

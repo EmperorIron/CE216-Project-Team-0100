@@ -60,8 +60,7 @@ public class GUIGuide {
 
         java.util.List<String> validImagePaths = new java.util.ArrayList<>();
         
-        // --- 100% Bulletproof Approach for JARs ---
-        // Explicitly list the names of your PNGs here! Add as many as you need.
+      
         String[] explicitFiles = {
             "1-TitleScreen.png", "2-SportsSelection.png", "3-TeamSelection.png", "4-HomeScreen.png", "5-LeagueTable.png",
             "6-Fixture.png", "7-Training.png", "8-GameMenu.png", "9-save screen.png", "10-load screen.png", "11-Error screen.png","12-Tactic right table.png",
@@ -69,10 +68,10 @@ public class GUIGuide {
             "17-GameBreak.png","18-End of season screen.png"
         };
         
-        for (String fileName : explicitFiles) {
+        for (String explicitFile : explicitFiles) {
             try {
-                if (getClass().getResource("/images/guideguide/" + fileName) != null) {
-                    validImagePaths.add(fileName);
+                if (getClass().getResource("/images/guideguide/" + explicitFile) != null) {
+                    validImagePaths.add(explicitFile);
                 }
             } catch (Exception e) { }
         }
