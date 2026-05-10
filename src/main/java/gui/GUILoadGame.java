@@ -73,7 +73,7 @@ public class GUILoadGame {
                     if (tempSave.getPlayerTeam() != null) clubName = tempSave.getPlayerTeam().getName();
                     if (tempSave.getCalendar() != null) gameTime = "Week " + (tempSave.getCalendar().getCurrentWeek() + 1);
                 }
-                VBox saveCard = createSaveCard("Quick Save (Autosave)", dateStr, clubName, gameTime, autoSaveFile.getPath());
+                VBox saveCard = createSaveCard("Quick Save", dateStr, clubName, gameTime, autoSaveFile.getPath());
                 saveList.getChildren().add(saveCard);
             }
             

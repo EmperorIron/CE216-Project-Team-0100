@@ -87,7 +87,7 @@ public class GUIMenu {
                 return;
             }
 
-            SaveGame saveData = new SaveGame("autosave", leagueToSave, calendarToSave, GameContext.getInstance().getPlayerTeam(),
+            SaveGame saveData = new SaveGame("Quick Save", leagueToSave, calendarToSave, GameContext.getInstance().getPlayerTeam(),
                     gui.GUISquadManager.getInstance().getPitchPlayers(), gui.GUISquadManager.getInstance().getPlayersOnPitchQueue(), gui.GUISquadManager.getInstance().getReservePlayersQueue(),
                     gui.GUISquadManager.getInstance().getCurrentTacticStyle());
             SaveManager.saveGame(saveData, "autosave");
@@ -104,7 +104,7 @@ public class GUIMenu {
                     GUIMain.loadSavedGame(loadedGame);
                 }
             } else {
-                GUIPopup.showMessage("Warning", "Quick Save Not Found", "No quick save (autosave) has been created yet.");
+                GUIPopup.showMessage("Warning", "Quick Save Not Found", "No quick save has been created yet.");
             }
         });
 
